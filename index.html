@@ -273,23 +273,28 @@
         </div>
       </section>
 
-      <!-- ============ TAB 3: LIVE GROUP CHAT MENU (EVERYONE CAN CHAT) ============ -->
+      <!-- ============ TAB 3: LIVE GROUP CHAT MENU (DELETE OWN + ADMIN DELETE ANY & ALL CLEAR) ============ -->
       <section id="tab-chat" class="hidden space-y-3">
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden flex flex-col h-[72vh]">
           <!-- Chat Header -->
-          <div class="bg-emerald-800 text-white px-4 py-3 flex items-center justify-between">
-            <div class="flex items-center gap-2.5">
-              <div class="w-9 h-9 rounded-full bg-white/15 flex items-center justify-center text-lg">
+          <div class="bg-emerald-800 text-white px-4 py-3 flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <div class="w-9 h-9 rounded-full bg-white/15 flex items-center justify-center text-lg shrink-0">
                 💬
               </div>
-              <div>
-                <h2 class="text-sm font-bold">ગુજરાત પુરવઠા લાઇવ ગ્રુપ ચેટ</h2>
-                <p id="chat-members-count" class="text-[11px] text-emerald-200">એડમિન અને તમામ ઓપરેટરો અહીં ચેટ કરી શકે છે</p>
+              <div class="min-w-0">
+                <h2 class="text-sm font-bold truncate">ગુજરાત પુરવઠા લાઇવ ગ્રુપ ચેટ</h2>
+                <p id="chat-members-count" class="text-[11px] text-emerald-200 truncate">એડમિન અને તમામ ઓપરેટરો અહીં ચેટ કરી શકે છે</p>
               </div>
             </div>
-            <button type="button" onclick="manualSyncNow()" class="text-[11px] bg-white/15 hover:bg-white/25 px-2.5 py-1 rounded-lg font-semibold">
-              🔄 રિફ્રેશ
-            </button>
+            <div class="flex items-center gap-1.5 shrink-0">
+              <button type="button" id="btn-clear-all-chat" onclick="clearAllGroupMessages()" class="hidden text-[11px] bg-red-600 hover:bg-red-700 text-white px-2.5 py-1.5 rounded-lg font-bold shadow">
+                🗑️ ઓલ ક્લિયર
+              </button>
+              <button type="button" onclick="manualSyncNow()" class="text-[11px] bg-white/15 hover:bg-white/25 px-2.5 py-1.5 rounded-lg font-semibold">
+                🔄 રિફ્રેશ
+              </button>
+            </div>
           </div>
 
           <!-- Messages Feed -->
@@ -385,7 +390,7 @@
           <h2 class="text-sm font-bold text-amber-950 flex items-center gap-2">
             <span>📢 હોમ પેજ પર હાઇલાઇટ સૂચના મૂકો (ગ્રુપ ચેટમાં નહીં દેખાય)</span>
           </h2>
-          <p class="text-[11px] text-amber-900">અહીંથી મોકલેલ સૂચના માત્ર હોમ પેજ પર સૌથી ઉપર હાઇલાઇટ બોક્સમાં દેખાશે:</p>
+          <p class="text-[11px] text-amber-900">અહીંથી મોકલેલ સૂચના માત્ર હોમ પેજ પર સૌથી ઉપર હાઇલાઇટ બોક્સમાં જ દેખાશે:</p>
           <form onsubmit="sendAdminHomeNotice(event)" class="flex flex-col sm:flex-row gap-2">
             <input type="text" id="admin-broadcast-input" placeholder="હોમ પેજ માટે અગત્યની સૂચના લખો..." required
               class="flex-1 px-3.5 py-2.5 bg-white border border-amber-300 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-amber-500" />
@@ -668,8 +673,8 @@
     };
 
     // 2. CONSTANTS & STORAGE KEYS
-    const STORAGE_KEY = 'gujarat_purvatha_db_v12';
-    const SESSION_KEY = 'gujarat_purvatha_session_v12';
+    const STORAGE_KEY = 'gujarat_purvatha_db_v13';
+    const SESSION_KEY = 'gujarat_purvatha_session_v13';
     const CLOUD_URL_KEY = 'gujarat_purvatha_firebase_url';
     const BDAY_TOAST_KEY = 'gujarat_purvatha_bday_notified_date';
     const LAST_SEEN_NOTICE_KEY = 'gujarat_purvatha_last_seen_notice_id';
@@ -682,6 +687,8 @@
       deletedUsers: {},
       folders: [],
       messages: [],
+      deletedMessages: {},
+      chatClearedAt: 0,
       adminNotice: null,
       updatedAt: Date.now()
     };
@@ -722,7 +729,7 @@
       return raw.replace(/\/+$/, '').replace(/\/purvatha_portal\.json$/i, '');
     }
 
-    // 4. DATABASE & REALTIME CLOUD SYNC ENGINE
+    // 4. DATABASE & REALTIME CLOUD SYNC ENGINE (WITH DELETED MESSAGE & ALL-CLEAR SYNC)
     function getDefaultState() {
       const initTime = new Date().toLocaleTimeString('gu-IN', { hour: '2-digit', minute: '2-digit' });
       return {
@@ -753,17 +760,9 @@
             entries: []
           }
         ],
-        messages: [
-          {
-            id: 'msg_welcome',
-            senderMobile: ADMIN_MOBILE,
-            sender: 'મુખ્ય એડમિન',
-            role: 'admin',
-            text: 'ગુજરાત પુરવઠા ઓપરેટર લાઇવ ગ્રુપ ચેટમાં આપનું સ્વાગત છે!',
-            time: initTime,
-            ts: 1700000000000
-          }
-        ],
+        messages: [],
+        deletedMessages: {},
+        chatClearedAt: 0,
         adminNotice: {
           id: 'notice_welcome',
           text: 'ગુજરાત પુરવઠા ઓપરેટર લાઇવ પોર્ટલમાં આપનું સ્વાગત છે.',
@@ -777,7 +776,9 @@
     function mergeStates(localSt, cloudSt) {
       if (!cloudSt || !cloudSt.users) return localSt;
 
-      const mergedDeleted = { ...(localSt.deletedUsers || {}), ...(cloudSt.deletedUsers || {}) };
+      const mergedDeletedUsers = { ...(localSt.deletedUsers || {}), ...(cloudSt.deletedUsers || {}) };
+      const mergedDeletedMsgs = { ...(localSt.deletedMessages || {}), ...(cloudSt.deletedMessages || {}) };
+      const maxChatClearedAt = Math.max(localSt.chatClearedAt || 0, cloudSt.chatClearedAt || 0);
 
       const mergedUsers = { ...(localSt.users || {}) };
       Object.keys(cloudSt.users || {}).forEach(mob => {
@@ -788,8 +789,8 @@
         }
       });
 
-      Object.keys(mergedDeleted).forEach(mob => {
-        const delTime = mergedDeleted[mob];
+      Object.keys(mergedDeletedUsers).forEach(mob => {
+        const delTime = mergedDeletedUsers[mob];
         if (mob !== ADMIN_MOBILE && mergedUsers[mob] && (mergedUsers[mob].updatedAt || 0) < delTime) {
           delete mergedUsers[mob];
         }
@@ -815,9 +816,14 @@
         finalFolders = finalFolders.filter(f => cloudFolderIds.has(f.id) || (f.updatedAt || 0) > (cloudSt.updatedAt || 0));
       }
 
+      // Merge Messages while strictly respecting individual deletions, All-Clear timestamp, and excluding Admin Notices
       const msgMap = new Map();
       [...(localSt.messages || []), ...(cloudSt.messages || [])].forEach(m => {
-        if (m && m.id) msgMap.set(m.id, m);
+        if (!m || !m.id) return;
+        if (mergedDeletedMsgs[m.id]) return;
+        if ((m.ts || 0) <= maxChatClearedAt) return;
+        if (typeof m.text === 'string' && (m.text.startsWith('📢 એડમિન સૂચના:') || m.text.startsWith('📢 અગત્યની સૂચના:'))) return;
+        msgMap.set(m.id, m);
       });
       const finalMessages = Array.from(msgMap.values())
         .sort((a, b) => (a.ts || 0) - (b.ts || 0))
@@ -838,9 +844,11 @@
 
       return {
         users: mergedUsers,
-        deletedUsers: mergedDeleted,
+        deletedUsers: mergedDeletedUsers,
         folders: finalFolders,
         messages: finalMessages,
+        deletedMessages: mergedDeletedMsgs,
+        chatClearedAt: maxChatClearedAt,
         adminNotice: finalNotice,
         updatedAt: Math.max(localSt.updatedAt || 0, cloudSt.updatedAt || 0)
       };
@@ -859,6 +867,8 @@
             appState.users[ADMIN_MOBILE].role = 'admin';
             appState.users[ADMIN_MOBILE].locked = false;
             if (!appState.deletedUsers) appState.deletedUsers = {};
+            if (!appState.deletedMessages) appState.deletedMessages = {};
+            if (!appState.chatClearedAt) appState.chatClearedAt = 0;
             if (!Array.isArray(appState.folders)) appState.folders = [];
             if (!Array.isArray(appState.messages)) appState.messages = [];
             return;
@@ -980,7 +990,7 @@
       }
     });
 
-    // 5. HOME PAGE HIGHLIGHTED ADMIN NOTICE LOGIC (DOES NOT MIX WITH GROUP CHAT)
+    // 5. HOME PAGE HIGHLIGHTED ADMIN NOTICE LOGIC (COMPLETELY SEPARATE FROM GROUP CHAT)
     function renderHomeAdminNotice() {
       const card = document.getElementById('home-admin-notice-card');
       const textEl = document.getElementById('home-admin-notice-text');
@@ -1017,7 +1027,7 @@
       const nowTime = new Date().toLocaleTimeString('gu-IN', { hour: '2-digit', minute: '2-digit' });
       const nowTs = Date.now();
 
-      // Only updates Home Page Highlighted Notice (does NOT add to group chat)
+      // Strictly updates ONLY the Home Page Highlighted Notice Card (never enters Group Chat)
       appState.adminNotice = {
         id: 'notice_' + nowTs,
         text: text,
@@ -1027,7 +1037,7 @@
 
       inp.value = '';
       await persistAndBroadcast(true);
-      showToast('સૂચના હોમ પેજ પર હાઇલાઇટ બોક્સમાં લાઇવ મૂકાઈ ગઈ છે!');
+      showToast('સૂચના માત્ર હોમ પેજ પર હાઇલાઇટ બોક્સમાં લાઇવ મૂકાઈ ગઈ છે!');
     }
 
     // 6. AUTHENTICATION
@@ -1140,12 +1150,15 @@
       document.getElementById('app-shell').classList.remove('hidden');
 
       const navAdmin = document.getElementById('nav-admin');
+      const clearChatBtn = document.getElementById('btn-clear-all-chat');
       if (user.role === 'admin') {
-        user.locked = false; // Admin is never locked
+        user.locked = false;
         navAdmin.classList.remove('hidden');
+        if (clearChatBtn) clearChatBtn.classList.remove('hidden');
         document.getElementById('firebase-url-input').value = getActiveCloudUrl();
       } else {
         navAdmin.classList.add('hidden');
+        if (clearChatBtn) clearChatBtn.classList.add('hidden');
       }
 
       populateDistrictSelects();
@@ -1211,7 +1224,7 @@
       }
     }
 
-    // 8. DISTRICT & TALUKA DROPDOWNS & LOCKING (ADMIN CAN ALWAYS CHANGE)
+    // 8. DISTRICT & TALUKA DROPDOWNS & LOCKING
     function populateDistrictSelects() {
       const districts = Object.keys(GUJARAT_DATA).sort();
       const selectIds = ['assign-district', 'dir-district-filter', 'admin-op-district'];
@@ -1276,7 +1289,7 @@
       showToast(user.role === 'admin' ? 'એડમિનનો જિલ્લો અને તાલુકો અપડેટ થઈ ગયો છે!' : 'જિલ્લો અને તાલુકો સેવ અને લૉક થઈ ગયા છે!');
     }
 
-    // 9. LIVE DIRECTORY RENDERING (WITH DISTRICT + TALUKA FILTER)
+    // 9. LIVE DIRECTORY RENDERING
     function renderDirectory() {
       const listEl = document.getElementById('directory-list');
       if (!listEl) return;
@@ -1339,7 +1352,7 @@
       }).join('');
     }
 
-    // 10. LIVE GROUP CHAT (EVERYONE CAN CHAT FREELY, SEPARATE FROM ADMIN NOTICE)
+    // 10. LIVE GROUP CHAT (OPERATOR CAN DELETE OWN MESSAGE; ADMIN CAN DELETE ANY + ALL CLEAR)
     async function sendGroupMessage(e) {
       e.preventDefault();
       const inp = document.getElementById('group-chat-input');
@@ -1351,7 +1364,7 @@
       const nowTs = Date.now();
 
       appState.messages.push({
-        id: 'msg_' + nowTs + '_' + Math.random().toString(36).slice(2, 5),
+        id: 'msg_' + nowTs + '_' + Math.random().toString(36).slice(2, 6),
         senderMobile: currentUserMobile,
         sender: user ? user.name : currentUserMobile,
         role: user ? user.role : 'operator',
@@ -1366,31 +1379,75 @@
 
     async function deleteGroupMessage(msgId) {
       const user = appState.users[currentUserMobile];
-      if (!user || user.role !== 'admin') return;
+      if (!user) return;
+
+      const targetMsg = (appState.messages || []).find(m => m.id === msgId);
+      if (!targetMsg) return;
+
+      // Allow if Admin OR if Operator is deleting their own sent message
+      const isOwner = targetMsg.senderMobile === currentUserMobile;
+      const isAdmin = user.role === 'admin';
+      if (!isAdmin && !isOwner) {
+        showToast('તમે ફક્ત તમારો પોતાનો જ મેસેજ ડિલીટ કરી શકો છો.', 'error');
+        return;
+      }
+
+      if (!appState.deletedMessages) appState.deletedMessages = {};
+      appState.deletedMessages[msgId] = Date.now();
       appState.messages = (appState.messages || []).filter(m => m.id !== msgId);
+
       await persistAndBroadcast(true);
-      showToast('સંદેશ દૂર કરવામાં આવ્યો.', 'info');
+      showToast('મેસેજ ડિલીટ કરવામાં આવ્યો છે.', 'info');
+    }
+
+    async function clearAllGroupMessages() {
+      const user = appState.users[currentUserMobile];
+      if (!user || user.role !== 'admin') return;
+
+      if (!confirm('શું તમે ખરેખર ગ્રુપ ચેટના બધા જ મેસેજ એકસાથે ઓલ ક્લિયર (All Clear) કરવા માંગો છો?')) return;
+
+      const nowTs = Date.now();
+      if (!appState.deletedMessages) appState.deletedMessages = {};
+      (appState.messages || []).forEach(m => {
+        if (m && m.id) appState.deletedMessages[m.id] = nowTs;
+      });
+      appState.messages = [];
+      appState.chatClearedAt = nowTs;
+
+      await persistAndBroadcast(true);
+      showToast('આખી ગ્રુપ ચેટ ઓલ ક્લિયર (All Clear) થઈ ગઈ છે!', 'info');
     }
 
     function renderGroupChat() {
       const box = document.getElementById('group-chat-messages');
       const countEl = document.getElementById('chat-members-count');
+      const clearBtn = document.getElementById('btn-clear-all-chat');
       if (!box) return;
+
+      const currentUser = appState.users[currentUserMobile];
+      const isAdmin = currentUser && currentUser.role === 'admin';
+      if (clearBtn) {
+        clearBtn.classList.toggle('hidden', !isAdmin);
+      }
 
       const totalMembers = Object.keys(appState.users || {}).length;
       if (countEl) countEl.textContent = `એડમિન અને ${totalMembers} ઓપરેટરો લાઇવ ચેટમાં`;
 
-      const msgs = appState.messages || [];
+      const deletedMap = appState.deletedMessages || {};
+      const clearedAt = appState.chatClearedAt || 0;
+      const msgs = (appState.messages || []).filter(m =>
+        m && m.id && !deletedMap[m.id] && (m.ts || 0) > clearedAt &&
+        !(typeof m.text === 'string' && (m.text.startsWith('📢 એડમિન સૂચના:') || m.text.startsWith('📢 અગત્યની સૂચના:')))
+      );
+
       if (msgs.length === 0) {
-        box.innerHTML = `<p class="text-xs text-slate-400 text-center py-6">હજુ કોઈ સંદેશ નથી. પ્રથમ સંદેશ મોકલો!</p>`;
+        box.innerHTML = `<p class="text-xs text-slate-400 text-center py-6">ગ્રુપ ચેટમાં હાલ કોઈ સંદેશ નથી. પ્રથમ સંદેશ મોકલો!</p>`;
         return;
       }
 
-      const currentUser = appState.users[currentUserMobile];
-      const isAdmin = currentUser && currentUser.role === 'admin';
-
       box.innerHTML = msgs.map(m => {
         const isMine = m.senderMobile === currentUserMobile;
+        const canDelete = isAdmin || isMine;
         const bubbleClass = isMine
           ? 'bg-emerald-100 border-emerald-300 ml-auto'
           : m.role === 'admin'
@@ -1403,9 +1460,15 @@
               <span class="${m.role === 'admin' ? 'text-amber-800' : 'text-blue-900'}">
                 ${escapeHtml(m.sender)} ${m.role === 'admin' ? '(ADMIN)' : ''}
               </span>
-              <div class="flex items-center gap-1.5">
+              <div class="flex items-center gap-2">
                 <span class="text-slate-400">${escapeHtml(m.time || '')}</span>
-                ${isAdmin ? `<button type="button" onclick="deleteGroupMessage('${m.id}')" class="text-red-500 hover:text-red-700 font-bold" title="ડિલીટ કરો">✕</button>` : ''}
+                ${canDelete ? `
+                  <button type="button" onclick="deleteGroupMessage('${m.id}')"
+                    class="px-1.5 py-0.5 rounded bg-red-50 hover:bg-red-100 text-red-600 font-bold text-[10px]"
+                    title="આ મેસેજ ડિલીટ કરો">
+                    🗑️ ડિલીટ
+                  </button>
+                ` : ''}
               </div>
             </div>
             <p class="text-xs text-slate-800 whitespace-pre-wrap break-words leading-relaxed">${escapeHtml(m.text)}</p>
@@ -1632,7 +1695,7 @@
       showToast('ફાઇલ દૂર કરવામાં આવી.', 'info');
     }
 
-    // 12. ADMIN PANEL CONTROLS (INCLUDING CHANGING ANY OPERATOR'S DISTRICT & TALUKA)
+    // 12. ADMIN PANEL CONTROLS
     async function saveFirebaseConfig() {
       let url = document.getElementById('firebase-url-input').value.trim();
       url = url.replace(/\/+$/, '').replace(/\/purvatha_portal\.json$/i, '');
@@ -1752,7 +1815,6 @@
       const countEl = document.getElementById('admin-op-count');
       if (!listEl) return;
 
-      // Do not re-render while admin is actively clicking inside an operator's dropdown
       if (document.activeElement && document.activeElement.id && document.activeElement.id.startsWith('adm-')) {
         return;
       }
@@ -1794,7 +1856,6 @@
               </div>
             </div>
 
-            <!-- Admin Direct District & Taluka Editor for this Operator -->
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-2 border-t border-slate-200/80">
               <select id="adm-dist-${op.mobile}" onchange="onAdminRowDistrictChange('${op.mobile}')"
                 class="w-full px-2.5 py-2 bg-white border border-slate-300 rounded-xl text-xs font-semibold">
@@ -1959,7 +2020,6 @@
         populateTalukas('assign-district', 'assign-taluka', user.taluka);
       }
 
-      // Admin can always change their own District & Taluka; Operators lock after saving
       if (user.locked && user.role !== 'admin') {
         distEl.disabled = true;
         talEl.disabled = true;
