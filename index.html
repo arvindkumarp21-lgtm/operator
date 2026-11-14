@@ -9,10 +9,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>ગુજરાત પુરવઠા ઓપરેટર</title>
 
-  <!-- Inline Dynamic PWA Manifest -->
   <link id="pwa-manifest" rel="manifest" href="" />
-
-  <!-- Tailwind CSS & Google Fonts (Noto Sans Gujarati) -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -24,23 +21,17 @@
       background-color: #f1f5f9;
       -webkit-tap-highlight-color: transparent;
     }
-    .no-scrollbar::-webkit-scrollbar {
-      display: none;
-    }
-    .no-scrollbar {
-      -ms-overflow-style: none;
-      scrollbar-width: none;
-    }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     @keyframes pulse-dot {
       0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.5; transform: scale(1.2); }
+      50% { opacity: 0.4; transform: scale(1.25); }
     }
-    .live-dot {
-      animation: pulse-dot 1.5s infinite;
-    }
+    .live-dot { animation: pulse-dot 1.4s infinite; }
     .drop-zone-active {
       border-color: #2563eb !important;
       background-color: #eff6ff !important;
+      transform: scale(0.99);
     }
   </style>
 </head>
@@ -106,55 +97,57 @@
         </div>
       </form>
     </div>
-    <p class="text-blue-200/70 text-[11px] mt-4">ગુજરાત પુરવઠા ઓપરેટર PWA • સુરક્ષિત લાઇવ સિસ્ટમ</p>
+    <p class="text-blue-200/70 text-[11px] mt-4">ગુજરાત પુરવઠા ઓપરેટર PWA • ક્લાઉડ લાઇવ સિસ્ટમ</p>
   </div>
 
   <!-- ================= MAIN APP SHELL ================= -->
   <div id="app-shell" class="hidden min-h-screen pb-24 max-w-3xl mx-auto bg-slate-50 shadow-xl">
 
-    <!-- Top Header -->
-    <header class="sticky top-0 z-30 bg-blue-950 text-white px-4 py-3.5 shadow-md flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <div class="w-9 h-9 rounded-xl bg-amber-400 text-blue-950 font-bold flex items-center justify-center text-base shadow">
-          ગુ
-        </div>
-        <div>
-          <h1 class="text-base font-bold leading-tight">ગુજરાત પુરવઠા ઓપરેટર</h1>
-          <div class="flex items-center gap-2 text-[11px] text-blue-200">
-            <span id="header-user-name" class="font-medium truncate max-w-[140px]">ઓપરેટર</span>
-            <span>•</span>
-            <span id="header-role-badge" class="px-1.5 py-0.5 rounded bg-blue-800 text-amber-300 font-semibold">OPERATOR</span>
+    <!-- Sticky Header + Top Admin Live Notice Bar -->
+    <div class="sticky top-0 z-30">
+      <header class="bg-blue-950 text-white px-4 py-3.5 shadow-md flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl bg-amber-400 text-blue-950 font-bold flex items-center justify-center text-base shadow">
+            ગુ
           </div>
-        </div>
-      </div>
-
-      <div class="flex items-center gap-2">
-        <div id="sync-indicator" title="લાઇવ સિંક સ્થિતિ" class="flex items-center gap-1.5 bg-white/10 px-2.5 py-1 rounded-full text-[11px]">
-          <span id="sync-dot" class="w-2 h-2 rounded-full bg-emerald-400 live-dot"></span>
-          <span id="sync-text" class="font-medium">LIVE</span>
-        </div>
-        <button type="button" onclick="manualSyncNow()" title="ડેટા રિફ્રેશ/સિંક કરો" class="p-2 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 transition">
-          <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-          </svg>
-        </button>
-      </div>
-    </header>
-
-    <!-- TOP LIVE ADMIN NOTICE BAR (Shows immediately across app when Admin sends a message) -->
-    <div id="top-admin-notice-bar" class="hidden bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-400 text-slate-950 px-4 py-2.5 border-b border-amber-600/30 shadow-sm">
-      <div class="flex items-start justify-between gap-2">
-        <div class="flex items-start gap-2 min-w-0">
-          <span class="text-base shrink-0 mt-0.5">📢</span>
-          <div class="min-w-0">
-            <div class="flex items-center gap-2">
-              <span class="text-[10px] font-extrabold uppercase tracking-wider bg-slate-950 text-amber-300 px-1.5 py-0.5 rounded">એડમિન સૂચના (LIVE)</span>
-              <span id="top-admin-notice-time" class="text-[10px] font-bold text-slate-800"></span>
+          <div>
+            <h1 class="text-base font-bold leading-tight">ગુજરાત પુરવઠા ઓપરેટર</h1>
+            <div class="flex items-center gap-2 text-[11px] text-blue-200">
+              <span id="header-user-name" class="font-medium truncate max-w-[140px]">ઓપરેટર</span>
+              <span>•</span>
+              <span id="header-role-badge" class="px-1.5 py-0.5 rounded bg-blue-800 text-amber-300 font-semibold">OPERATOR</span>
             </div>
-            <p id="top-admin-notice-text" class="text-xs font-bold text-slate-950 mt-0.5 break-words leading-snug"></p>
           </div>
         </div>
-        <button type="button" onclick="dismissTopAdminNotice()" class="text-slate-900/70 hover:text-slate-950 font-bold text-base px-1 shrink-0" title="બંધ કરો">&times;</button>
+
+        <div class="flex items-center gap-2">
+          <div id="sync-indicator" onclick="manualSyncNow()" title="લાઇવ સિંક સ્થિતિ (ક્લિક કરી રિફ્રેશ કરો)" class="cursor-pointer flex items-center gap-1.5 bg-white/10 px-2.5 py-1 rounded-full text-[11px]">
+            <span id="sync-dot" class="w-2 h-2 rounded-full bg-emerald-400 live-dot"></span>
+            <span id="sync-text" class="font-medium">CLOUD LIVE</span>
+          </div>
+          <button type="button" onclick="manualSyncNow()" title="ડેટા રિફ્રેશ/સિંક કરો" class="p-2 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 transition">
+            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      <!-- TOP LIVE ADMIN NOTICE BAR (Shows immediately at the top of the app for all operators) -->
+      <div id="top-admin-notice-bar" class="hidden bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-400 text-slate-950 px-4 py-2.5 border-b border-amber-600/30 shadow-md">
+        <div class="flex items-start justify-between gap-2">
+          <div class="flex items-start gap-2 min-w-0">
+            <span class="text-base shrink-0 mt-0.5">📢</span>
+            <div class="min-w-0">
+              <div class="flex items-center gap-2">
+                <span class="text-[10px] font-extrabold uppercase tracking-wider bg-slate-950 text-amber-300 px-1.5 py-0.5 rounded">એડમિન સૂચના (LIVE)</span>
+                <span id="top-admin-notice-time" class="text-[10px] font-bold text-slate-800"></span>
+              </div>
+              <p id="top-admin-notice-text" class="text-xs font-bold text-slate-950 mt-0.5 break-words leading-snug"></p>
+            </div>
+          </div>
+          <button type="button" onclick="dismissTopAdminNotice()" class="text-slate-900/70 hover:text-slate-950 font-bold text-lg leading-none px-1.5 shrink-0" title="બંધ કરો">&times;</button>
+        </div>
       </div>
     </div>
 
@@ -243,13 +236,13 @@
         </div>
       </section>
 
-      <!-- ============ TAB 2: LIVE DIRECTORY ============ -->
+      <!-- ============ TAB 2: LIVE DIRECTORY (DIRECT CALL & WHATSAPP) ============ -->
       <section id="tab-directory" class="hidden space-y-4">
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-4 space-y-3">
           <div class="flex items-center justify-between">
             <div>
               <h2 class="text-base font-bold text-slate-800">ઓપરેટર લાઇવ ડિરેક્ટરી</h2>
-              <p class="text-[11px] text-slate-500">ડાયરેક્ટ કૉલ અને વોટ્સએપ સુવિધા સાથે</p>
+              <p class="text-[11px] text-slate-500">ડાયરેક્ટ કૉલ અને વોટ્સએપ કરવાની સુવિધા</p>
             </div>
             <button type="button" onclick="manualSyncNow()" class="px-3 py-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl text-xs font-bold flex items-center gap-1.5 hover:bg-emerald-100">
               <span class="w-2 h-2 rounded-full bg-emerald-500 live-dot"></span>
@@ -259,7 +252,7 @@
 
           <!-- Search & District Filter -->
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            <input type="text" id="dir-search" oninput="renderDirectory()" placeholder="નામ, મોબાઇલ કે તાલુકાથી શોધો..."
+            <input type="text" id="dir-search" oninput="renderDirectory()" placeholder="નામ, મોબાઇલ, વોટ્સએપ કે તાલુકાથી શોધો..."
               class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-600" />
             <select id="dir-district-filter" onchange="renderDirectory()"
               class="w-full px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-600">
@@ -311,7 +304,7 @@
         </div>
       </section>
 
-      <!-- ============ TAB 4: DATA & FOLDERS (WITH DRAG & DROP + FILE SELECT) ============ -->
+      <!-- ============ TAB 4: DATA & FOLDERS (DRAG & DROP + SELECT FILE) ============ -->
       <section id="tab-data" class="hidden space-y-4">
         <!-- Folder Creation Card -->
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-4 space-y-3">
@@ -320,7 +313,7 @@
             ડેટા અને ફોલ્ડર મેનેજમેન્ટ
           </h2>
           <form onsubmit="createDataFolder(event)" class="flex gap-2">
-            <input type="text" id="new-folder-name" placeholder="નવા ફોલ્ડરનું નામ લખો (દા.ત. રેશનકાર્ડ ફાઇલ્સ)" required
+            <input type="text" id="new-folder-name" placeholder="નવા ફોલ્ડરનું નામ લખો (દા.ત. રેશનકાર્ડ ડેટા)" required
               class="flex-1 px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-600" />
             <button type="submit" class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs shadow whitespace-nowrap">
               + ફોલ્ડર બનાવો
@@ -341,7 +334,7 @@
               <h3 id="active-folder-title" class="text-base font-bold text-slate-800">ફોલ્ડર નામ</h3>
             </div>
             <button type="button" onclick="closeFolderView()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold">
-              ← પાછા જાઓ
+              ← બધા ફોલ્ડર્સ
             </button>
           </div>
 
@@ -350,47 +343,43 @@
             ondragover="handleDragOver(event)"
             ondragleave="handleDragLeave(event)"
             ondrop="handleFileDrop(event)"
-            class="border-2 border-dashed border-indigo-300 bg-indigo-50/40 rounded-2xl p-5 text-center space-y-2.5 transition cursor-pointer"
+            class="border-2 border-dashed border-indigo-400 bg-indigo-50/50 rounded-2xl p-5 text-center space-y-3 transition cursor-pointer"
             onclick="document.getElementById('folder-file-picker').click()">
-            <div class="w-12 h-12 mx-auto rounded-2xl bg-indigo-100 text-indigo-700 flex items-center justify-center">
+            <div class="w-12 h-12 mx-auto rounded-2xl bg-indigo-100 text-indigo-700 flex items-center justify-center shadow-inner">
               <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
               </svg>
             </div>
             <div>
-              <p class="text-xs font-bold text-slate-800">ફાઇલો અહીં ડ્રેગ કરીને મૂકો (Drag & Drop)</p>
-              <p class="text-[11px] text-slate-500 mt-0.5">અથવા નીચેના બટનથી મોબાઇલ / કમ્પ્યુટરમાંથી ફાઇલ સિલેક્ટ કરો</p>
+              <p class="text-xs font-bold text-slate-800">આ ફોલ્ડરમાં ડેટા / ફાઇલ અહીં ડ્રેગ કરીને મૂકો (Drag & Drop)</p>
+              <p class="text-[11px] text-slate-500 mt-0.5">અથવા મોબાઇલ / કમ્પ્યુટરમાંથી કોઈપણ ફાઇલ સિલેક્ટ કરો</p>
             </div>
             <button type="button" onclick="event.stopPropagation(); document.getElementById('folder-file-picker').click()"
-              class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs shadow inline-flex items-center gap-1.5">
-              <span>📂 ફાઇલ સિલેક્ટ કરો (PDF, Excel, Photo, Doc)</span>
+              class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs shadow inline-flex items-center gap-1.5">
+              <span>📂 ફાઇલ / ડેટા સિલેક્ટ કરો</span>
             </button>
             <input type="file" id="folder-file-picker" multiple onchange="handleFileSelect(event)" class="hidden" />
           </div>
 
-          <!-- Optional Manual Text Entry inside Folder -->
-          <details class="bg-slate-50 rounded-xl border border-slate-200 p-3">
-            <summary class="text-xs font-bold text-slate-700 cursor-pointer select-none">
-              ✍️ અથવા મેન્યુઅલ વિગત / નંબર લખીને ઉમેરો
-            </summary>
-            <form onsubmit="addFolderEntry(event)" class="space-y-2.5 pt-3">
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                <input type="text" id="entry-title" placeholder="અરજદારનું નામ / વિષય" required
-                  class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs font-medium" />
-                <input type="text" id="entry-ref" placeholder="મોબાઇલ / અરજી / કાર્ડ નંબર" required
-                  class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs font-medium" />
-              </div>
-              <input type="text" id="entry-note" placeholder="વધારાની વિગત અથવા નોંધ (વૈકલ્પિક)"
+          <!-- Manual Text Entry Form inside Folder -->
+          <form onsubmit="addFolderEntry(event)" class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-2.5">
+            <p class="text-xs font-bold text-slate-700">✍️ અથવા મેન્યુઅલ ડેટા વિગત લખીને સેવ કરો:</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <input type="text" id="entry-title" placeholder="અરજદારનું નામ / વિષય" required
                 class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs font-medium" />
-              <button type="submit" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg text-xs shadow">
-                + વિગત સેવ કરો
-              </button>
-            </form>
-          </details>
+              <input type="text" id="entry-ref" placeholder="મોબાઇલ / અરજી / કાર્ડ નંબર" required
+                class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs font-medium" />
+            </div>
+            <input type="text" id="entry-note" placeholder="વધારાની વિગત અથવા નોંધ (વૈકલ્પિક)"
+              class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs font-medium" />
+            <button type="submit" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg text-xs shadow">
+              + ડેટા વિગત સેવ કરો
+            </button>
+          </form>
 
           <!-- Entries & Files List -->
           <div class="space-y-2">
-            <h4 class="text-xs font-bold text-slate-600">ફોલ્ડરમાં સેવ થયેલ ફાઇલો અને ડેટા:</h4>
+            <h4 class="text-xs font-bold text-slate-600">આ ફોલ્ડરમાં સેવ થયેલ ફાઇલો અને ડેટા:</h4>
             <div id="folder-entries-list" class="space-y-2.5">
               <!-- Folder entries rendered here -->
             </div>
@@ -403,13 +392,14 @@
         <!-- Quick Admin Top Broadcast Message Card -->
         <div class="bg-amber-50 border border-amber-300 rounded-2xl p-4 space-y-2.5 shadow-sm">
           <h2 class="text-sm font-bold text-amber-950 flex items-center gap-2">
-            <span>📢 બધા ઓપરેટરની સ્ક્રીન પર ઉપર તાત્કાલિક સૂચના મોકલો</span>
+            <span>📢 ઓપરેટર લોગિનમાં સૌથી ઉપર લાઇવ મેસેજ બતાવો</span>
           </h2>
+          <p class="text-[11px] text-amber-900">અહીંથી મોકલેલ મેસેજ દરેક ઓપરેટરની એપ્લિકેશનમાં તરત જ સૌથી ઉપર દેખાશે:</p>
           <form onsubmit="sendAdminTopBroadcast(event)" class="flex flex-col sm:flex-row gap-2">
-            <input type="text" id="admin-broadcast-input" placeholder="અહીં અગત્યની સૂચના લખો (તરત જ ઉપર દેખાશે)..." required
+            <input type="text" id="admin-broadcast-input" placeholder="અહીં અગત્યનો મેસેજ લખો..." required
               class="flex-1 px-3.5 py-2.5 bg-white border border-amber-300 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-amber-500" />
             <button type="submit" class="px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl text-xs shadow whitespace-nowrap">
-              લાઇવ સૂચના મોકલો
+              ઉપર લાઇવ મેસેજ મોકલો
             </button>
           </form>
         </div>
@@ -418,18 +408,15 @@
         <div class="bg-gradient-to-br from-slate-900 to-blue-950 text-white rounded-2xl shadow-md p-4 space-y-3">
           <div class="flex items-center justify-between">
             <h2 class="text-sm font-bold flex items-center gap-2">
-              <span>☁️ ક્લાઉડ લાઇવ સિંક સેટિંગ્સ (Firebase URL)</span>
+              <span>☁️ ક્લાઉડ લાઇવ સિંક (Firebase Connected)</span>
             </h2>
-            <span id="cloud-status-tag" class="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-400 text-slate-950">LOCAL + SYNC</span>
+            <span id="cloud-status-tag" class="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-400 text-slate-950">CLOUD CONNECTED</span>
           </div>
-          <p class="text-[11px] text-blue-200 leading-relaxed">
-            બધા મોબાઇલ પર એકસાથે રિયલ-ટાઇમ ડેટા અને સૂચના અપડેટ કરવા માટે Firebase Realtime Database લિંક સેવ કરો:
-          </p>
           <div class="flex flex-col sm:flex-row gap-2">
-            <input type="url" id="firebase-url-input" placeholder="https://your-project-default-rtdb.firebaseio.com"
-              class="flex-1 px-3 py-2 rounded-xl bg-white/10 border border-white/20 text-white placeholder-blue-300/60 text-xs focus:outline-none focus:ring-2 focus:ring-amber-400" />
-            <button type="button" onclick="saveFirebaseConfig()" class="px-4 py-2 bg-amber-400 hover:bg-amber-500 text-slate-950 font-bold rounded-xl text-xs whitespace-nowrap">
-              લાઇવ સિંક સેવ કરો
+            <input type="url" id="firebase-url-input" placeholder="https://all-pds-oprator-default-rtdb.asia-southeast1.firebasedatabase.app"
+              class="flex-1 px-3 py-2.5 rounded-xl bg-white/10 border border-white/20 text-white placeholder-blue-300/60 text-xs focus:outline-none focus:ring-2 focus:ring-amber-400" />
+            <button type="button" onclick="saveFirebaseConfig()" class="px-4 py-2.5 bg-amber-400 hover:bg-amber-500 text-slate-950 font-bold rounded-xl text-xs whitespace-nowrap">
+              લાઇવ સિંક અપડેટ કરો
             </button>
           </div>
         </div>
@@ -477,7 +464,6 @@
 
       <!-- ============ TAB 6: PROFILE, SEPARATE WHATSAPP, DOB, PASSWORD & LOGOUT ============ -->
       <section id="tab-profile" class="hidden space-y-4">
-        <!-- Profile Details Card -->
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-5 space-y-4">
           <div class="flex items-center gap-4">
             <div class="relative">
@@ -493,7 +479,8 @@
             </div>
             <div>
               <h2 id="profile-display-name" class="text-lg font-bold text-slate-900">ઓપરેટર નામ</h2>
-              <p id="profile-display-mobile" class="text-xs font-semibold text-slate-500">+91 0000000000</p>
+              <p id="profile-display-mobile" class="text-xs font-semibold text-slate-600">📞 મોબાઇલ: +91 0000000000</p>
+              <p id="profile-display-whatsapp" class="text-xs font-semibold text-emerald-700 mt-0.5">💬 WhatsApp: +91 0000000000</p>
               <span id="profile-display-location" class="inline-block mt-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-800">
                 જિલ્લો / તાલુકો બાકી
               </span>
@@ -509,21 +496,28 @@
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label class="block text-xs font-bold text-slate-600 mb-1">અલગ વોટ્સએપ નંબર (જો અલગ હોય તો)</label>
-                <input type="tel" id="prof-whatsapp" maxlength="10" inputmode="numeric" placeholder="૧૦ આંકડાનો WhatsApp નંબર"
-                  class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-600" />
+                <label class="block text-xs font-bold text-slate-600 mb-1">કોલિંગ મોબાઇલ નંબર (લૉગિન નંબર)</label>
+                <input type="text" id="prof-calling-mobile" disabled
+                  class="w-full px-3.5 py-2.5 bg-slate-200 border border-slate-300 rounded-xl text-xs font-bold text-slate-600 cursor-not-allowed" />
               </div>
+              <div>
+                <label class="block text-xs font-bold text-emerald-800 mb-1">અલગ વોટ્સએપ નંબર (જો અલગ હોય તો)</label>
+                <input type="tel" id="prof-whatsapp" maxlength="10" inputmode="numeric" placeholder="૧૦ આંકડાનો અલગ WhatsApp નંબર"
+                  class="w-full px-3.5 py-2.5 bg-emerald-50/50 border border-emerald-300 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-600" />
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label class="block text-xs font-bold text-slate-600 mb-1">જન્મ તારીખ (Date of Birth)</label>
                 <input type="date" id="prof-dob"
                   class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-600" />
               </div>
-            </div>
-
-            <div>
-              <label class="block text-xs font-bold text-slate-600 mb-1">ઈમેલ એડ્રેસ</label>
-              <input type="email" id="prof-email" placeholder="example@gmail.com"
-                class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-600" />
+              <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1">ઈમેલ એડ્રેસ</label>
+                <input type="email" id="prof-email" placeholder="example@gmail.com"
+                  class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-600" />
+              </div>
             </div>
 
             <div>
@@ -538,7 +532,7 @@
             </div>
 
             <button type="submit" class="w-full py-3 bg-blue-900 hover:bg-blue-800 text-white font-bold rounded-xl text-xs shadow">
-              પ્રોફાઇલ અને WhatsApp નંબર સેવ કરો
+              પ્રોફાઇલ અને અલગ WhatsApp નંબર સેવ કરો
             </button>
           </form>
         </div>
@@ -638,6 +632,9 @@
 
   <!-- ================= APPLICATION JAVASCRIPT ================= -->
   <script>
+    // તમારી કાયમી Firebase Realtime Database લિંક અહીં સેટ કરેલી છે:
+    const DEFAULT_FIREBASE_URL = "https://all-pds-oprator-default-rtdb.asia-southeast1.firebasedatabase.app";
+
     // 1. ALL 35 DISTRICTS & TALUKAS OF GUJARAT
     const GUJARAT_DATA = {
       'Ahmedabad': ['Ghatlodia', 'DETROJ', 'DASKROI', 'DHANDHUKA', 'DHOLERA', 'DHOZHAKA', 'BAVLA', 'MANDAL', 'VIRAMGAM', 'SANAND'],
@@ -678,17 +675,19 @@
     };
 
     // 2. CONSTANTS & STORAGE KEYS
-    const STORAGE_KEY = 'gujarat_purvatha_db_v8';
-    const SESSION_KEY = 'gujarat_purvatha_session_v8';
+    const STORAGE_KEY = 'gujarat_purvatha_db_v11';
+    const SESSION_KEY = 'gujarat_purvatha_session_v11';
     const CLOUD_URL_KEY = 'gujarat_purvatha_firebase_url';
     const BDAY_TOAST_KEY = 'gujarat_purvatha_bday_notified_date';
     const DISMISSED_NOTICE_KEY = 'gujarat_purvatha_dismissed_notice_id';
+    const LAST_SEEN_NOTICE_KEY = 'gujarat_purvatha_last_seen_notice_id';
     const ADMIN_MOBILE = '9033483992';
     const DEFAULT_ADMIN_PASS = '654321';
     const DEFAULT_OP_PASS = '123456';
 
     let appState = {
       users: {},
+      deletedUsers: {},
       folders: [],
       messages: [],
       adminNotice: null,
@@ -699,8 +698,9 @@
     let activeFolderId = null;
     let deferredInstallPrompt = null;
     let syncTimer = null;
+    let isSyncingNow = false;
 
-    // 3. HELPER FUNCTIONS (TOAST & PASSWORD TOGGLE)
+    // 3. HELPER FUNCTIONS
     let toastTimeout = null;
     function showToast(msg, type = 'success') {
       const box = document.getElementById('toast-box');
@@ -724,7 +724,13 @@
       if (inp) inp.type = inp.type === 'password' ? 'text' : 'password';
     }
 
-    // 4. DATABASE & REALTIME CLOUD SYNC ENGINE
+    function getActiveCloudUrl() {
+      const saved = (localStorage.getItem(CLOUD_URL_KEY) || '').trim();
+      const raw = saved || DEFAULT_FIREBASE_URL;
+      return raw.replace(/\/+$/, '').replace(/\/purvatha_portal\.json$/i, '');
+    }
+
+    // 4. DATABASE & REALTIME CLOUD SYNC ENGINE (GRANULAR SMART MERGE)
     function getDefaultState() {
       const initTime = new Date().toLocaleTimeString('gu-IN', { hour: '2-digit', minute: '2-digit' });
       return {
@@ -742,14 +748,16 @@
             dob: '',
             address: 'ગુજરાત પુરવઠા ભવન, ગાંધીનગર',
             photo: '',
-            updatedAt: Date.now()
+            updatedAt: 1700000000000
           }
         },
+        deletedUsers: {},
         folders: [
           {
             id: 'folder_default_1',
             name: 'સામાન્ય પુરવઠા ફાઇલ્સ',
             createdAt: new Date().toLocaleDateString('gu-IN'),
+            updatedAt: 1700000000000,
             entries: []
           }
         ],
@@ -760,15 +768,90 @@
             sender: 'મુખ્ય એડમિન',
             role: 'admin',
             text: 'ગુજરાત પુરવઠા ઓપરેટર ગ્રુપ ચેટમાં આપનું સ્વાગત છે!',
-            time: initTime
+            time: initTime,
+            ts: 1700000000000
           }
         ],
         adminNotice: {
           id: 'notice_welcome',
           text: 'ગુજરાત પુરવઠા ઓપરેટર લાઇવ પોર્ટલમાં આપનું સ્વાગત છે.',
-          time: initTime
+          time: initTime,
+          ts: 1700000000000
         },
         updatedAt: Date.now()
+      };
+    }
+
+    function mergeStates(localSt, cloudSt) {
+      if (!cloudSt || !cloudSt.users) return localSt;
+
+      const mergedDeleted = { ...(localSt.deletedUsers || {}), ...(cloudSt.deletedUsers || {}) };
+
+      // Merge Users by individual updatedAt timestamp
+      const mergedUsers = { ...(localSt.users || {}) };
+      Object.keys(cloudSt.users || {}).forEach(mob => {
+        const cU = cloudSt.users[mob];
+        const lU = mergedUsers[mob];
+        if (!lU || (cU.updatedAt || 0) >= (lU.updatedAt || 0)) {
+          mergedUsers[mob] = cU;
+        }
+      });
+
+      // Respect deleted users
+      Object.keys(mergedDeleted).forEach(mob => {
+        const delTime = mergedDeleted[mob];
+        if (mob !== ADMIN_MOBILE && mergedUsers[mob] && (mergedUsers[mob].updatedAt || 0) < delTime) {
+          delete mergedUsers[mob];
+        }
+      });
+
+      // Merge Folders & Entries by ID
+      const folderMap = new Map();
+      [...(localSt.folders || []), ...(cloudSt.folders || [])].forEach(f => {
+        if (!f || !f.id) return;
+        if (!folderMap.has(f.id)) {
+          folderMap.set(f.id, { ...f, entries: [...(f.entries || [])] });
+        } else {
+          const existing = folderMap.get(f.id);
+          const entryMap = new Map();
+          [...(existing.entries || []), ...(f.entries || [])].forEach(e => {
+            if (e && e.id) entryMap.set(e.id, e);
+          });
+          existing.entries = Array.from(entryMap.values());
+        }
+      });
+      let finalFolders = Array.from(folderMap.values());
+      if ((cloudSt.updatedAt || 0) > (localSt.updatedAt || 0) && Array.isArray(cloudSt.folders)) {
+        const cloudFolderIds = new Set(cloudSt.folders.map(f => f.id));
+        finalFolders = finalFolders.filter(f => cloudFolderIds.has(f.id) || (f.updatedAt || 0) > (cloudSt.updatedAt || 0));
+      }
+
+      // Merge Messages by ID
+      const msgMap = new Map();
+      [...(localSt.messages || []), ...(cloudSt.messages || [])].forEach(m => {
+        if (m && m.id) msgMap.set(m.id, m);
+      });
+      const finalMessages = Array.from(msgMap.values()).slice(-100);
+
+      // Latest Admin Notice
+      let finalNotice = localSt.adminNotice;
+      if (cloudSt.adminNotice) {
+        if (!finalNotice || (cloudSt.adminNotice.ts || 0) >= (finalNotice.ts || 0)) {
+          finalNotice = cloudSt.adminNotice;
+        }
+      }
+
+      if (!mergedUsers[ADMIN_MOBILE]) {
+        mergedUsers[ADMIN_MOBILE] = getDefaultState().users[ADMIN_MOBILE];
+      }
+
+      return {
+        users: mergedUsers,
+        deletedUsers: mergedDeleted,
+        folders: finalFolders,
+        messages: finalMessages,
+        adminNotice: finalNotice,
+        updatedAt: Math.max(localSt.updatedAt || 0, cloudSt.updatedAt || 0)
       };
     }
 
@@ -782,6 +865,7 @@
             if (!appState.users[ADMIN_MOBILE]) {
               appState.users[ADMIN_MOBILE] = getDefaultState().users[ADMIN_MOBILE];
             }
+            if (!appState.deletedUsers) appState.deletedUsers = {};
             if (!Array.isArray(appState.folders)) appState.folders = [];
             if (!Array.isArray(appState.messages)) appState.messages = [];
             return;
@@ -799,77 +883,69 @@
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
       } catch (storageErr) {
-        showToast('સ્ટોરેજ ભરાઈ ગયું છે! કૃપા કરીને જૂની મોટી ફાઇલો દૂર કરો.', 'error');
+        showToast('સ્ટોરેજ ભરાઈ ગયું છે! કૃપા કરીને મોટી ફાઇલો દૂર કરો.', 'error');
         return;
       }
       if (currentUserMobile) refreshAllViews();
 
-      const cloudUrl = (localStorage.getItem(CLOUD_URL_KEY) || '').trim().replace(/\/+$/, '');
+      const cloudUrl = getActiveCloudUrl();
       if (pushCloud && cloudUrl) {
         try {
           setSyncStatus('syncing');
-          await fetch(`${cloudUrl}/purvatha_portal.json`, {
+          try {
+            const getRes = await fetch(`${cloudUrl}/purvatha_portal.json?t=${Date.now()}`, { cache: 'no-store' });
+            if (getRes.ok) {
+              const remoteData = await getRes.json();
+              if (remoteData && remoteData.users) {
+                appState = mergeStates(appState, remoteData);
+                appState.updatedAt = Date.now();
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+              }
+            }
+          } catch (_) {}
+
+          const putRes = await fetch(`${cloudUrl}/purvatha_portal.json`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(appState)
           });
+          if (!putRes.ok) throw new Error('PUT HTTP ' + putRes.status);
           setSyncStatus('live');
+          if (currentUserMobile) refreshAllViews();
         } catch (err) {
-          console.warn('Cloud push failed:', err);
+          console.warn('Cloud push error:', err);
           setSyncStatus('offline');
         }
       }
     }
 
     async function pullFromCloud(silent = true) {
-      const cloudUrl = (localStorage.getItem(CLOUD_URL_KEY) || '').trim().replace(/\/+$/, '');
+      const cloudUrl = getActiveCloudUrl();
       if (!cloudUrl) {
         setSyncStatus('local');
         return;
       }
+      if (isSyncingNow) return;
+      isSyncingNow = true;
       try {
         if (!silent) setSyncStatus('syncing');
-        const res = await fetch(`${cloudUrl}/purvatha_portal.json?t=${Date.now()}`);
+        const res = await fetch(`${cloudUrl}/purvatha_portal.json?t=${Date.now()}`, { cache: 'no-store' });
         if (!res.ok) throw new Error('HTTP ' + res.status);
         const cloudData = await res.json();
         if (cloudData && cloudData.users) {
-          const mergedUsers = { ...appState.users };
-          Object.keys(cloudData.users).forEach(mob => {
-            const cUser = cloudData.users[mob];
-            const lUser = mergedUsers[mob];
-            if (!lUser || (cUser.updatedAt || 0) >= (lUser.updatedAt || 0)) {
-              mergedUsers[mob] = cUser;
-            }
-          });
-          if ((cloudData.updatedAt || 0) > (appState.updatedAt || 0)) {
-            Object.keys(mergedUsers).forEach(mob => {
-              if (!cloudData.users[mob] && mob !== ADMIN_MOBILE) {
-                delete mergedUsers[mob];
-              }
-            });
-          }
-
-          const isCloudNewer = (cloudData.updatedAt || 0) >= (appState.updatedAt || 0);
-          appState = {
-            users: mergedUsers,
-            folders: Array.isArray(cloudData.folders) && isCloudNewer ? cloudData.folders : appState.folders,
-            messages: Array.isArray(cloudData.messages) && isCloudNewer ? cloudData.messages : appState.messages,
-            adminNotice: isCloudNewer && cloudData.adminNotice ? cloudData.adminNotice : appState.adminNotice,
-            updatedAt: Math.max(cloudData.updatedAt || 0, appState.updatedAt || 0)
-          };
-          if (!appState.users[ADMIN_MOBILE]) {
-            appState.users[ADMIN_MOBILE] = getDefaultState().users[ADMIN_MOBILE];
-          }
+          appState = mergeStates(appState, cloudData);
           localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
           if (currentUserMobile) refreshAllViews();
         } else {
           await persistAndBroadcast(true);
         }
         setSyncStatus('live');
-        if (!silent) showToast('ક્લાઉડ ડેટા લાઇવ સિંક થઈ ગયો છે!');
+        if (!silent) showToast('ક્લાઉડ ડેટા લાઇવ અપડેટ થઈ ગયો છે!');
       } catch (e) {
         setSyncStatus('offline');
-        if (!silent) showToast('ક્લાઉડ કનેક્શન મળ્યું નથી, લોકલ ડેટા ચાલુ છે.', 'info');
+        if (!silent) showToast('Firebase કનેક્શન એરર! Firebase Rules માં .read અને .write true રાખો.', 'error');
+      } finally {
+        isSyncingNow = false;
       }
     }
 
@@ -877,21 +953,22 @@
       const dot = document.getElementById('sync-dot');
       const txt = document.getElementById('sync-text');
       const tag = document.getElementById('cloud-status-tag');
+
       if (!dot || !txt) return;
       if (mode === 'live') {
         dot.className = 'w-2 h-2 rounded-full bg-emerald-400 live-dot';
         txt.textContent = 'CLOUD LIVE';
-        if (tag) tag.textContent = 'CLOUD CONNECTED';
+        if (tag) { tag.textContent = 'CLOUD CONNECTED'; tag.className = 'text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-400 text-slate-950'; }
       } else if (mode === 'syncing') {
         dot.className = 'w-2 h-2 rounded-full bg-amber-400 animate-ping';
         txt.textContent = 'SYNCING...';
       } else if (mode === 'offline') {
         dot.className = 'w-2 h-2 rounded-full bg-red-400';
-        txt.textContent = 'OFFLINE';
+        txt.textContent = 'SYNC ERROR';
+        if (tag) { tag.textContent = 'CHECK FIREBASE RULES'; tag.className = 'text-[10px] font-bold px-2 py-0.5 rounded bg-red-500 text-white'; }
       } else {
-        dot.className = 'w-2 h-2 rounded-full bg-emerald-400 live-dot';
-        txt.textContent = 'LIVE';
-        if (tag) tag.textContent = 'LOCAL LIVE';
+        dot.className = 'w-2 h-2 rounded-full bg-amber-400 live-dot';
+        txt.textContent = 'LOCAL';
       }
     }
 
@@ -924,6 +1001,14 @@
         textEl.textContent = notice.text;
         timeEl.textContent = notice.time ? `(${notice.time})` : '';
         bar.classList.remove('hidden');
+
+        const lastSeenId = localStorage.getItem(LAST_SEEN_NOTICE_KEY);
+        if (lastSeenId !== notice.id) {
+          localStorage.setItem(LAST_SEEN_NOTICE_KEY, notice.id);
+          if (notice.id !== 'notice_welcome') {
+            showToast('📢 એડમિન તરફથી નવી સૂચના: ' + notice.text, 'info');
+          }
+        }
       } else {
         bar.classList.add('hidden');
       }
@@ -946,29 +1031,30 @@
       if (!text) return;
 
       const nowTime = new Date().toLocaleTimeString('gu-IN', { hour: '2-digit', minute: '2-digit' });
-      const newNotice = {
-        id: 'notice_' + Date.now(),
+      const nowTs = Date.now();
+      appState.adminNotice = {
+        id: 'notice_' + nowTs,
         text: text,
-        time: nowTime
+        time: nowTime,
+        ts: nowTs
       };
-      appState.adminNotice = newNotice;
       appState.messages.push({
-        id: 'msg_' + Date.now(),
+        id: 'msg_' + nowTs,
         senderMobile: currentUserMobile,
         sender: user.name || 'મુખ્ય એડમિન',
         role: 'admin',
-        text: '📢 અગત્યની સૂચના: ' + text,
-        time: nowTime
+        text: '📢 એડમિન સૂચના: ' + text,
+        time: nowTime,
+        ts: nowTs
       });
-      if (appState.messages.length > 100) appState.messages.shift();
 
       inp.value = '';
       localStorage.removeItem(DISMISSED_NOTICE_KEY);
       await persistAndBroadcast(true);
-      showToast('સૂચના બધા ઓપરેટરની સ્ક્રીન પર ઉપર લાઇવ મોકલી દેવાઈ છે!');
+      showToast('મેસેજ તમામ ઓપરેટરના લોગિનમાં સૌથી ઉપર લાઇવ મોકલી દેવાયો છે!');
     }
 
-    // 6. AUTHENTICATION (STRICT PASSWORD CHECK)
+    // 6. AUTHENTICATION
     async function handleManualLogin(e) {
       e.preventDefault();
       const errBox = document.getElementById('login-error');
@@ -993,7 +1079,6 @@
         await pullFromCloud(true);
         loadLocalState();
 
-        // ADMIN LOGIN CHECK
         if (mobile === ADMIN_MOBILE) {
           const adminUser = appState.users[ADMIN_MOBILE] || getDefaultState().users[ADMIN_MOBILE];
           const validAdminPass = adminUser.password || DEFAULT_ADMIN_PASS;
@@ -1009,7 +1094,6 @@
           return;
         }
 
-        // OPERATOR LOGIN CHECK
         let existingUser = appState.users[mobile];
         if (existingUser) {
           const validPass = existingUser.password || DEFAULT_OP_PASS;
@@ -1023,6 +1107,9 @@
             errBox.textContent = 'ખોટો પાસવર્ડ! નવા ઓપરેટર માટે ડિફોલ્ટ પાસવર્ડ 123456 છે.';
             errBox.classList.remove('hidden');
             return;
+          }
+          if (appState.deletedUsers && appState.deletedUsers[mobile]) {
+            delete appState.deletedUsers[mobile];
           }
           appState.users[mobile] = {
             mobile: mobile,
@@ -1079,7 +1166,7 @@
       const navAdmin = document.getElementById('nav-admin');
       if (user.role === 'admin') {
         navAdmin.classList.remove('hidden');
-        document.getElementById('firebase-url-input').value = localStorage.getItem(CLOUD_URL_KEY) || '';
+        document.getElementById('firebase-url-input').value = getActiveCloudUrl();
       } else {
         navAdmin.classList.add('hidden');
       }
@@ -1090,7 +1177,7 @@
       switchTab('home');
 
       if (syncTimer) clearInterval(syncTimer);
-      syncTimer = setInterval(() => pullFromCloud(true), 6000);
+      syncTimer = setInterval(() => pullFromCloud(true), 3000);
     }
 
     // 7. BIRTHDAY WISH NOTIFICATION CHECKER
@@ -1198,7 +1285,7 @@
       showToast('જિલ્લો અને તાલુકો સેવ અને લૉક થઈ ગયા છે!');
     }
 
-    // 9. LIVE DIRECTORY RENDERING (WITH DIRECT CALL & WHATSAPP BUTTONS)
+    // 9. LIVE DIRECTORY RENDERING
     function renderDirectory() {
       const listEl = document.getElementById('directory-list');
       if (!listEl) return;
@@ -1226,7 +1313,7 @@
         const locText = u.district ? `${u.district} • ${u.taluka || ''}` : 'જિલ્લો/તાલુકો પસંદ કરવાનો બાકી';
         const dobText = u.dob ? `🎂 જન્મ તા.: ${u.dob}` : '';
         const waNum = (u.whatsapp && /^\d{10}$/.test(u.whatsapp)) ? u.whatsapp : u.mobile;
-        const hasDiffWa = u.whatsapp && u.whatsapp !== u.mobile;
+        const hasDiffWa = u.whatsapp && /^\d{10}$/.test(u.whatsapp) && u.whatsapp !== u.mobile;
 
         return `
           <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200/80 space-y-3">
@@ -1238,7 +1325,7 @@
                   ${roleTag}
                 </div>
                 <p class="text-xs font-semibold text-blue-900 mt-0.5">
-                  📞 ${escapeHtml(u.mobile)}
+                  📞 કૉલ: ${escapeHtml(u.mobile)}
                   ${hasDiffWa ? `<span class="text-emerald-700 ml-2">• 💬 WA: ${escapeHtml(waNum)}</span>` : ''}
                 </p>
                 <p class="text-[11px] text-slate-600 truncate mt-0.5">📍 ${escapeHtml(locText)}</p>
@@ -1246,13 +1333,12 @@
               </div>
             </div>
 
-            <!-- Direct Call & Direct WhatsApp Action Buttons -->
             <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100">
-              <a href="tel:${u.mobile}" class="py-2 px-3 bg-blue-50 hover:bg-blue-100 text-blue-900 font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition">
-                <span>📞 ડાયરેક્ટ કૉલ</span>
+              <a href="tel:${u.mobile}" class="py-2.5 px-3 bg-blue-50 hover:bg-blue-100 text-blue-900 font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition">
+                <span>📞 ડાયરેક્ટ કૉલ (${escapeHtml(u.mobile)})</span>
               </a>
-              <a href="https://wa.me/91${waNum}" target="_blank" rel="noopener" class="py-2 px-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-sm transition">
-                <span>💬 WhatsApp</span>
+              <a href="https://wa.me/91${waNum}" target="_blank" rel="noopener" class="py-2.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-sm transition">
+                <span>💬 WhatsApp (${escapeHtml(waNum)})</span>
               </a>
             </div>
           </div>
@@ -1260,7 +1346,7 @@
       }).join('');
     }
 
-    // 10. GROUP CHAT (ADMIN + ALL OPERATORS) - ADMIN MESSAGES ALSO UPDATE TOP BAR
+    // 10. GROUP CHAT
     async function sendGroupMessage(e) {
       e.preventDefault();
       const inp = document.getElementById('group-chat-input');
@@ -1269,23 +1355,24 @@
 
       const user = appState.users[currentUserMobile];
       const nowTime = new Date().toLocaleTimeString('gu-IN', { hour: '2-digit', minute: '2-digit' });
+      const nowTs = Date.now();
 
       appState.messages.push({
-        id: 'msg_' + Date.now(),
+        id: 'msg_' + nowTs,
         senderMobile: currentUserMobile,
         sender: user ? user.name : currentUserMobile,
         role: user ? user.role : 'operator',
         text,
-        time: nowTime
+        time: nowTime,
+        ts: nowTs
       });
-      if (appState.messages.length > 100) appState.messages.shift();
 
-      // If Admin sends message in group chat, also show it on Top Notice Bar for operators!
       if (user && user.role === 'admin') {
         appState.adminNotice = {
-          id: 'notice_' + Date.now(),
+          id: 'notice_' + nowTs,
           text: text,
-          time: nowTime
+          time: nowTime,
+          ts: nowTs
         };
         localStorage.removeItem(DISMISSED_NOTICE_KEY);
       }
@@ -1345,22 +1432,25 @@
       box.scrollTop = box.scrollHeight;
     }
 
-    // 11. DATA & FOLDERS SYSTEM (WITH DRAG & DROP + FILE SELECT + DOWNLOAD)
+    // 11. DATA & FOLDERS SYSTEM (WITH DRAG & DROP + FILE SELECT)
     async function createDataFolder(e) {
       e.preventDefault();
       const inp = document.getElementById('new-folder-name');
       const name = inp.value.trim();
       if (!name) return;
 
+      const newFolderId = 'fld_' + Date.now();
       appState.folders.unshift({
-        id: 'fld_' + Date.now(),
+        id: newFolderId,
         name: name,
         createdAt: new Date().toLocaleDateString('gu-IN'),
+        updatedAt: Date.now(),
         entries: []
       });
       inp.value = '';
+      activeFolderId = newFolderId;
       await persistAndBroadcast(true);
-      showToast('નવું ફોલ્ડર "' + name + '" બની ગયું છે!');
+      showToast('નવું ફોલ્ડર "' + name + '" બની ગયું છે! હવે તેમાં ફાઇલ ડ્રેગ અથવા સિલેક્ટ કરો.');
     }
 
     function renderFolders() {
@@ -1393,7 +1483,7 @@
               </div>
               <div class="min-w-0">
                 <h3 class="text-sm font-bold text-slate-900 truncate">${escapeHtml(f.name)}</h3>
-                <p class="text-[11px] text-slate-500">${count} ફાઇલ / એન્ટ્રી • ${escapeHtml(f.createdAt || '')}</p>
+                <p class="text-[11px] text-slate-500">${count} ફાઇલ / ડેટા • ${escapeHtml(f.createdAt || '')}</p>
               </div>
             </div>
             <button type="button" onclick="deleteFolder('${f.id}')" class="p-2 text-red-500 hover:bg-red-50 rounded-xl" title="ફોલ્ડર ડિલીટ કરો">
@@ -1424,7 +1514,6 @@
       showToast('ફોલ્ડર દૂર કરવામાં આવ્યું.', 'info');
     }
 
-    // Drag & Drop + File Picker Handlers
     function handleDragOver(e) {
       e.preventDefault();
       e.stopPropagation();
@@ -1474,8 +1563,8 @@
       let addedCount = 0;
 
       for (const file of files) {
-        if (file.size > 3 * 1024 * 1024) {
-          showToast(`"${file.name}" 3MB કરતાં મોટી છે, કૃપા કરીને નાની ફાઇલ પસંદ કરો.`, 'error');
+        if (file.size > 2.5 * 1024 * 1024) {
+          showToast(`"${file.name}" 2.5MB કરતાં મોટી છે, કૃપા કરીને નાની ફાઇલ પસંદ કરો.`, 'error');
           continue;
         }
         const dataUrl = await new Promise((resolve) => {
@@ -1500,6 +1589,7 @@
       }
 
       if (addedCount > 0) {
+        folder.updatedAt = Date.now();
         await persistAndBroadcast(true);
         showToast(`${addedCount} ફાઇલ ફોલ્ડરમાં સફળતાપૂર્વક સેવ થઈ ગઈ!`);
       }
@@ -1519,16 +1609,16 @@
       const entriesEl = document.getElementById('folder-entries-list');
 
       if (!folder.entries || folder.entries.length === 0) {
-        entriesEl.innerHTML = `<p class="text-center text-xs text-slate-500 py-4">આ ફોલ્ડરમાં હજુ કોઈ ફાઇલ કે ડેટા ઉમેરેલ નથી.</p>`;
+        entriesEl.innerHTML = `<p class="text-center text-xs text-slate-500 py-4">આ ફોલ્ડરમાં હજુ કોઈ ફાઇલ કે ડેટા ઉમેરેલ નથી. ઉપરથી ફાઇલ ડ્રેગ કરો અથવા સિલેક્ટ કરો.</p>`;
         return;
       }
 
       entriesEl.innerHTML = folder.entries.map(item => {
         if (item.isFile) {
           return `
-            <div class="p-3 rounded-xl bg-indigo-50/60 border border-indigo-200 flex items-center justify-between gap-2">
+            <div class="p-3 rounded-xl bg-indigo-50/70 border border-indigo-200 flex items-center justify-between gap-2">
               <div class="flex items-center gap-2.5 min-w-0">
-                <div class="w-9 h-9 rounded-lg bg-indigo-600 text-white flex items-center justify-center text-xs font-bold shrink-0">
+                <div class="w-9 h-9 rounded-lg bg-indigo-600 text-white flex items-center justify-center text-sm font-bold shrink-0">
                   📄
                 </div>
                 <div class="min-w-0">
@@ -1581,6 +1671,7 @@
         addedBy: user ? user.name : currentUserMobile,
         date: new Date().toLocaleString('gu-IN')
       });
+      folder.updatedAt = Date.now();
 
       document.getElementById('entry-title').value = '';
       document.getElementById('entry-ref').value = '';
@@ -1593,24 +1684,22 @@
       const folder = appState.folders.find(f => f.id === activeFolderId);
       if (!folder) return;
       folder.entries = (folder.entries || []).filter(item => item.id !== entryId);
+      folder.updatedAt = Date.now();
       await persistAndBroadcast(true);
       showToast('એન્ટ્રી દૂર કરવામાં આવી.', 'info');
     }
 
     // 12. ADMIN PANEL CONTROLS
     async function saveFirebaseConfig() {
-      const url = document.getElementById('firebase-url-input').value.trim().replace(/\/+$/, '');
+      let url = document.getElementById('firebase-url-input').value.trim();
+      url = url.replace(/\/+$/, '').replace(/\/purvatha_portal\.json$/i, '');
       if (url && !url.startsWith('https://')) {
         showToast('કૃપા કરીને સાચી https:// Firebase URL દાખલ કરો.', 'error');
         return;
       }
-      localStorage.setItem(CLOUD_URL_KEY, url);
-      if (url) {
-        await pullFromCloud(false);
-      } else {
-        setSyncStatus('local');
-        showToast('ક્લાઉડ URL દૂર કરવામાં આવી.', 'info');
-      }
+      localStorage.setItem(CLOUD_URL_KEY, url || DEFAULT_FIREBASE_URL);
+      await persistAndBroadcast(true);
+      await pullFromCloud(false);
     }
 
     async function adminAddOperator(e) {
@@ -1630,6 +1719,10 @@
       if (mobile === ADMIN_MOBILE) {
         showToast('આ મુખ્ય એડમિન નંબર છે.', 'error');
         return;
+      }
+
+      if (appState.deletedUsers && appState.deletedUsers[mobile]) {
+        delete appState.deletedUsers[mobile];
       }
 
       appState.users[mobile] = {
@@ -1661,6 +1754,8 @@
       if (mobile === ADMIN_MOBILE) return;
       if (!confirm('શું તમે ખરેખર આ ઓપરેટર (' + mobile + ') ને દૂર કરવા માંગો છો?')) return;
       delete appState.users[mobile];
+      if (!appState.deletedUsers) appState.deletedUsers = {};
+      appState.deletedUsers[mobile] = Date.now();
       await persistAndBroadcast(true);
       showToast('ઓપરેટરને દૂર કરવામાં આવ્યા છે.', 'info');
     }
@@ -1712,8 +1807,11 @@
       const user = appState.users[currentUserMobile];
       if (!user) return;
 
+      const waNum = (user.whatsapp && /^\d{10}$/.test(user.whatsapp)) ? user.whatsapp : user.mobile;
+
       document.getElementById('profile-display-name').textContent = user.name || 'ઓપરેટર';
-      document.getElementById('profile-display-mobile').textContent = '+91 ' + user.mobile;
+      document.getElementById('profile-display-mobile').textContent = '📞 મોબાઇલ: +91 ' + user.mobile;
+      document.getElementById('profile-display-whatsapp').textContent = '💬 WhatsApp: +91 ' + waNum;
       document.getElementById('profile-display-location').textContent = user.district
         ? `${user.district} • ${user.taluka || ''}`
         : 'જિલ્લો / તાલુકો પસંદ કરવાનો બાકી';
@@ -1722,7 +1820,8 @@
       document.getElementById('profile-avatar-img').src = avatar;
 
       document.getElementById('prof-name').value = user.name || '';
-      document.getElementById('prof-whatsapp').value = (user.whatsapp && user.whatsapp !== user.mobile) ? user.whatsapp : (user.whatsapp || '');
+      document.getElementById('prof-calling-mobile').value = user.mobile || '';
+      document.getElementById('prof-whatsapp').value = (user.whatsapp && user.whatsapp !== user.mobile) ? user.whatsapp : '';
       document.getElementById('prof-email').value = user.email || '';
       document.getElementById('prof-dob').value = user.dob || '';
       document.getElementById('prof-address').value = user.address || '';
@@ -1783,7 +1882,7 @@
       }
 
       user.name = document.getElementById('prof-name').value.trim() || user.name;
-      user.whatsapp = waInput || user.mobile;
+      user.whatsapp = waInput ? waInput : user.mobile;
       user.email = document.getElementById('prof-email').value.trim();
       user.dob = document.getElementById('prof-dob').value;
       user.address = document.getElementById('prof-address').value.trim();
@@ -1791,7 +1890,7 @@
 
       await persistAndBroadcast(true);
       checkBirthdaysAndNotify(false);
-      showToast('પ્રોફાઇલ, WhatsApp નંબર અને જન્મ તારીખ સેવ થઈ ગયા!');
+      showToast('પ્રોફાઇલ અને WhatsApp નંબર સફળતાપૂર્વક સેવ થઈ ગયા!');
     }
 
     async function handleChangePassword(e) {
@@ -1843,7 +1942,7 @@
       const saveBtn = document.getElementById('btn-save-location');
       const badge = document.getElementById('location-lock-badge');
 
-      if (user.district) {
+      if (user.district && document.activeElement !== distEl && document.activeElement !== talEl) {
         distEl.value = user.district;
         populateTalukas('assign-district', 'assign-taluka', user.taluka);
       }
@@ -1869,7 +1968,6 @@
       renderGroupChat();
       renderDirectory();
       renderFolders();
-      renderProfile();
       if (user.role === 'admin') {
         renderAdminOperators();
       }
@@ -1919,16 +2017,8 @@
           background_color: '#1e3a8a',
           theme_color: '#1e3a8a',
           icons: [
-            {
-              src: iconDataUri,
-              sizes: '192x192',
-              type: 'image/svg+xml'
-            },
-            {
-              src: iconDataUri,
-              sizes: '512x512',
-              type: 'image/svg+xml'
-            }
+            { src: iconDataUri, sizes: '192x192', type: 'image/svg+xml' },
+            { src: iconDataUri, sizes: '512x512', type: 'image/svg+xml' }
           ]
         };
         const manifestDataUri = 'data:application/manifest+json;charset=utf-8,' + encodeURIComponent(JSON.stringify(manifestObj));
@@ -1956,6 +2046,7 @@
 
     // 16. INITIALIZE ON PAGE LOAD
     document.addEventListener('DOMContentLoaded', async () => {
+      localStorage.setItem(CLOUD_URL_KEY, DEFAULT_FIREBASE_URL);
       setupPWA();
       loadLocalState();
       await pullFromCloud(true);
@@ -1964,6 +2055,7 @@
       if (savedSession && appState.users[savedSession]) {
         currentUserMobile = savedSession;
         enterApp();
+        renderProfile();
       }
     });
   </script>
