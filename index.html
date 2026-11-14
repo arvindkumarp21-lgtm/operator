@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ગુજરાત ઓપરેટર પોર્ટલ PWA</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="manifest" href="data:application/manifest+json;utf-8,%7B%22name%22%3A%22Gujarat%20Operator%20Portal%22%2C%22short_name%22%3A%22GJ%20Operator%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23f3f4f6%22%2C%22theme_color%22%3A%22%232563eb%22%7D">
+</head>
+<body class="bg-gray-100 min-h-screen text-gray-800 flex flex-col items-center">
+
+  <div id="app" class="w-full max-w-md bg-white min-h-screen shadow-lg flex flex-col relative pb-20">
+    <!-- હેડર -->
+    <header class="bg-blue-600 text-white p-4 flex justify-between items-center shadow-md">
+      <div class="flex items-center space-x-2">
+        <i class="fa-solid fa-id-card-clip text-2xl"></i>
+        <h1 class="font-bold text-lg">ઓપરેટર પોર્ટલ</h1>
+      </div>
+      <button id="installBtn" class="hidden bg-white text-blue-600 text-xs px-2.5 py-1.5 rounded-full font-bold shadow hover:bg-gray-100">
+        <i class="fa-solid fa-download mr-1"></i> ઇન્સ્ટોલ
+      </button>
+    </header>
+
+    <!-- મેઇન કન્ટેન્ટ -->
+    <main class="flex-1 p-4 overflow-y-auto">
+      <!-- 1. લોગિન સ્ક્રીન -->
+      <section id="loginSection" class="space-y-4 pt-6">
+        <div class="text-center">
+          <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto text-2xl mb-2">
+            <i class="fa-solid fa-user-lock"></i>
+          </div>
+          <h2 class="text-xl font-bold">ઓપરેટર લૉગિન</h2>
+          <p class="text-xs text-gray-500">તમારા રજિસ્ટર્ડ નંબર દ્વારા સાઇન-ઇન કરો</p>
+        </div>
+
+        <form id="loginForm" class="space-y-3 pt-4">
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1">મોબાઇલ નંબર</label>
+            <input type="tel" id="loginPhone" required placeholder="૧૦ આંકડાનો મોબાઇલ નંબર" class="w-full border rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1">પાસવર્ડ</label>
+            <input type="password" id="loginPass" required placeholder="પાસવર્ડ" class="w-full border rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+          </div>
+          <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-lg text-sm shadow">
+            પ્રવેશ કરો (Login)
+          </button>
+        </form>
+
+        <div class="mt-4 pt-4 border-t border-gray-200">
+          <p class="text-xs text-gray-500 font-medium mb-2 text-center">ઝડપી ટેસ્ટિંગ લૉગિન:</p>
+          <div class="grid grid-cols-2 gap-2">
+            <button onclick="quickLogin('operator')" class="bg-blue-50 border border-blue-200 text-blue-700 text-xs py-2 rounded-lg font-medium hover:bg-blue-100">
+              ઓપરેટર ડેમો
+            </button>
+            <button onclick="quickLogin('admin')" class="bg-purple-50 border border-purple-200 text-purple-700 text-xs py-2 rounded-lg font-medium hover:bg-purple-100">
+              એડમિન ડેમો
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. હોમ / જિલ્લો-તાલુકો પેજ -->
+      <section id="homeSection" class="hidden space-y-4">
+        <div class="bg-blue-50 border-l-4 border-blue-600 p-3 rounded">
+          <h3 class="font-bold text-sm text-blue-900" id="welcomeUser">નમસ્તે</h3>
+          <p class="text-xs text-blue-700" id="userRoleBadge">રોલ: ઓપરેટર</p>
+        </div>
+
+        <div id="lockedNotice" class="hidden bg-amber-50 border border-amber-300 text-amber-800 p-3 rounded-lg text-xs flex items-center justify-between">
+          <div class="flex items-center space-x-2">
+            <i class="fa-solid fa-lock text-amber-600"></i>
+            <span>જિલ્લો અને તાલુકો લૉક કરેલ છે.</span>
+          </div>
+          <button onclick="unlockSelection()" id="adminUnlockBtn" class="hidden text-xs bg-amber-200 text-amber-900 px-2 py-1 rounded font-bold hover:bg-amber-300">
+            અનલોક
+          </button>
+        </div>
+
+        <form id="districtForm" class="space-y-4 bg-white border border-gray-200 p-4 rounded-xl shadow-sm">
+          <div>
+            <label class="block text-xs font-bold text-gray-700 mb-1">૧. જિલ્લો પસંદ કરો</label>
+            <select id="districtSelect" required class="w-full border rounded-lg p-2.5 text-sm bg-white outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="">-- જિલ્લો પસંદ કરો --</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-gray-700 mb-1">૨. તાલુકો પસંદ કરો</label>
+            <select id="talukaSelect" required disabled class="w-full border rounded-lg p-2.5 text-sm bg-gray-50 outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="">-- પહેલા જિલ્લો પસંદ કરો --</option>
+            </select>
+          </div>
+
+          <button type="submit" id="saveLockBtn" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2.5 rounded-lg text-sm shadow">
+            <i class="fa-solid fa-lock mr-1"></i> સેવ કરો અને લૉક કરો
+          </button>
+        </form>
+      </section>
+
+      <!-- 3. ડિરેક્ટરી પેજ -->
+      <section id="directorySection" class="hidden space-y-3">
+        <h2 class="text-base font-bold text-gray-800">અન્ય ઓપરેટરોની યાદી</h2>
+        <input type="text" id="dirSearch" placeholder="નામ, જિલ્લો કે તાલુકો શોધો..." class="w-full border rounded-lg p-2 text-xs outline-none focus:ring-2 focus:ring-blue-500">
+        <div id="directoryList" class="space-y-2.5 pt-2"></div>
+      </section>
+
+      <!-- 4. પ્રોફાઇલ પેજ -->
+      <section id="profileSection" class="hidden space-y-4">
+        <div class="text-center pt-2">
+          <div class="relative w-24 h-24 mx-auto mb-2">
+            <div id="profileAvatar" class="w-24 h-24 rounded-full bg-blue-600 text-white flex items-center justify-center text-3xl font-bold shadow-md overflow-hidden">
+              OP
+            </div>
+            <label for="photoUpload" class="absolute bottom-0 right-0 bg-blue-600 text-white p-2 rounded-full cursor-pointer shadow hover:bg-blue-700">
+              <i class="fa-solid fa-camera text-xs"></i>
+              <input type="file" id="photoUpload" accept="image/*" class="hidden">
+            </label>
+          </div>
+          <h2 id="profileNameDisplay" class="font-bold text-base">ઓપરેટર નામ</h2>
+          <p id="profileRoleDisplay" class="text-xs text-gray-500">ઓપરેટર ID: GJ-OP-4892</p>
+        </div>
+
+        <form id="profileForm" class="space-y-3 bg-white border border-gray-200 p-4 rounded-xl shadow-sm text-xs">
+          <div>
+            <label class="block font-semibold text-gray-600 mb-1">પૂરું નામ</label>
+            <input type="text" id="profName" class="w-full border rounded-lg p-2 text-xs">
+          </div>
+          <div>
+            <label class="block font-semibold text-gray-600 mb-1">ઇમેઇલ</label>
+            <input type="email" id="profEmail" class="w-full border rounded-lg p-2 text-xs">
+          </div>
+          <div>
+            <label class="block font-semibold text-gray-600 mb-1">ઓફિસનું સરનામું</label>
+            <div class="flex gap-1.5 mb-1.5">
+              <button type="button" onclick="getCurrentLocation()" class="bg-gray-100 hover:bg-gray-200 border border-gray-300 text-gray-700 px-2.5 py-1.5 rounded-lg text-xs font-medium flex items-center">
+                <i class="fa-solid fa-location-crosshairs mr-1 text-blue-600"></i> કરન્ટ લોકેશન લો
+              </button>
+            </div>
+            <textarea id="profAddress" rows="2" placeholder="મેન્યુઅલ સરનામું ટાઇપ કરો..." class="w-full border rounded-lg p-2 text-xs"></textarea>
+          </div>
+          <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg text-xs shadow">
+            પ્રોફાઇલ અપડેટ કરો
+          </button>
+        </form>
+      </section>
+
+      <!-- 5. એડમિન / સહાય પેજ -->
+      <section id="adminSection" class="hidden space-y-4">
+        <h2 class="text-base font-bold text-gray-800">એડમિન સહાય & નોટિફિકેશન</h2>
+        <div id="adminInbox" class="hidden space-y-2">
+          <p class="text-xs font-semibold text-gray-500">ઓપરેટર મેસેજ ઇનબૉક્સ:</p>
+          <div id="messagesList" class="space-y-2"></div>
+        </div>
+        <form id="msgForm" class="space-y-3 bg-white border border-gray-200 p-4 rounded-xl shadow-sm text-xs">
+          <label class="block font-semibold text-gray-700">એડમિનને સંદેશ મોકલો</label>
+          <textarea id="msgBody" rows="3" placeholder="તમારી સમસ્યા અથવા વિનંતી અહીં લખો..." required class="w-full border rounded-lg p-2 outline-none focus:ring-2 focus:ring-blue-500 text-xs"></textarea>
+          <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg text-xs shadow">
+            સંદેશ મોકલો
+          </button>
+        </form>
+      </section>
+    </main>
+
+    <!-- બોટમ નેવિગેશન બાર -->
+    <nav id="bottomNav" class="hidden absolute bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around py-2 shadow-lg">
+      <button onclick="switchTab('home')" class="nav-item flex flex-col items-center text-blue-600 text-xs" data-tab="home">
+        <i class="fa-solid fa-house text-lg"></i>
+        <span>હોમ</span>
+      </button>
+      <button onclick="switchTab('directory')" class="nav-item flex flex-col items-center text-gray-500 text-xs" data-tab="directory">
+        <i class="fa-solid fa-address-book text-lg"></i>
+        <span>ડિરેક્ટરી</span>
+      </button>
+      <button onclick="switchTab('profile')" class="nav-item flex flex-col items-center text-gray-500 text-xs" data-tab="profile">
+        <i class="fa-solid fa-user text-lg"></i>
+        <span>પ્રોફાઇલ</span>
+      </button>
+      <button onclick="switchTab('admin')" class="nav-item flex flex-col items-center text-gray-500 text-xs relative" data-tab="admin">
+        <i class="fa-solid fa-headset text-lg"></i>
+        <span>એડમિન</span>
+        <span id="unreadBadge" class="hidden absolute top-0 right-3 bg-red-600 text-white rounded-full text-[10px] w-4 h-4 flex items-center justify-center">0</span>
+      </button>
+    </nav>
+  </div>
+
+  <script>
+    // CONTACT.xlsx પરથી મળેલ તમામ ૩૫ જિલ્લાઓ અને તાલુકાઓનો સંપૂર્ણ ડેટાબેઝ
+    const districtData = {
+      "Ahmedabad": ["Ghatlodia", "DETROJ", "DASKROI", "DHANDHUKA", "DHOLERA", "DHOZHAKA", "BAVLA", "MANDAL", "VIRAMGAM", "SANAND"],
+      "Ahmedabad City": ["AMRAIWADI ZONE", "ASARWA-DARIYAPUR ZONE", "ELISBRIDGE ZONE", "GHATLODIA ZONE", "JAMALPUR-KHADIA ZONE", "THAKKARBAPA NAGAR ZONE", "DANILIMDA ZONE", "NARODA ZONE", "NARANPURA ZONE", "NIKOL ZONE", "BAPUNAGAR ZONE", "MANINAGAR ZONE", "VEJALPUR ZONE", "VATVA ZONE", "SABARMATI ZONE"],
+      "Amreli": ["AMARELI", "AMARELI (City)", "KHAMBHA", "JAFRABAD", "DHARI", "BAGSRA", "BABRA", "RAJULA", "LATHI", "LILIA", "VADIA", "SAVARKUNDLA"],
+      "Arvalli": ["DHANSURA", "BAYAD", "BHILODA", "MEGHRAJ", "MALPUR", "MODASA", "Shamlaji", "Sathamba"],
+      "Anand": ["ANKLAV", "ANAND", "ANAND CITY", "UMRETHA", "KHAMBHAT", "TARAPORE", "PETLAD", "BORSAD", "SOJITRA"],
+      "Kutch": ["MANDAVI", "ANJAR", "ABDASA", "KHAVDA", "GANDHIDHAM", "NAKHTRANA", "BHACHAU", "BHUJ", "Bhuj City", "MUNDRA", "RAPAR", "LAKHPATH"],
+      "Kheda": ["KATHLAL", "KAPDAVANJ", "KHEDA", "GALTESHWAR", "THASRA", "NADIAD", "NADIAD CITY", "Fagvel", "MAHUDHA", "MEHMEDABAD", "MAATAR", "VASO"],
+      "Gandhinagar": ["KALOL", "GANDHINAGAR", "GANDHINAGAR ZONAL", "DEHGAM", "MANSA"],
+      "Gir Somnath": ["UNA", "KODINAR", "GIR GADHADA", "TALALA", "VERAVAL", "Veraval(City)", "SUTRAPADA"],
+      "Chottaudepur": ["Kadval", "KAVANT", "CHHOTAUDEPUR", "JETPUR-PAVI", "NASVADI", "BODELI", "SANKHEDA"],
+      "Junagadh": ["KESHOD", "JUNAGADH", "JUNAGADH ZONAL-1", "JUNAGADH ZONAL-2", "BHESANA", "MADREDA", "MANGAROL", "MANAVDAR", "MALIKA HATINA", "VANTHALI", "VISAVADAR"],
+      "Jamnagar": ["KALAVAD", "JAM-JODHPUR", "JAMNAGAR", "JAMNAGAR (ZONAL-1)", "JAMNAGAR (ZONAL-2)", "JODIA", "DHROL", "LALPUR"],
+      "Dang": ["AHWA", "VAGHAI", "SUBIR"],
+      "Tapi": ["Ukai", "UCHAL", "KUKARMUNDA", "DOLVAN", "NIZAR", "VYARA", "VALOD", "SONAGADH"],
+      "Devbhumi Dwarka": ["KHAMBHALIA", "KALYANPUR", "DWARKA", "BHANVAD"],
+      "Dahod": ["GARBADA", "Govind Guru Limdi", "JALOD", "DEVGADH BARIA", "DAHOD", "DHANPUR", "FATEPURA", "LIMKHEDA", "Sukhsar", "SANJELI", "SINGVAD"],
+      "Narmada": ["GARUDESHWAR", "CHIKADA", "KEDIYAPADA", "TILAKWADA", "NANDOD", "SAGBARA"],
+      "Navasari": ["KHERGAM", "GANADHEVI", "CHIKHLI", "JALALPOR", "NAVSARI RURAL", "NAVSARI CITY", "VANSADA"],
+      "Panchmahal": ["KALOLA", "GODHARA", "Godhra City", "JAMBUGHODA", "GHOGHAMBA", "MORWA HADAF", "SHEHARA", "HALOL"],
+      "Patan": ["CHANASMA", "PATAN", "Patan City", "RADHANPUR", "SHANKHESWAR", "SARSVATI", "SATALPUR", "SAMI", "SIDHAPUR", "HARIJ"],
+      "Porbandar": ["KUTIYANA", "PORBANDER", "Porbandar City", "RANAVAV"],
+      "Banaskantha": ["AMIRGADH", "Ogad", "KANKREJ", "DISA", "Deesa (City)", "DANTA", "DANTIWADA", "DHANERA", "PALANPUR", "Palanpur (City)", "VADGAM", "Hadad"],
+      "Botad": ["GADHADA", "BARVALA", "BOTAD", "BOTAD (CITY)", "RANPUR"],
+      "Bharuch": ["ANKALESHVAR", "AMOD", "JAGADIA", "JAMBUSAR", "NETRANG", "BHARUCH RURAL", "BHARUCH CITY", "VAGHARA", "WALIA", "HANSOT"],
+      "Bhavanagar": ["UMRALA", "GARIYADHAR", "GHOGHA", "JESAR", "TALAJA", "PALEETANA", "BHAVNAGAR", "BHAVNAGAR ZONAL-1", "BHAVNAGAR ZONAL-2", "BHAVNAGAR ZONAL-3", "MAHUWA", "VALLABHIPUR", "SHIHOR"],
+      "Mehsana": ["UNJHA", "KADI", "KHERALU", "JOTANA", "BECHARAJI", "MAHESANA", "VADNAGAR", "VISNAGAR", "VIJAPOOR", "SATLASANA"],
+      "Mahisagar": ["KADANA", "Kothmba", "KHANPUR", "Godhar", "BALASINOR", "LUNAVADA", "VEERPUR", "SANTRAMPUR"],
+      "Morbi": ["TANKARA", "MALIYA MIYANA", "MORABI", "Morbi City", "VANKANER", "HALVAD"],
+      "Rajkot": ["UPLETA", "KOTADA SANGALI", "GONDAL", "JETPUR", "JASDAN", "JAMKANDORAN", "ZONAL-1", "ZONAL-2", "ZONAL-3", "ZONAL-4", "DHORAJI", "PADDHARI", "RAJKOT", "LODHIKA", "VINCHHIA"],
+      "Baroda": ["KARJAN", "DABHOI", "DESAR", "PADARA", "VADODARA RURAL", "VADODARA ZONAL-1", "VADODARA ZOLAN-2", "VADODARA ZONAL-3", "VADODARA ZONAL-4", "VADODARA ZONAL-5", "VADORARA ZONAL-6", "VAGHODIYA", "SAVLI", "SINOR"],
+      "Valsad": ["UMBERGAON", "KAPRADA", "DHARAMPUR", "Nanapondha", "PARADI", "VALSAD", "Valsad City", "Vapi City"],
+      "Vav-Tharad": ["THARAD", "DEODAR", "Dharnidhar", "BHABHAR", "Rah", "LAKHANI", "VAV", "SUIGAM"],
+      "Surat": ["Adajan Zone-1", "Abrama Zone-1", "Udhna Zone-1", "Udhna Zone-2", "UMERPADA", "OLPAD", "Katargam Zone-1", "Katargam Zone-2", "Katargam Zone-3", "KAMAREZ", "CHORYASI", "Puna Zone-1", "Puna Zone-2", "PALSANA", "BARDOLI", "MAJURA ZONE-1", "MAHUWA", "MANGAROL", "MANDVI"],
+      "Surendranagar": ["DHAGADRA", "CHUDA", "CHOTILA", "THANGADH", "DASADA", "MULI", "LAKHATAR", "LIMBDI", "VADHAVAN", "Surendranagar City", "SAYALA"],
+      "Sabarkantha": ["IDAR", "KHEDBRAHMA", "TALOD", "PRANTIJ", "POSHINA", "VADALI", "VIJAYANAGAR", "HIMATNAGAR"]
+    };
+
+    let currentUser = null;
+    let deferredPrompt = null;
+
+    // જિલ્લા ડ્રોપડાઉન લોડ કરવું
+    function loadDistricts() {
+      const select = document.getElementById('districtSelect');
+      select.innerHTML = '<option value="">-- જિલ્લો પસંદ કરો --</option>';
+      Object.keys(districtData).sort().forEach(dist => {
+        const opt = document.createElement('option');
+        opt.value = dist;
+        opt.textContent = dist;
+        select.appendChild(opt);
+      });
+    }
+
+    document.getElementById('districtSelect').addEventListener('change', function() {
+      const dist = this.value;
+      const talukaSelect = document.getElementById('talukaSelect');
+      talukaSelect.innerHTML = '<option value="">-- તાલુકો પસંદ કરો --</option>';
+      if (dist && districtData[dist]) {
+        talukaSelect.disabled = false;
+        talukaSelect.classList.remove('bg-gray-50');
+        districtData[dist].forEach(tal => {
+          const opt = document.createElement('option');
+          opt.value = tal;
+          opt.textContent = tal;
+          talukaSelect.appendChild(opt);
+        });
+      } else {
+        talukaSelect.disabled = true;
+        talukaSelect.classList.add('bg-gray-50');
+      }
+    });
+
+    function quickLogin(role) {
+      if (role === 'admin') {
+        currentUser = { name: "એડમિન અધિકારી", phone: "9999988888", role: "admin", isLocked: false };
+      } else {
+        currentUser = { name: "ઓપરેટર યુઝર", phone: "9876543210", role: "operator", isLocked: false };
+      }
+      initUserSession();
+    }
+
+    document.getElementById('loginForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const phone = document.getElementById('loginPhone').value;
+      currentUser = { name: "ઓપરેટર યુઝર", phone: phone, role: (phone === '9999988888' ? 'admin' : 'operator'), isLocked: false };
+      initUserSession();
+    });
+
+    function initUserSession() {
+      document.getElementById('loginSection').classList.add('hidden');
+      document.getElementById('bottomNav').classList.remove('hidden');
+      document.getElementById('welcomeUser').textContent = "નમસ્તે, " + currentUser.name;
+      document.getElementById('userRoleBadge').textContent = "રોલ: " + (currentUser.role === 'admin' ? 'એડમિન' : 'ઓપરેટર');
+      
+      loadDistricts();
+      switchTab('home');
+    }
+
+    function switchTab(tabId) {
+      ['home', 'directory', 'profile', 'admin'].forEach(t => {
+        document.getElementById(t + 'Section').classList.add('hidden');
+      });
+      document.querySelectorAll('.nav-item').forEach(el => {
+        el.classList.remove('text-blue-600');
+        el.classList.add('text-gray-500');
+      });
+
+      document.getElementById(tabId + 'Section').classList.remove('hidden');
+      const activeBtn = document.querySelector(`[data-tab="${tabId}"]`);
+      if (activeBtn) {
+        activeBtn.classList.add('text-blue-600');
+        activeBtn.classList.remove('text-gray-500');
+      }
+    }
+
+    document.getElementById('districtForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const dist = document.getElementById('districtSelect').value;
+      const tal = document.getElementById('talukaSelect').value;
+      if (!dist || !tal) return;
+
+      document.getElementById('districtSelect').disabled = true;
+      document.getElementById('talukaSelect').disabled = true;
+      document.getElementById('saveLockBtn').classList.add('hidden');
+      document.getElementById('lockedNotice').classList.remove('hidden');
+      alert(`જિલ્લો: ${dist} અને તાલુકો: ${talukaSelect.value} સફળતાપૂર્વક લૉક થયા છે!`);
+    });
+
+    function unlockSelection() {
+      document.getElementById('districtSelect').disabled = false;
+      document.getElementById('talukaSelect').disabled = false;
+      document.getElementById('saveLockBtn').classList.remove('hidden');
+      document.getElementById('lockedNotice').classList.add('hidden');
+    }
+
+    function getCurrentLocation() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition((pos) => {
+          document.getElementById('profAddress').value = `અક્ષાંશ: ${pos.coords.latitude.toFixed(4)}, રેખાંશ: ${pos.coords.longitude.toFixed(4)}`;
+        }, () => alert("GPS લોકેશન મેળવવામાં નિષ્ફળ!"));
+      }
+    }
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      document.getElementById('installBtn').classList.remove('hidden');
+    });
+
+    document.getElementById('installBtn').addEventListener('click', () => {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt = null;
+      }
+    });
+  </script>
+</body>
+</html>
