@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ગુજરાત ઓપરેટર સેવા પોર્ટલ - PWA</title>
+  <title>ગુજરાત પુરવઠા ઓપરેટર - PWA</title>
 
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -19,20 +19,20 @@
     (function setupManifest() {
       try {
         const manifestData = {
-          name: "ગુજરાત ઓપરેટર પોર્ટલ",
-          short_name: "GJ Portal",
+          name: "ગુજરાત પુરવઠા ઓપરેટર",
+          short_name: "પુરવઠા ઓપરેટર",
           start_url: ".",
           display: "standalone",
           background_color: "#f8fafc",
           theme_color: "#1d4ed8",
           icons: [
             {
-              src: "https://placehold.co/192x192/1d4ed8/ffffff?text=GJ+PWA",
+              src: "https://placehold.co/192x192/1d4ed8/ffffff?text=GJ+Purvatha",
               sizes: "192x192",
               type: "image/png"
             },
             {
-              src: "https://placehold.co/512x512/1d4ed8/ffffff?text=GJ+Portal",
+              src: "https://placehold.co/512x512/1d4ed8/ffffff?text=Purvatha+Op",
               sizes: "512x512",
               type: "image/png"
             }
@@ -71,14 +71,14 @@
     <div class="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
       <div class="flex items-center space-x-3">
         <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-700 to-indigo-600 text-white flex items-center justify-center font-bold text-lg shadow-md shadow-blue-500/20 shrink-0">
-          ગુ
+          પુ
         </div>
         <div>
           <div class="flex items-center gap-2">
-            <h1 class="text-base font-bold text-slate-900 leading-tight">ગુજરાત ઓપરેટર પોર્ટલ</h1>
+            <h1 class="text-base font-bold text-slate-900 leading-tight">ગુજરાત પુરવઠા ઓપરેટર</h1>
             <span id="roleBadge" class="hidden text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 uppercase tracking-wider">Operator</span>
           </div>
-          <p class="text-xs text-slate-500" id="headerSubtitle">PWA Application • Mobile & PC</p>
+          <p class="text-xs text-slate-500" id="headerSubtitle">પુરવઠા સેવા પોર્ટલ • Mobile & PC</p>
         </div>
       </div>
 
@@ -122,8 +122,8 @@
           <div class="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-inner text-2xl">
             <i class="fa-solid fa-shield-halved"></i>
           </div>
-          <h2 class="text-2xl font-bold text-slate-900">સુરક્ષિત લૉગિન</h2>
-          <p class="text-slate-500 text-xs sm:text-sm mt-1">રજિસ્ટર્ડ મોબાઇલ નંબર અને પાસવર્ડથી પ્રવેશ કરો</p>
+          <h2 class="text-2xl font-bold text-slate-900">ગુજરાત પુરવઠા ઓપરેટર</h2>
+          <p class="text-slate-500 text-xs sm:text-sm mt-1">તમારા મોબાઇલ નંબર અને પાસવર્ડથી લૉગિન કરો</p>
         </div>
 
         <!-- Inline Error Alert Box -->
@@ -193,7 +193,7 @@
           <div class="flex items-center justify-between">
             <div>
               <span id="userStatusTag" class="inline-block px-2.5 py-0.5 rounded-full bg-white/20 text-white text-[11px] font-medium mb-1.5 backdrop-blur-sm">
-                સક્રિય ઓપરેટર
+                સક્રિય પુરવઠા ઓપરેટર
               </span>
               <h2 class="text-xl sm:text-2xl font-bold tracking-tight">નમસ્તે, <span id="displayName">ઓપરેટર</span></h2>
               <p class="text-blue-100 text-xs sm:text-sm mt-0.5" id="bannerDistrictStatus">જિલ્લો અને તાલુકો સેટ કરો અથવા ચકાસો</p>
@@ -336,7 +336,7 @@
                 type="text" 
                 id="newFolderNameInput" 
                 required 
-                placeholder="નવા ફોલ્ડરનું નામ (દા.ત. આધાર ડેટા, આવક દાખલા)..." 
+                placeholder="નવા ફોલ્ડરનું નામ (દા.ત. રેશનકાર્ડ ડેટા, E-KYC)..." 
                 class="flex-1 px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
               />
               <button 
@@ -390,7 +390,7 @@
                 <input 
                   type="text" 
                   id="entryRefInput" 
-                  placeholder="મોબાઇલ નંબર / અરજી નંબર" 
+                  placeholder="મોબાઇલ નંબર / રેશનકાર્ડ નંબર" 
                   class="px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
@@ -432,18 +432,18 @@
         </div>
       </section>
 
-      <!-- ================= TAB 3: OPERATOR DIRECTORY ================= -->
+      <!-- ================= TAB 3: LIVE OPERATOR DIRECTORY ================= -->
       <section id="tab-directory" class="tab-pane hidden space-y-4">
         <div class="bg-white rounded-3xl p-5 sm:p-6 shadow-xs border border-slate-200">
           <div class="flex items-center justify-between mb-4">
             <div>
               <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
                 <i class="fa-solid fa-users text-blue-600"></i>
-                <span>ગુજરાત ઓપરેટર ડિરેક્ટરી</span>
+                <span>પુરવઠા ઓપરેટર ડિરેક્ટરી (Live)</span>
               </h3>
-              <p class="text-xs text-slate-500 mt-0.5">અન્ય જિલ્લા અને તાલુકાના ઓપરેટરોના નામ અને મોબાઇલ નંબર</p>
+              <p class="text-xs text-slate-500 mt-0.5">ગુજરાતના તમામ રજિસ્ટર્ડ પુરવઠા ઓપરેટરોની લાઇવ યાદી</p>
             </div>
-            <span id="operatorTotalCount" class="text-xs bg-slate-100 text-slate-700 font-bold px-2.5 py-1 rounded-full border border-slate-200">
+            <span id="operatorTotalCount" class="text-xs bg-blue-50 text-blue-800 font-bold px-2.5 py-1 rounded-full border border-blue-200">
               0 ઓપરેટર
             </span>
           </div>
@@ -458,7 +458,7 @@
                 type="text" 
                 id="directorySearchInput" 
                 oninput="renderDirectoryList()"
-                placeholder="નામ, જિલ્લો અથવા તાલુકો શોધો..."
+                placeholder="નામ, જિલ્લો, તાલુકો કે મોબાઇલ શોધો..."
                 class="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all text-slate-800"
               />
             </div>
@@ -483,7 +483,7 @@
         </div>
       </section>
 
-      <!-- ================= TAB 4: PROFILE & CHANGE PASSWORD ================= -->
+      <!-- ================= TAB 4: PROFILE (WITH DOB, PASSWORD & LOGOUT) ================= -->
       <section id="tab-profile" class="tab-pane hidden space-y-4">
         <div class="bg-white rounded-3xl p-5 sm:p-6 shadow-xs border border-slate-200 space-y-6">
           
@@ -521,8 +521,8 @@
             </div>
           </div>
 
-          <!-- District/Taluka Summary Tiles -->
-          <div class="grid grid-cols-3 gap-2.5 text-xs">
+          <!-- District/Taluka/DOB Summary Tiles -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs">
             <div class="p-3 bg-slate-50 border border-slate-200/80 rounded-2xl">
               <span class="text-slate-400 block text-[11px]">જિલ્લો:</span>
               <span id="profileDistrictVal" class="font-bold text-slate-800 block truncate mt-0.5">-</span>
@@ -530,6 +530,10 @@
             <div class="p-3 bg-slate-50 border border-slate-200/80 rounded-2xl">
               <span class="text-slate-400 block text-[11px]">તાલુકો:</span>
               <span id="profileTalukaVal" class="font-bold text-slate-800 block truncate mt-0.5">-</span>
+            </div>
+            <div class="p-3 bg-slate-50 border border-slate-200/80 rounded-2xl">
+              <span class="text-slate-400 block text-[11px]">જન્મ તારીખ:</span>
+              <span id="profileDobVal" class="font-bold text-slate-800 block truncate mt-0.5">-</span>
             </div>
             <div class="p-3 bg-slate-50 border border-slate-200/80 rounded-2xl">
               <span class="text-slate-400 block text-[11px]">લૉક સ્થિતિ:</span>
@@ -551,6 +555,11 @@
               </div>
 
               <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1" for="profileEditDob">જન્મ તારીખ (Date of Birth)</label>
+                <input type="date" id="profileEditDob" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white text-slate-800" />
+              </div>
+
+              <div class="sm:col-span-2">
                 <label class="block text-xs font-semibold text-slate-600 mb-1" for="profileEditEmail">ઇમેઇલ (Email ID)</label>
                 <input type="email" id="profileEditEmail" placeholder="example@gmail.com" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white" />
               </div>
@@ -634,14 +643,14 @@
                   <i class="fa-solid fa-user-plus text-purple-600"></i>
                   <span>ઓપરેટર મેનેજમેન્ટ (Add / Remove Operators)</span>
                 </h3>
-                <p class="text-xs text-slate-500 mt-0.5">નવો ઓપરેટર ઉમેરો (ડિફોલ્ટ પાસવર્ડ: 123456) અથવા દૂર કરો</p>
+                <p class="text-xs text-slate-500 mt-0.5">અહીંથી ઉમેરેલ ઓપરેટર તરત જ ડિરેક્ટરીમાં લાઇવ દેખાશે</p>
               </div>
               <span id="adminOpCountBadge" class="px-2.5 py-1 bg-purple-100 text-purple-800 font-bold text-xs rounded-full">0 ઓપરેટર</span>
             </div>
 
             <!-- Add Operator Form -->
             <form onsubmit="handleAdminAddOperator(event)" class="bg-purple-50/40 border border-purple-200/80 p-4 rounded-2xl space-y-3">
-              <h4 class="text-xs font-bold text-purple-900 uppercase tracking-wider">નવો ઓપરેટર ઉમેરો</h4>
+              <h4 class="text-xs font-bold text-purple-900 uppercase tracking-wider">નવો પુરવઠા ઓપરેટર ઉમેરો</h4>
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 <input type="text" id="newOpName" required placeholder="ઓપરેટરનું પૂરું નામ *" class="px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-purple-500" />
                 <input type="tel" id="newOpPhone" required maxlength="10" pattern="[0-9]{10}" placeholder="૧૦ આંકડાનો મોબાઇલ નંબર *" class="px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-purple-500" />
@@ -812,16 +821,16 @@
       "Sabarkantha": ["IDAR", "KHEDBRAHMA", "TALOD", "PRANTIJ", "POSHINA", "VADALI", "VIJAYANAGAR", "HIMATNAGAR"]
     };
 
-    // 2. UNIFIED USERS DATABASE INITIALIZATION
-    const USERS_DB_KEY = 'gj_portal_users_v4';
-    const FOLDERS_DB_KEY = 'gj_portal_folders_v4';
-    const MESSAGES_DB_KEY = 'gj_portal_messages_v4';
-    const SESSION_KEY = 'gj_portal_session_v4';
+    // 2. UNIFIED USERS DATABASE INITIALIZATION (Fresh Prefix 'gj_purvatha_v1')
+    const USERS_DB_KEY = 'gj_purvatha_v1_users';
+    const FOLDERS_DB_KEY = 'gj_purvatha_v1_folders';
+    const MESSAGES_DB_KEY = 'gj_purvatha_v1_messages';
+    const SESSION_KEY = 'gj_purvatha_v1_session';
     const ADMIN_PHONE = '9033483992';
 
     function initializeDatabase() {
-      // Clear legacy incompatible storage keys if any
-      ['gj_portal_users_v1', 'gj_portal_users_v2', 'gj_portal_users_v3'].forEach(k => localStorage.removeItem(k));
+      // Clear legacy incompatible storage keys
+      ['gj_portal_users_v1', 'gj_portal_users_v2', 'gj_portal_users_v3', 'gj_portal_users_v4'].forEach(k => localStorage.removeItem(k));
 
       if (!localStorage.getItem(USERS_DB_KEY)) {
         const initialUsers = [
@@ -830,10 +839,11 @@
             password: "654321",
             name: "એડમિન અધિકારી (Admin)",
             role: "admin",
-            email: "admin@gujarat.gov.in",
+            email: "admin.purvatha@gujarat.gov.in",
+            dob: "1985-05-15",
             district: "Gandhinagar",
             taluka: "GANDHINAGAR",
-            address: "બ્લોક નં. ૧, સચિવાલય, ગાંધીનગર",
+            address: "બ્લોક નં. ૧૪, અન્ન અને નાગરિક પુરવઠા કચેરી, ગાંધીનગર",
             photo: "",
             isLocked: false
           },
@@ -842,10 +852,11 @@
             password: "123456",
             name: "ભાવેશભાઈ ચૌહાણ",
             role: "operator",
-            email: "bhavesh.c@gujarat.in",
+            email: "bhavesh.purvatha@gujarat.in",
+            dob: "1992-08-20",
             district: "Ahmedabad",
             taluka: "SANAND",
-            address: "તાલુકા સેવા સદન, સાણંદ",
+            address: "મામલતદાર કચેરી પુરવઠા શાખા, સાણંદ",
             photo: "",
             isLocked: true
           },
@@ -854,10 +865,11 @@
             password: "123456",
             name: "અંકિતભાઈ શાહ",
             role: "operator",
-            email: "ankit.shah@gujarat.in",
+            email: "ankit.purvatha@gujarat.in",
+            dob: "1994-03-10",
             district: "Surat",
             taluka: "KAMAREZ",
-            address: "જન સેવા કેન્દ્ર, કામરેજ",
+            address: "પુરવઠા ઝોનલ કચેરી, કામરેજ",
             photo: "",
             isLocked: true
           },
@@ -866,10 +878,11 @@
             password: "123456",
             name: "જયેશભાઈ જાડેજા",
             role: "operator",
-            email: "jayesh.j@gujarat.in",
+            email: "jayesh.purvatha@gujarat.in",
+            dob: "1990-11-05",
             district: "Rajkot",
             taluka: "GONDAL",
-            address: "મામલતદાર કચેરી પાસે, ગોંડલ",
+            address: "મામલતદાર કચેરી, ગોંડલ",
             photo: "",
             isLocked: true
           }
@@ -881,15 +894,15 @@
         const initialFolders = [
           {
             id: "fld_1",
-            name: "આધાર કાર્ડ અરજી ડેટા",
+            name: "રેશનકાર્ડ E-KYC ડેટા",
             createdAt: "14/11/2026",
             items: [
-              { id: "itm_101", title: "મહેશભાઈ કે. પટેલ", ref: "9825011223", notes: "નવું આધાર કાર્ડ અને મોબાઇલ નંબર લિંક", date: "14/11/2026" }
+              { id: "itm_101", title: "મહેશભાઈ કે. પટેલ", ref: "9825011223", notes: "NFSA રેશનકાર્ડ આધાર લિંક અને E-KYC પૂર્ણ", date: "14/11/2026" }
             ]
           },
           {
             id: "fld_2",
-            name: "આવક અને જાતિના દાખલા",
+            name: "નવા રેશનકાર્ડ અરજી",
             createdAt: "14/11/2026",
             items: []
           }
@@ -930,6 +943,15 @@
 
     function saveFolders(folders) {
       localStorage.setItem(FOLDERS_DB_KEY, JSON.stringify(folders));
+    }
+
+    function formatDisplayDate(isoDateStr) {
+      if (!isoDateStr) return "બાકી";
+      const parts = isoDateStr.split('-');
+      if (parts.length === 3) {
+        return `${parts[2]}/${parts[1]}/${parts[0]}`;
+      }
+      return isoDateStr;
     }
 
     // 3. TOAST & PASSWORD VISIBILITY UTILITIES
@@ -1006,7 +1028,8 @@
             password: "654321",
             name: "એડમિન અધિકારી (Admin)",
             role: "admin",
-            email: "admin@gujarat.gov.in",
+            email: "admin.purvatha@gujarat.gov.in",
+            dob: "",
             district: "Gandhinagar",
             taluka: "GANDHINAGAR",
             address: "સચિવાલય, ગાંધીનગર",
@@ -1038,12 +1061,14 @@
             showToast("ખોટો પાસવર્ડ! લૉગિન નિષ્ફળ.", "error");
             return;
           }
+          // Automatically register new operator and sync live to Directory
           matchedUser = {
             phone: mobile,
             password: "123456",
-            name: "ઓપરેટર (" + mobile.slice(-4) + ")",
+            name: "પુરવઠા ઓપરેટર (" + mobile.slice(-4) + ")",
             role: "operator",
             email: "",
+            dob: "",
             district: "",
             taluka: "",
             address: "",
@@ -1058,7 +1083,7 @@
       currentUser = matchedUser;
       localStorage.setItem(SESSION_KEY, currentUser.phone);
       renderAppView();
-      showToast(`${currentUser.role === 'admin' ? 'એડમિન' : 'ઓપરેટર'} તરીકે સફળતાપૂર્વક લૉગિન થયા છો!`, 'success');
+      showToast(`${currentUser.role === 'admin' ? 'એડમિન' : 'પુરવઠા ઓપરેટર'} તરીકે સફળતાપૂર્વક લૉગિન થયા છો!`, 'success');
     }
 
     function syncCurrentUserToStorage() {
@@ -1067,8 +1092,13 @@
       const idx = users.findIndex(u => u.phone === currentUser.phone);
       if (idx !== -1) {
         users[idx] = currentUser;
-        saveUsers(users);
+      } else {
+        users.push(currentUser);
       }
+      saveUsers(users);
+      // Immediately refresh live Directory and Admin list
+      renderDirectoryList();
+      renderAdminOperatorsList();
     }
 
     // 5. RENDER AUTHENTICATED APP
@@ -1097,7 +1127,7 @@
       } else {
         roleBadge.textContent = 'OPERATOR';
         roleBadge.className = 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 uppercase tracking-wider';
-        userStatusTag.textContent = 'સક્રિય તાલુકા ઓપરેટર';
+        userStatusTag.textContent = 'સક્રિય પુરવઠા ઓપરેટર';
         document.getElementById('adminUnlockBtn').classList.add('hidden');
         navAdminLabel.textContent = 'સહાય';
         adminExclusiveView.classList.add('hidden');
@@ -1108,8 +1138,10 @@
       document.getElementById('profileFullNameDisplay').textContent = currentUser.name;
       document.getElementById('profileRoleTag').textContent = currentUser.role.toUpperCase();
       document.getElementById('profilePhoneBadge').textContent = `મોબાઇલ: ${currentUser.phone}`;
+      document.getElementById('profileDobVal').textContent = formatDisplayDate(currentUser.dob);
 
       document.getElementById('profileEditName').value = currentUser.name || "";
+      document.getElementById('profileEditDob').value = currentUser.dob || "";
       document.getElementById('profileEditEmail').value = currentUser.email || "";
       document.getElementById('profileEditAddress').value = currentUser.address || "";
 
@@ -1248,8 +1280,7 @@
 
       syncCurrentUserToStorage();
       renderDistrictLockState();
-      renderDirectoryList();
-      showToast('જિલ્લો અને તાલુકો સેવ કરીને લૉક કરવામાં આવ્યા!', 'success');
+      showToast('જિલ્લો અને તાલુકો સેવ કરીને લૉક કરવામાં આવ્યા! ડિરેક્ટરીમાં અપડેટ થયું.', 'success');
     }
 
     function adminDirectUnlockSelf() {
@@ -1421,22 +1452,23 @@
       }
     }
 
-    // 8. OPERATOR DIRECTORY
+    // 8. LIVE OPERATOR DIRECTORY (Auto-syncs all added & updated operators)
     function renderDirectoryList() {
       const container = document.getElementById('operatorsListContainer');
       const searchVal = (document.getElementById('directorySearchInput').value || '').toLowerCase().trim();
       const filterDist = document.getElementById('directoryDistrictFilter').value;
       const countBadge = document.getElementById('operatorTotalCount');
 
+      // Fetch live operators from storage
       const operators = getUsers().filter(u => u.role === 'operator');
 
       const filtered = operators.filter(op => {
         const dName = (op.district || '').toLowerCase();
         const tName = (op.taluka || '').toLowerCase();
-        const matchesSearch = op.name.toLowerCase().includes(searchVal) ||
+        const matchesSearch = (op.name || '').toLowerCase().includes(searchVal) ||
                               dName.includes(searchVal) ||
                               tName.includes(searchVal) ||
-                              op.phone.includes(searchVal);
+                              (op.phone || '').includes(searchVal);
         const matchesDist = (filterDist === 'ALL') || (op.district === filterDist);
         return matchesSearch && matchesDist;
       });
@@ -1451,16 +1483,20 @@
       container.innerHTML = filtered.map(op => `
         <div class="p-3.5 rounded-2xl border border-slate-200/80 bg-white hover:border-blue-300 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div class="flex items-center gap-3">
-            <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white font-bold text-sm flex items-center justify-center shrink-0">
-              ${op.name ? op.name.charAt(0) : 'ઓ'}
-            </div>
+            ${op.photo && op.photo.startsWith('data:image')
+              ? `<img src="${op.photo}" alt="${op.name}" class="w-11 h-11 rounded-2xl object-cover border border-slate-200 shrink-0" />`
+              : `<div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white font-bold text-sm flex items-center justify-center shrink-0">${op.name ? op.name.charAt(0) : 'ઓ'}</div>`
+            }
             <div>
               <h4 class="font-bold text-slate-900 text-sm">${op.name}</h4>
               <p class="text-xs text-slate-500 mt-0.5">
                 <i class="fa-solid fa-location-dot text-slate-400 text-[10px]"></i>
                 <span>${op.district || 'જિલ્લો બાકી'} • <strong class="text-slate-700">${op.taluka || 'તાલુકો બાકી'}</strong></span>
               </p>
-              <span class="text-[11px] font-mono text-slate-500">${op.phone}</span>
+              <div class="flex items-center gap-2 mt-0.5 text-[11px] text-slate-500">
+                <span class="font-mono font-semibold text-slate-700">${op.phone}</span>
+                ${op.dob ? `<span>• જન્મ: ${formatDisplayDate(op.dob)}</span>` : ''}
+              </div>
             </div>
           </div>
 
@@ -1478,7 +1514,7 @@
       `).join('');
     }
 
-    // 9. ADMIN EXCLUSIVE: ADD & REMOVE OPERATORS
+    // 9. ADMIN EXCLUSIVE: ADD & REMOVE OPERATORS (LIVE SYNC TO DIRECTORY)
     function handleAdminAddOperator(e) {
       if (e) e.preventDefault();
       if (!currentUser || currentUser.role !== 'admin') return;
@@ -1505,6 +1541,7 @@
         name: name,
         role: "operator",
         email: "",
+        dob: "",
         district: district || "",
         taluka: taluka || "",
         address: "",
@@ -1512,7 +1549,7 @@
         isLocked: Boolean(district && taluka)
       };
 
-      users.push(newOperator);
+      users.unshift(newOperator);
       saveUsers(users);
 
       document.getElementById('newOpName').value = '';
@@ -1521,9 +1558,10 @@
       document.getElementById('newOpTaluka').innerHTML = '<option value="">-- તાલુકો (વૈકલ્પિક) --</option>';
       document.getElementById('newOpTaluka').disabled = true;
 
+      // Immediately sync Admin list & Live Directory
       renderAdminOperatorsList();
       renderDirectoryList();
-      showToast(`નવો ઓપરેટર "${name}" ઉમેરાયો! (પાસવર્ડ: 123456)`, 'success');
+      showToast(`નવો ઓપરેટર "${name}" ઉમેરાયો અને ડિરેક્ટરીમાં લાઇવ થઈ ગયો!`, 'success');
     }
 
     function handleAdminRemoveOperator(phone) {
@@ -1535,9 +1573,10 @@
       users = users.filter(u => u.phone !== phone);
       saveUsers(users);
 
+      // Immediately sync Admin list & Live Directory
       renderAdminOperatorsList();
       renderDirectoryList();
-      showToast(`ઓપરેટર (${target ? target.name : phone}) ને સિસ્ટમમાંથી દૂર કરવામાં આવ્યા.`, 'info');
+      showToast(`ઓપરેટર (${target ? target.name : phone}) ને ડિરેક્ટરી અને સિસ્ટમમાંથી દૂર કરવામાં આવ્યા.`, 'info');
     }
 
     function renderAdminOperatorsList() {
@@ -1569,7 +1608,7 @@
       `).join('');
     }
 
-    // 10. PROFILE & CHANGE PASSWORD
+    // 10. PROFILE (WITH DOB) & CHANGE PASSWORD
     function handleChangePassword(e) {
       if (e) e.preventDefault();
       const currentPass = document.getElementById('currentPassInput').value.trim();
@@ -1672,12 +1711,13 @@
     function handleProfileUpdate(e) {
       if (e) e.preventDefault();
       currentUser.name = document.getElementById('profileEditName').value.trim();
+      currentUser.dob = document.getElementById('profileEditDob').value;
       currentUser.email = document.getElementById('profileEditEmail').value.trim();
       currentUser.address = document.getElementById('profileEditAddress').value.trim();
 
       syncCurrentUserToStorage();
       renderAppView();
-      showToast('પ્રોફાઇલ વિગતો સાચવવામાં આવી!', 'success');
+      showToast('પ્રોફાઇલ અને જન્મ તારીખ સાચવવામાં આવી!', 'success');
     }
 
     // 11. MESSAGING & NOTIFICATIONS
@@ -1913,7 +1953,14 @@
       navigator.serviceWorker.register(URL.createObjectURL(new Blob([swCode], { type: 'application/javascript' }))).catch(() => {});
     }
 
-    // 14. AUTO-RESTORE SESSION
+    // 14. AUTO-RESTORE SESSION & CROSS-TAB LIVE SYNC
+    window.addEventListener('storage', (e) => {
+      if (e.key === USERS_DB_KEY && currentUser) {
+        renderDirectoryList();
+        renderAdminOperatorsList();
+      }
+    });
+
     window.addEventListener('DOMContentLoaded', () => {
       const savedPhone = localStorage.getItem(SESSION_KEY);
       if (savedPhone) {
