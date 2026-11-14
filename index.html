@@ -16,31 +16,37 @@
 
   <script>
     // PWA Dynamic Web App Manifest
-    const manifestData = {
-      name: "ગુજરાત ઓપરેટર પોર્ટલ",
-      short_name: "GJ Portal",
-      start_url: window.location.href,
-      display: "standalone",
-      background_color: "#f8fafc",
-      theme_color: "#1d4ed8",
-      icons: [
-        {
-          src: "https://placehold.co/192x192/1d4ed8/ffffff?text=GJ+PWA",
-          sizes: "192x192",
-          type: "image/png"
-        },
-        {
-          src: "https://placehold.co/512x512/1d4ed8/ffffff?text=GJ+Portal",
-          sizes: "512x512",
-          type: "image/png"
-        }
-      ]
-    };
-    const blob = new Blob([JSON.stringify(manifestData)], { type: 'application/json' });
-    const manifestLink = document.createElement('link');
-    manifestLink.rel = 'manifest';
-    manifestLink.href = URL.createObjectURL(blob);
-    document.head.appendChild(manifestLink);
+    (function setupManifest() {
+      try {
+        const manifestData = {
+          name: "ગુજરાત ઓપરેટર પોર્ટલ",
+          short_name: "GJ Portal",
+          start_url: ".",
+          display: "standalone",
+          background_color: "#f8fafc",
+          theme_color: "#1d4ed8",
+          icons: [
+            {
+              src: "https://placehold.co/192x192/1d4ed8/ffffff?text=GJ+PWA",
+              sizes: "192x192",
+              type: "image/png"
+            },
+            {
+              src: "https://placehold.co/512x512/1d4ed8/ffffff?text=GJ+Portal",
+              sizes: "512x512",
+              type: "image/png"
+            }
+          ]
+        };
+        const blob = new Blob([JSON.stringify(manifestData)], { type: 'application/json' });
+        const manifestLink = document.createElement('link');
+        manifestLink.rel = 'manifest';
+        manifestLink.href = URL.createObjectURL(blob);
+        document.head.appendChild(manifestLink);
+      } catch (e) {
+        console.warn("Manifest setup skipped:", e);
+      }
+    })();
   </script>
 
   <style>
@@ -139,6 +145,7 @@
                 id="loginMobile" 
                 required 
                 maxlength="10"
+                autocomplete="off"
                 placeholder="૧૦ આંકડાનો મોબાઇલ નંબર"
                 class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all text-slate-800"
               />
@@ -155,6 +162,7 @@
                 type="password" 
                 id="loginPassword" 
                 required 
+                autocomplete="new-password"
                 placeholder="તમારો પાસવર્ડ દાખલ કરો"
                 class="w-full pl-10 pr-11 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all text-slate-800"
               />
@@ -203,7 +211,7 @@
           </div>
           <div class="text-xs">
             <span class="font-bold text-amber-900 block text-sm">જિલ્લો અને તાલુકો લૉક કરેલ છે!</span>
-            <p class="text-amber-800 mt-0.5">આ વિગતો સેવ કરીને લૉક કરવામાં આવી છે. તેને માત્ર **એડમિન** જ બદલી શકે છે. સુધારા માટે એડમિન ટેબમાંથી વિનંતી મોકલો.</p>
+            <p class="text-amber-800 mt-0.5">આ વિગતો સેવ કરીને લૉક કરવામાં આવી છે. તેને માત્ર <strong>એડમિન</strong> જ બદલી શકે છે. સુધારા માટે સહાય ટેબમાંથી વિનંતી મોકલો.</p>
           </div>
         </div>
 
@@ -303,7 +311,7 @@
         </div>
       </section>
 
-      <!-- ================= TAB 2: DATA & FOLDERS MANAGEMENT (NEW) ================= -->
+      <!-- ================= TAB 2: DATA & FOLDERS MANAGEMENT ================= -->
       <section id="tab-data" class="tab-pane hidden space-y-4">
         <div class="bg-white rounded-3xl p-5 sm:p-6 shadow-xs border border-slate-200">
           
@@ -569,7 +577,7 @@
             </div>
           </form>
 
-          <!-- CHANGE PASSWORD CARD (NEW) -->
+          <!-- CHANGE PASSWORD CARD -->
           <form onsubmit="handleChangePassword(event)" class="border border-amber-200/80 bg-amber-50/20 rounded-2xl p-4 sm:p-5 space-y-3.5">
             <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5 pb-2 border-b border-amber-200/60">
               <i class="fa-solid fa-key text-amber-600"></i>
@@ -618,7 +626,7 @@
         <!-- ============= ADMIN EXCLUSIVE VIEW ============= -->
         <div id="adminExclusiveView" class="hidden space-y-4">
           
-          <!-- 1. ADD & REMOVE OPERATORS MANAGEMENT (NEW) -->
+          <!-- 1. ADD & REMOVE OPERATORS MANAGEMENT -->
           <div class="bg-white rounded-3xl p-5 sm:p-6 shadow-xs border border-purple-200 space-y-4">
             <div class="flex items-center justify-between pb-3 border-b border-slate-100">
               <div>
@@ -804,14 +812,17 @@
       "Sabarkantha": ["IDAR", "KHEDBRAHMA", "TALOD", "PRANTIJ", "POSHINA", "VADALI", "VIJAYANAGAR", "HIMATNAGAR"]
     };
 
-    // 2. UNIFIED USERS DATABASE INITIALIZATION (Strict Passwords: Operator=123456, Admin=654321)
-    const USERS_DB_KEY = 'gj_portal_users_v3';
-    const FOLDERS_DB_KEY = 'gj_portal_folders_v3';
-    const MESSAGES_DB_KEY = 'gj_portal_messages_v3';
-    const SESSION_KEY = 'gj_portal_session_v3';
+    // 2. UNIFIED USERS DATABASE INITIALIZATION
+    const USERS_DB_KEY = 'gj_portal_users_v4';
+    const FOLDERS_DB_KEY = 'gj_portal_folders_v4';
+    const MESSAGES_DB_KEY = 'gj_portal_messages_v4';
+    const SESSION_KEY = 'gj_portal_session_v4';
     const ADMIN_PHONE = '9033483992';
 
     function initializeDatabase() {
+      // Clear legacy incompatible storage keys if any
+      ['gj_portal_users_v1', 'gj_portal_users_v2', 'gj_portal_users_v3'].forEach(k => localStorage.removeItem(k));
+
       if (!localStorage.getItem(USERS_DB_KEY)) {
         const initialUsers = [
           {
@@ -895,6 +906,7 @@
 
     let currentUser = null;
     let activeFolderId = null;
+    let toastTimer = null;
 
     function getUsers() {
       try {
@@ -920,8 +932,53 @@
       localStorage.setItem(FOLDERS_DB_KEY, JSON.stringify(folders));
     }
 
-    // 3. TOAST UTILITY
+    // 3. TOAST & PASSWORD VISIBILITY UTILITIES
     function showToast(message, type = 'info') {
+      const toast = document.getElementById('toast');
+      const toastMsg = document.getElementById('toastMsg');
+      const toastIcon = document.getElementById('toastIcon');
+      const toastContent = document.getElementById('toastContent');
+
+      toastMsg.textContent = message;
+      toastContent.className = 'px-4 py-3 rounded-2xl shadow-xl border text-sm flex items-center space-x-3 bg-white ';
+
+      if (type === 'success') {
+        toastContent.className += 'border-emerald-200 text-emerald-900';
+        toastIcon.className = 'fa-solid fa-circle-check text-emerald-600 text-lg shrink-0';
+      } else if (type === 'error') {
+        toastContent.className += 'border-red-200 text-red-900';
+        toastIcon.className = 'fa-solid fa-circle-exclamation text-red-600 text-lg shrink-0';
+      } else {
+        toastContent.className += 'border-blue-200 text-slate-800';
+        toastIcon.className = 'fa-solid fa-circle-info text-blue-600 text-lg shrink-0';
+      }
+
+      toast.classList.remove('opacity-0', 'translate-y-[-10px]', 'pointer-events-none');
+      toast.classList.add('opacity-100', 'translate-y-0');
+
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-[-10px]', 'pointer-events-none');
+        toast.classList.remove('opacity-100', 'translate-y-0');
+      }, 3200);
+    }
+
+    function togglePasswordVisibility(inputId, iconId) {
+      const input = document.getElementById(inputId);
+      const icon = document.getElementById(iconId);
+      if (!input || !icon) return;
+
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+      } else {
+        input.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+      }
+    }
+
     // 4. STRICT AUTHENTICATION (Admin = 9033483992 / 654321; Any 10-digit Operator = 123456 or updated password)
     function handleManualLogin(e) {
       if (e) e.preventDefault();
@@ -967,7 +1024,6 @@
           return;
         }
       } else {
-        // Operator login: if user exists verify stored password; if new 10-digit mobile allow with '123456'
         if (matchedUser) {
           if (matchedUser.password !== password) {
             errorText.textContent = "ખોટો પાસવર્ડ! કૃપા કરીને સાચો પાસવર્ડ દાખલ કરો.";
@@ -977,12 +1033,11 @@
           }
         } else {
           if (password !== "123456") {
-            errorText.textContent = "ખોટો પાસવર્ડ! નવા ઓપરેટર માટે ડિફોલ્ટ પાસવર્ડ નાખો.";
+            errorText.textContent = "ખોટો પાસવર્ડ! નવા ઓપરેટર માટે ડિફોલ્ટ પાસવર્ડ દાખલ કરો.";
             errorAlert.classList.remove('hidden');
             showToast("ખોટો પાસવર્ડ! લૉગિન નિષ્ફળ.", "error");
             return;
           }
-          // Auto-register new operator with default password '123456'
           matchedUser = {
             phone: mobile,
             password: "123456",
@@ -1000,7 +1055,6 @@
         }
       }
 
-      // Valid user & password
       currentUser = matchedUser;
       localStorage.setItem(SESSION_KEY, currentUser.phone);
       renderAppView();
@@ -1205,7 +1259,7 @@
       showToast('અનલોક કરવામાં આવ્યું.', 'info');
     }
 
-    // 7. DATA & FOLDERS MANAGEMENT (NEW FEATURE)
+    // 7. DATA & FOLDERS MANAGEMENT
     function handleCreateFolder(e) {
       if (e) e.preventDefault();
       const input = document.getElementById('newFolderNameInput');
@@ -1367,7 +1421,7 @@
       }
     }
 
-    // 8. OPERATOR DIRECTORY (Shows all operators from Users DB)
+    // 8. OPERATOR DIRECTORY
     function renderDirectoryList() {
       const container = document.getElementById('operatorsListContainer');
       const searchVal = (document.getElementById('directorySearchInput').value || '').toLowerCase().trim();
@@ -1447,7 +1501,7 @@
 
       const newOperator = {
         phone: phone,
-        password: "123456", // Default operator password
+        password: "123456",
         name: name,
         role: "operator",
         email: "",
