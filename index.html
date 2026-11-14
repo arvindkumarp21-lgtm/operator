@@ -103,7 +103,7 @@
   <!-- ================= MAIN APP SHELL ================= -->
   <div id="app-shell" class="hidden min-h-screen pb-24 max-w-3xl mx-auto bg-slate-50 shadow-xl">
 
-    <!-- Sticky Header + Top Admin Live Notice Bar -->
+    <!-- Sticky Header -->
     <div class="sticky top-0 z-30">
       <header class="bg-blue-950 text-white px-4 py-3.5 shadow-md flex items-center justify-between">
         <div class="flex items-center gap-3">
@@ -132,23 +132,6 @@
           </button>
         </div>
       </header>
-
-      <!-- TOP LIVE ADMIN NOTICE BAR (Shows immediately at the top of the app for all operators) -->
-      <div id="top-admin-notice-bar" class="hidden bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-400 text-slate-950 px-4 py-2.5 border-b border-amber-600/30 shadow-md">
-        <div class="flex items-start justify-between gap-2">
-          <div class="flex items-start gap-2 min-w-0">
-            <span class="text-base shrink-0 mt-0.5">📢</span>
-            <div class="min-w-0">
-              <div class="flex items-center gap-2">
-                <span class="text-[10px] font-extrabold uppercase tracking-wider bg-slate-950 text-amber-300 px-1.5 py-0.5 rounded">એડમિન સૂચના (LIVE)</span>
-                <span id="top-admin-notice-time" class="text-[10px] font-bold text-slate-800"></span>
-              </div>
-              <p id="top-admin-notice-text" class="text-xs font-bold text-slate-950 mt-0.5 break-words leading-snug"></p>
-            </div>
-          </div>
-          <button type="button" onclick="dismissTopAdminNotice()" class="text-slate-900/70 hover:text-slate-950 font-bold text-lg leading-none px-1.5 shrink-0" title="બંધ કરો">&times;</button>
-        </div>
-      </div>
     </div>
 
     <!-- Main Content Area -->
@@ -156,6 +139,24 @@
 
       <!-- ============ TAB 1: HOME / DASHBOARD ============ -->
       <section id="tab-home" class="space-y-4">
+
+        <!-- HIGHLIGHTED ADMIN NOTICE CARD ON HOME PAGE ONLY -->
+        <div id="home-admin-notice-card" class="hidden bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-400 text-slate-950 rounded-2xl p-4 border-2 border-amber-600/40 shadow-lg">
+          <div class="flex items-start justify-between gap-3">
+            <div class="flex items-start gap-3 min-w-0">
+              <div class="w-10 h-10 rounded-2xl bg-slate-950 text-amber-400 flex items-center justify-center text-lg shrink-0 shadow">
+                📢
+              </div>
+              <div class="min-w-0">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <span class="text-[10px] font-extrabold uppercase tracking-wider bg-slate-950 text-amber-300 px-2 py-0.5 rounded-md">એડમિન અગત્યની સૂચના</span>
+                  <span id="home-admin-notice-time" class="text-[11px] font-bold text-slate-800"></span>
+                </div>
+                <p id="home-admin-notice-text" class="text-sm font-bold text-slate-950 mt-1.5 break-words leading-relaxed"></p>
+              </div>
+            </div>
+          </div>
+        </div>
 
         <!-- Birthday Wish Notification Banner -->
         <div id="birthday-wish-banner" class="hidden bg-gradient-to-r from-amber-500 via-orange-500 to-pink-600 text-white rounded-2xl p-4 shadow-lg space-y-2.5">
@@ -218,17 +219,17 @@
 
           <button type="button" id="btn-save-location" onclick="saveOperatorLocation()"
             class="w-full py-2.5 bg-blue-900 hover:bg-blue-800 text-white font-bold rounded-xl text-xs shadow transition">
-            જિલ્લો અને તાલુકો સેવ અને લૉક કરો
+            જિલ્લો અને તાલુકો સેવ કરો
           </button>
           <p id="location-lock-note" class="text-[11px] text-slate-500">
-            * એકવાર જિલ્લો અને તાલુકો સેવ કર્યા પછી તે લૉક થઈ જશે. ફેરફાર માટે એડમિનનો સંપર્ક કરવો.
+            * ઓપરેટર એકવાર જિલ્લો અને તાલુકો સેવ કરશે પછી તે લૉક થઈ જશે. (એડમિન ગમે ત્યારે બદલી શકશે).
           </p>
         </div>
 
         <!-- Quick Shortcuts Card -->
         <div class="grid grid-cols-2 gap-3">
           <button type="button" onclick="switchTab('chat')" class="bg-emerald-600 hover:bg-emerald-700 text-white p-3.5 rounded-2xl shadow-sm flex items-center justify-center gap-2 text-xs font-bold transition">
-            <span>💬 ઓપરેટર ગ્રુપ ચેટ</span>
+            <span>💬 લાઇવ ગ્રુપ ચેટ</span>
           </button>
           <button type="button" onclick="switchTab('directory')" class="bg-blue-900 hover:bg-blue-800 text-white p-3.5 rounded-2xl shadow-sm flex items-center justify-center gap-2 text-xs font-bold transition">
             <span>📞 ડિરેક્ટરી (કૉલ / WhatsApp)</span>
@@ -236,13 +237,13 @@
         </div>
       </section>
 
-      <!-- ============ TAB 2: LIVE DIRECTORY (DIRECT CALL & WHATSAPP) ============ -->
+      <!-- ============ TAB 2: LIVE DIRECTORY (DISTRICT + TALUKA FILTER + CALL/WA) ============ -->
       <section id="tab-directory" class="hidden space-y-4">
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-4 space-y-3">
           <div class="flex items-center justify-between">
             <div>
               <h2 class="text-base font-bold text-slate-800">ઓપરેટર લાઇવ ડિરેક્ટરી</h2>
-              <p class="text-[11px] text-slate-500">ડાયરેક્ટ કૉલ અને વોટ્સએપ કરવાની સુવિધા</p>
+              <p class="text-[11px] text-slate-500">જિલ્લા અને તાલુકા મુજબ ફિલ્ટર તથા ડાયરેક્ટ કૉલ/વોટ્સએપ</p>
             </div>
             <button type="button" onclick="manualSyncNow()" class="px-3 py-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl text-xs font-bold flex items-center gap-1.5 hover:bg-emerald-100">
               <span class="w-2 h-2 rounded-full bg-emerald-500 live-dot"></span>
@@ -250,14 +251,20 @@
             </button>
           </div>
 
-          <!-- Search & District Filter -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            <input type="text" id="dir-search" oninput="renderDirectory()" placeholder="નામ, મોબાઇલ, વોટ્સએપ કે તાલુકાથી શોધો..."
+          <!-- Search + District Filter + Taluka Filter -->
+          <div class="space-y-2.5">
+            <input type="text" id="dir-search" oninput="renderDirectory()" placeholder="નામ, મોબાઇલ કે વોટ્સએપ નંબરથી શોધો..."
               class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-600" />
-            <select id="dir-district-filter" onchange="renderDirectory()"
-              class="w-full px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-600">
-              <option value="">બધા જિલ્લા (૩૫)</option>
-            </select>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <select id="dir-district-filter" onchange="onDirectoryDistrictChange()"
+                class="w-full px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-600">
+                <option value="">બધા જિલ્લા (૩૫)</option>
+              </select>
+              <select id="dir-taluka-filter" onchange="renderDirectory()"
+                class="w-full px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-600">
+                <option value="">બધા તાલુકા / ઝોન</option>
+              </select>
+            </div>
           </div>
         </div>
 
@@ -266,9 +273,9 @@
         </div>
       </section>
 
-      <!-- ============ TAB 3: GROUP CHAT MENU ============ -->
+      <!-- ============ TAB 3: LIVE GROUP CHAT MENU (EVERYONE CAN CHAT) ============ -->
       <section id="tab-chat" class="hidden space-y-3">
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden flex flex-col h-[70vh]">
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden flex flex-col h-[72vh]">
           <!-- Chat Header -->
           <div class="bg-emerald-800 text-white px-4 py-3 flex items-center justify-between">
             <div class="flex items-center gap-2.5">
@@ -276,8 +283,8 @@
                 💬
               </div>
               <div>
-                <h2 class="text-sm font-bold">ગુજરાત પુરવઠા ગ્રુપ ચેટ</h2>
-                <p id="chat-members-count" class="text-[11px] text-emerald-200">એડમિન અને તમામ ઓપરેટર ગ્રુપ</p>
+                <h2 class="text-sm font-bold">ગુજરાત પુરવઠા લાઇવ ગ્રુપ ચેટ</h2>
+                <p id="chat-members-count" class="text-[11px] text-emerald-200">એડમિન અને તમામ ઓપરેટરો અહીં ચેટ કરી શકે છે</p>
               </div>
             </div>
             <button type="button" onclick="manualSyncNow()" class="text-[11px] bg-white/15 hover:bg-white/25 px-2.5 py-1 rounded-lg font-semibold">
@@ -304,7 +311,7 @@
         </div>
       </section>
 
-      <!-- ============ TAB 4: DATA & FOLDERS (DRAG & DROP + SELECT FILE) ============ -->
+      <!-- ============ TAB 4: DATA & FOLDERS (ONLY DRAG & DROP / FILE SELECT) ============ -->
       <section id="tab-data" class="hidden space-y-4">
         <!-- Folder Creation Card -->
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-4 space-y-3">
@@ -326,7 +333,7 @@
           <!-- Folders rendered here -->
         </div>
 
-        <!-- Selected Folder Items View (Drag & Drop + Select File + Manual Entry) -->
+        <!-- Selected Folder Items View (ONLY Drag & Drop + Select File) -->
         <div id="folder-detail-box" class="hidden bg-white rounded-2xl shadow-sm border border-slate-200/80 p-4 space-y-4">
           <div class="flex items-center justify-between border-b border-slate-100 pb-3">
             <div>
@@ -343,7 +350,7 @@
             ondragover="handleDragOver(event)"
             ondragleave="handleDragLeave(event)"
             ondrop="handleFileDrop(event)"
-            class="border-2 border-dashed border-indigo-400 bg-indigo-50/50 rounded-2xl p-5 text-center space-y-3 transition cursor-pointer"
+            class="border-2 border-dashed border-indigo-400 bg-indigo-50/50 rounded-2xl p-6 text-center space-y-3 transition cursor-pointer"
             onclick="document.getElementById('folder-file-picker').click()">
             <div class="w-12 h-12 mx-auto rounded-2xl bg-indigo-100 text-indigo-700 flex items-center justify-center shadow-inner">
               <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
@@ -361,27 +368,11 @@
             <input type="file" id="folder-file-picker" multiple onchange="handleFileSelect(event)" class="hidden" />
           </div>
 
-          <!-- Manual Text Entry Form inside Folder -->
-          <form onsubmit="addFolderEntry(event)" class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-2.5">
-            <p class="text-xs font-bold text-slate-700">✍️ અથવા મેન્યુઅલ ડેટા વિગત લખીને સેવ કરો:</p>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              <input type="text" id="entry-title" placeholder="અરજદારનું નામ / વિષય" required
-                class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs font-medium" />
-              <input type="text" id="entry-ref" placeholder="મોબાઇલ / અરજી / કાર્ડ નંબર" required
-                class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs font-medium" />
-            </div>
-            <input type="text" id="entry-note" placeholder="વધારાની વિગત અથવા નોંધ (વૈકલ્પિક)"
-              class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs font-medium" />
-            <button type="submit" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg text-xs shadow">
-              + ડેટા વિગત સેવ કરો
-            </button>
-          </form>
-
-          <!-- Entries & Files List -->
+          <!-- Files List -->
           <div class="space-y-2">
-            <h4 class="text-xs font-bold text-slate-600">આ ફોલ્ડરમાં સેવ થયેલ ફાઇલો અને ડેટા:</h4>
+            <h4 class="text-xs font-bold text-slate-600">આ ફોલ્ડરમાં સેવ થયેલ ફાઇલો:</h4>
             <div id="folder-entries-list" class="space-y-2.5">
-              <!-- Folder entries rendered here -->
+              <!-- Folder files rendered here -->
             </div>
           </div>
         </div>
@@ -389,36 +380,19 @@
 
       <!-- ============ TAB 5: ADMIN PANEL (ONLY FOR ADMIN) ============ -->
       <section id="tab-admin" class="hidden space-y-4">
-        <!-- Quick Admin Top Broadcast Message Card -->
+        <!-- Admin Home Page Notice Broadcast Card (Separate from Group Chat) -->
         <div class="bg-amber-50 border border-amber-300 rounded-2xl p-4 space-y-2.5 shadow-sm">
           <h2 class="text-sm font-bold text-amber-950 flex items-center gap-2">
-            <span>📢 ઓપરેટર લોગિનમાં સૌથી ઉપર લાઇવ મેસેજ બતાવો</span>
+            <span>📢 હોમ પેજ પર હાઇલાઇટ સૂચના મૂકો (ગ્રુપ ચેટમાં નહીં દેખાય)</span>
           </h2>
-          <p class="text-[11px] text-amber-900">અહીંથી મોકલેલ મેસેજ દરેક ઓપરેટરની એપ્લિકેશનમાં તરત જ સૌથી ઉપર દેખાશે:</p>
-          <form onsubmit="sendAdminTopBroadcast(event)" class="flex flex-col sm:flex-row gap-2">
-            <input type="text" id="admin-broadcast-input" placeholder="અહીં અગત્યનો મેસેજ લખો..." required
+          <p class="text-[11px] text-amber-900">અહીંથી મોકલેલ સૂચના માત્ર હોમ પેજ પર સૌથી ઉપર હાઇલાઇટ બોક્સમાં દેખાશે:</p>
+          <form onsubmit="sendAdminHomeNotice(event)" class="flex flex-col sm:flex-row gap-2">
+            <input type="text" id="admin-broadcast-input" placeholder="હોમ પેજ માટે અગત્યની સૂચના લખો..." required
               class="flex-1 px-3.5 py-2.5 bg-white border border-amber-300 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-amber-500" />
             <button type="submit" class="px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl text-xs shadow whitespace-nowrap">
-              ઉપર લાઇવ મેસેજ મોકલો
+              હોમ પેજ પર સૂચના મૂકો
             </button>
           </form>
-        </div>
-
-        <!-- Cloud Live Sync Setup Card -->
-        <div class="bg-gradient-to-br from-slate-900 to-blue-950 text-white rounded-2xl shadow-md p-4 space-y-3">
-          <div class="flex items-center justify-between">
-            <h2 class="text-sm font-bold flex items-center gap-2">
-              <span>☁️ ક્લાઉડ લાઇવ સિંક (Firebase Connected)</span>
-            </h2>
-            <span id="cloud-status-tag" class="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-400 text-slate-950">CLOUD CONNECTED</span>
-          </div>
-          <div class="flex flex-col sm:flex-row gap-2">
-            <input type="url" id="firebase-url-input" placeholder="https://all-pds-oprator-default-rtdb.asia-southeast1.firebasedatabase.app"
-              class="flex-1 px-3 py-2.5 rounded-xl bg-white/10 border border-white/20 text-white placeholder-blue-300/60 text-xs focus:outline-none focus:ring-2 focus:ring-amber-400" />
-            <button type="button" onclick="saveFirebaseConfig()" class="px-4 py-2.5 bg-amber-400 hover:bg-amber-500 text-slate-950 font-bold rounded-xl text-xs whitespace-nowrap">
-              લાઇવ સિંક અપડેટ કરો
-            </button>
-          </div>
         </div>
 
         <!-- Add New Operator Card -->
@@ -450,14 +424,34 @@
           </form>
         </div>
 
-        <!-- Manage / Remove / Unlock Operators List -->
+        <!-- Manage Operators & Edit Any Operator's District/Taluka -->
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-4 space-y-3">
           <div class="flex items-center justify-between">
-            <h2 class="text-sm font-bold text-slate-800">રજિસ્ટર્ડ ઓપરેટર મેનેજમેન્ટ</h2>
+            <div>
+              <h2 class="text-sm font-bold text-slate-800">ઓપરેટર મેનેજમેન્ટ (જિલ્લો/તાલુકો બદલો)</h2>
+              <p class="text-[11px] text-slate-500">કોઈપણ ઓપરેટરનો જિલ્લો કે તાલુકો અહીંથી સીધો બદલીને સેવ કરો</p>
+            </div>
             <span id="admin-op-count" class="text-xs font-bold text-blue-900 bg-blue-50 px-2.5 py-1 rounded-lg">0 ઓપરેટર</span>
           </div>
-          <div id="admin-operators-list" class="space-y-2.5">
-            <!-- Admin operator rows rendered here -->
+          <div id="admin-operators-list" class="space-y-3">
+            <!-- Admin operator rows with district/taluka editors rendered here -->
+          </div>
+        </div>
+
+        <!-- Cloud Live Sync Setup Card -->
+        <div class="bg-gradient-to-br from-slate-900 to-blue-950 text-white rounded-2xl shadow-md p-4 space-y-3">
+          <div class="flex items-center justify-between">
+            <h2 class="text-sm font-bold flex items-center gap-2">
+              <span>☁️ ક્લાઉડ લાઇવ સિંક (Firebase Connected)</span>
+            </h2>
+            <span id="cloud-status-tag" class="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-400 text-slate-950">CLOUD CONNECTED</span>
+          </div>
+          <div class="flex flex-col sm:flex-row gap-2">
+            <input type="url" id="firebase-url-input" placeholder="https://all-pds-oprator-default-rtdb.asia-southeast1.firebasedatabase.app"
+              class="flex-1 px-3 py-2.5 rounded-xl bg-white/10 border border-white/20 text-white placeholder-blue-300/60 text-xs focus:outline-none focus:ring-2 focus:ring-amber-400" />
+            <button type="button" onclick="saveFirebaseConfig()" class="px-4 py-2.5 bg-amber-400 hover:bg-amber-500 text-slate-950 font-bold rounded-xl text-xs whitespace-nowrap">
+              લાઇવ સિંક અપડેટ કરો
+            </button>
           </div>
         </div>
       </section>
@@ -632,7 +626,6 @@
 
   <!-- ================= APPLICATION JAVASCRIPT ================= -->
   <script>
-    // તમારી કાયમી Firebase Realtime Database લિંક અહીં સેટ કરેલી છે:
     const DEFAULT_FIREBASE_URL = "https://all-pds-oprator-default-rtdb.asia-southeast1.firebasedatabase.app";
 
     // 1. ALL 35 DISTRICTS & TALUKAS OF GUJARAT
@@ -675,11 +668,10 @@
     };
 
     // 2. CONSTANTS & STORAGE KEYS
-    const STORAGE_KEY = 'gujarat_purvatha_db_v11';
-    const SESSION_KEY = 'gujarat_purvatha_session_v11';
+    const STORAGE_KEY = 'gujarat_purvatha_db_v12';
+    const SESSION_KEY = 'gujarat_purvatha_session_v12';
     const CLOUD_URL_KEY = 'gujarat_purvatha_firebase_url';
     const BDAY_TOAST_KEY = 'gujarat_purvatha_bday_notified_date';
-    const DISMISSED_NOTICE_KEY = 'gujarat_purvatha_dismissed_notice_id';
     const LAST_SEEN_NOTICE_KEY = 'gujarat_purvatha_last_seen_notice_id';
     const ADMIN_MOBILE = '9033483992';
     const DEFAULT_ADMIN_PASS = '654321';
@@ -730,7 +722,7 @@
       return raw.replace(/\/+$/, '').replace(/\/purvatha_portal\.json$/i, '');
     }
 
-    // 4. DATABASE & REALTIME CLOUD SYNC ENGINE (GRANULAR SMART MERGE)
+    // 4. DATABASE & REALTIME CLOUD SYNC ENGINE
     function getDefaultState() {
       const initTime = new Date().toLocaleTimeString('gu-IN', { hour: '2-digit', minute: '2-digit' });
       return {
@@ -767,7 +759,7 @@
             senderMobile: ADMIN_MOBILE,
             sender: 'મુખ્ય એડમિન',
             role: 'admin',
-            text: 'ગુજરાત પુરવઠા ઓપરેટર ગ્રુપ ચેટમાં આપનું સ્વાગત છે!',
+            text: 'ગુજરાત પુરવઠા ઓપરેટર લાઇવ ગ્રુપ ચેટમાં આપનું સ્વાગત છે!',
             time: initTime,
             ts: 1700000000000
           }
@@ -787,7 +779,6 @@
 
       const mergedDeleted = { ...(localSt.deletedUsers || {}), ...(cloudSt.deletedUsers || {}) };
 
-      // Merge Users by individual updatedAt timestamp
       const mergedUsers = { ...(localSt.users || {}) };
       Object.keys(cloudSt.users || {}).forEach(mob => {
         const cU = cloudSt.users[mob];
@@ -797,7 +788,6 @@
         }
       });
 
-      // Respect deleted users
       Object.keys(mergedDeleted).forEach(mob => {
         const delTime = mergedDeleted[mob];
         if (mob !== ADMIN_MOBILE && mergedUsers[mob] && (mergedUsers[mob].updatedAt || 0) < delTime) {
@@ -805,7 +795,6 @@
         }
       });
 
-      // Merge Folders & Entries by ID
       const folderMap = new Map();
       [...(localSt.folders || []), ...(cloudSt.folders || [])].forEach(f => {
         if (!f || !f.id) return;
@@ -826,14 +815,14 @@
         finalFolders = finalFolders.filter(f => cloudFolderIds.has(f.id) || (f.updatedAt || 0) > (cloudSt.updatedAt || 0));
       }
 
-      // Merge Messages by ID
       const msgMap = new Map();
       [...(localSt.messages || []), ...(cloudSt.messages || [])].forEach(m => {
         if (m && m.id) msgMap.set(m.id, m);
       });
-      const finalMessages = Array.from(msgMap.values()).slice(-100);
+      const finalMessages = Array.from(msgMap.values())
+        .sort((a, b) => (a.ts || 0) - (b.ts || 0))
+        .slice(-100);
 
-      // Latest Admin Notice
       let finalNotice = localSt.adminNotice;
       if (cloudSt.adminNotice) {
         if (!finalNotice || (cloudSt.adminNotice.ts || 0) >= (finalNotice.ts || 0)) {
@@ -844,6 +833,8 @@
       if (!mergedUsers[ADMIN_MOBILE]) {
         mergedUsers[ADMIN_MOBILE] = getDefaultState().users[ADMIN_MOBILE];
       }
+      mergedUsers[ADMIN_MOBILE].role = 'admin';
+      mergedUsers[ADMIN_MOBILE].locked = false;
 
       return {
         users: mergedUsers,
@@ -865,6 +856,8 @@
             if (!appState.users[ADMIN_MOBILE]) {
               appState.users[ADMIN_MOBILE] = getDefaultState().users[ADMIN_MOBILE];
             }
+            appState.users[ADMIN_MOBILE].role = 'admin';
+            appState.users[ADMIN_MOBILE].locked = false;
             if (!appState.deletedUsers) appState.deletedUsers = {};
             if (!Array.isArray(appState.folders)) appState.folders = [];
             if (!Array.isArray(appState.messages)) appState.messages = [];
@@ -987,20 +980,18 @@
       }
     });
 
-    // 5. TOP LIVE ADMIN NOTICE BAR LOGIC
-    function renderTopAdminNotice() {
-      const bar = document.getElementById('top-admin-notice-bar');
-      const textEl = document.getElementById('top-admin-notice-text');
-      const timeEl = document.getElementById('top-admin-notice-time');
-      if (!bar || !textEl || !timeEl) return;
+    // 5. HOME PAGE HIGHLIGHTED ADMIN NOTICE LOGIC (DOES NOT MIX WITH GROUP CHAT)
+    function renderHomeAdminNotice() {
+      const card = document.getElementById('home-admin-notice-card');
+      const textEl = document.getElementById('home-admin-notice-text');
+      const timeEl = document.getElementById('home-admin-notice-time');
+      if (!card || !textEl || !timeEl) return;
 
       const notice = appState.adminNotice;
-      const dismissedId = localStorage.getItem(DISMISSED_NOTICE_KEY);
-
-      if (notice && notice.text && notice.id !== dismissedId) {
+      if (notice && notice.text) {
         textEl.textContent = notice.text;
         timeEl.textContent = notice.time ? `(${notice.time})` : '';
-        bar.classList.remove('hidden');
+        card.classList.remove('hidden');
 
         const lastSeenId = localStorage.getItem(LAST_SEEN_NOTICE_KEY);
         if (lastSeenId !== notice.id) {
@@ -1010,18 +1001,11 @@
           }
         }
       } else {
-        bar.classList.add('hidden');
+        card.classList.add('hidden');
       }
     }
 
-    function dismissTopAdminNotice() {
-      if (appState.adminNotice && appState.adminNotice.id) {
-        localStorage.setItem(DISMISSED_NOTICE_KEY, appState.adminNotice.id);
-      }
-      document.getElementById('top-admin-notice-bar').classList.add('hidden');
-    }
-
-    async function sendAdminTopBroadcast(e) {
+    async function sendAdminHomeNotice(e) {
       e.preventDefault();
       const user = appState.users[currentUserMobile];
       if (!user || user.role !== 'admin') return;
@@ -1032,26 +1016,18 @@
 
       const nowTime = new Date().toLocaleTimeString('gu-IN', { hour: '2-digit', minute: '2-digit' });
       const nowTs = Date.now();
+
+      // Only updates Home Page Highlighted Notice (does NOT add to group chat)
       appState.adminNotice = {
         id: 'notice_' + nowTs,
         text: text,
         time: nowTime,
         ts: nowTs
       };
-      appState.messages.push({
-        id: 'msg_' + nowTs,
-        senderMobile: currentUserMobile,
-        sender: user.name || 'મુખ્ય એડમિન',
-        role: 'admin',
-        text: '📢 એડમિન સૂચના: ' + text,
-        time: nowTime,
-        ts: nowTs
-      });
 
       inp.value = '';
-      localStorage.removeItem(DISMISSED_NOTICE_KEY);
       await persistAndBroadcast(true);
-      showToast('મેસેજ તમામ ઓપરેટરના લોગિનમાં સૌથી ઉપર લાઇવ મોકલી દેવાયો છે!');
+      showToast('સૂચના હોમ પેજ પર હાઇલાઇટ બોક્સમાં લાઇવ મૂકાઈ ગઈ છે!');
     }
 
     // 6. AUTHENTICATION
@@ -1165,6 +1141,7 @@
 
       const navAdmin = document.getElementById('nav-admin');
       if (user.role === 'admin') {
+        user.locked = false; // Admin is never locked
         navAdmin.classList.remove('hidden');
         document.getElementById('firebase-url-input').value = getActiveCloudUrl();
       } else {
@@ -1234,7 +1211,7 @@
       }
     }
 
-    // 8. DISTRICT & TALUKA DROPDOWNS & LOCKING
+    // 8. DISTRICT & TALUKA DROPDOWNS & LOCKING (ADMIN CAN ALWAYS CHANGE)
     function populateDistrictSelects() {
       const districts = Object.keys(GUJARAT_DATA).sort();
       const selectIds = ['assign-district', 'dir-district-filter', 'admin-op-district'];
@@ -1262,6 +1239,18 @@
       if (selectedTaluka) talEl.value = selectedTaluka;
     }
 
+    function onDirectoryDistrictChange() {
+      const dist = document.getElementById('dir-district-filter').value;
+      const talFilter = document.getElementById('dir-taluka-filter');
+      if (!dist || !GUJARAT_DATA[dist]) {
+        talFilter.innerHTML = '<option value="">બધા તાલુકા / ઝોન</option>';
+      } else {
+        talFilter.innerHTML = '<option value="">બધા તાલુકા (' + dist + ')</option>' +
+          GUJARAT_DATA[dist].map(t => `<option value="${t}">${t}</option>`).join('');
+      }
+      renderDirectory();
+    }
+
     async function saveOperatorLocation() {
       const user = appState.users[currentUserMobile];
       if (!user) return;
@@ -1280,28 +1269,32 @@
       user.updatedAt = Date.now();
       if (user.role !== 'admin') {
         user.locked = true;
+      } else {
+        user.locked = false;
       }
       await persistAndBroadcast(true);
-      showToast('જિલ્લો અને તાલુકો સેવ અને લૉક થઈ ગયા છે!');
+      showToast(user.role === 'admin' ? 'એડમિનનો જિલ્લો અને તાલુકો અપડેટ થઈ ગયો છે!' : 'જિલ્લો અને તાલુકો સેવ અને લૉક થઈ ગયા છે!');
     }
 
-    // 9. LIVE DIRECTORY RENDERING
+    // 9. LIVE DIRECTORY RENDERING (WITH DISTRICT + TALUKA FILTER)
     function renderDirectory() {
       const listEl = document.getElementById('directory-list');
       if (!listEl) return;
       const query = (document.getElementById('dir-search').value || '').toLowerCase().trim();
       const distFilter = document.getElementById('dir-district-filter').value;
+      const talukaFilter = document.getElementById('dir-taluka-filter') ? document.getElementById('dir-taluka-filter').value : '';
 
       const allUsers = Object.values(appState.users || {});
       const filtered = allUsers.filter(u => {
         const matchDist = !distFilter || u.district === distFilter;
+        const matchTaluka = !talukaFilter || u.taluka === talukaFilter;
         const hay = `${u.name || ''} ${u.mobile || ''} ${u.whatsapp || ''} ${u.district || ''} ${u.taluka || ''}`.toLowerCase();
         const matchQuery = !query || hay.includes(query);
-        return matchDist && matchQuery;
+        return matchDist && matchTaluka && matchQuery;
       });
 
       if (filtered.length === 0) {
-        listEl.innerHTML = `<div class="bg-white rounded-2xl p-6 text-center text-slate-500 text-xs font-semibold border border-slate-200">કોઈ ઓપરેટર મળ્યા નથી.</div>`;
+        listEl.innerHTML = `<div class="bg-white rounded-2xl p-6 text-center text-slate-500 text-xs font-semibold border border-slate-200">પસંદ કરેલ ફિલ્ટર મુજબ કોઈ ઓપરેટર મળ્યા નથી.</div>`;
         return;
       }
 
@@ -1346,7 +1339,7 @@
       }).join('');
     }
 
-    // 10. GROUP CHAT
+    // 10. LIVE GROUP CHAT (EVERYONE CAN CHAT FREELY, SEPARATE FROM ADMIN NOTICE)
     async function sendGroupMessage(e) {
       e.preventDefault();
       const inp = document.getElementById('group-chat-input');
@@ -1358,7 +1351,7 @@
       const nowTs = Date.now();
 
       appState.messages.push({
-        id: 'msg_' + nowTs,
+        id: 'msg_' + nowTs + '_' + Math.random().toString(36).slice(2, 5),
         senderMobile: currentUserMobile,
         sender: user ? user.name : currentUserMobile,
         role: user ? user.role : 'operator',
@@ -1366,16 +1359,6 @@
         time: nowTime,
         ts: nowTs
       });
-
-      if (user && user.role === 'admin') {
-        appState.adminNotice = {
-          id: 'notice_' + nowTs,
-          text: text,
-          time: nowTime,
-          ts: nowTs
-        };
-        localStorage.removeItem(DISMISSED_NOTICE_KEY);
-      }
 
       inp.value = '';
       await persistAndBroadcast(true);
@@ -1395,7 +1378,7 @@
       if (!box) return;
 
       const totalMembers = Object.keys(appState.users || {}).length;
-      if (countEl) countEl.textContent = `એડમિન અને ${totalMembers} ઓપરેટર ગ્રુપ`;
+      if (countEl) countEl.textContent = `એડમિન અને ${totalMembers} ઓપરેટરો લાઇવ ચેટમાં`;
 
       const msgs = appState.messages || [];
       if (msgs.length === 0) {
@@ -1432,7 +1415,7 @@
       box.scrollTop = box.scrollHeight;
     }
 
-    // 11. DATA & FOLDERS SYSTEM (WITH DRAG & DROP + FILE SELECT)
+    // 11. DATA & FOLDERS SYSTEM (ONLY DRAG & DROP + FILE SELECT)
     async function createDataFolder(e) {
       e.preventDefault();
       const inp = document.getElementById('new-folder-name');
@@ -1483,7 +1466,7 @@
               </div>
               <div class="min-w-0">
                 <h3 class="text-sm font-bold text-slate-900 truncate">${escapeHtml(f.name)}</h3>
-                <p class="text-[11px] text-slate-500">${count} ફાઇલ / ડેટા • ${escapeHtml(f.createdAt || '')}</p>
+                <p class="text-[11px] text-slate-500">${count} ફાઇલ • ${escapeHtml(f.createdAt || '')}</p>
               </div>
             </div>
             <button type="button" onclick="deleteFolder('${f.id}')" class="p-2 text-red-500 hover:bg-red-50 rounded-xl" title="ફોલ્ડર ડિલીટ કરો">
@@ -1609,75 +1592,35 @@
       const entriesEl = document.getElementById('folder-entries-list');
 
       if (!folder.entries || folder.entries.length === 0) {
-        entriesEl.innerHTML = `<p class="text-center text-xs text-slate-500 py-4">આ ફોલ્ડરમાં હજુ કોઈ ફાઇલ કે ડેટા ઉમેરેલ નથી. ઉપરથી ફાઇલ ડ્રેગ કરો અથવા સિલેક્ટ કરો.</p>`;
+        entriesEl.innerHTML = `<p class="text-center text-xs text-slate-500 py-4">આ ફોલ્ડરમાં હજુ કોઈ ફાઇલ ઉમેરેલ નથી. ઉપરથી ફાઇલ ડ્રેગ કરો અથવા સિલેક્ટ કરો.</p>`;
         return;
       }
 
       entriesEl.innerHTML = folder.entries.map(item => {
-        if (item.isFile) {
-          return `
-            <div class="p-3 rounded-xl bg-indigo-50/70 border border-indigo-200 flex items-center justify-between gap-2">
-              <div class="flex items-center gap-2.5 min-w-0">
-                <div class="w-9 h-9 rounded-lg bg-indigo-600 text-white flex items-center justify-center text-sm font-bold shrink-0">
-                  📄
-                </div>
-                <div class="min-w-0">
-                  <h4 class="text-xs font-bold text-slate-900 truncate">${escapeHtml(item.fileName)}</h4>
-                  <p class="text-[10px] text-slate-600">${escapeHtml(item.fileSize || '')} • ${escapeHtml(item.addedBy || '')} • ${escapeHtml(item.date || '')}</p>
-                </div>
+        const titleText = item.fileName || item.title || 'ફાઇલ';
+        return `
+          <div class="p-3 rounded-xl bg-indigo-50/70 border border-indigo-200 flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <div class="w-9 h-9 rounded-lg bg-indigo-600 text-white flex items-center justify-center text-sm font-bold shrink-0">
+                📄
               </div>
-              <div class="flex items-center gap-1.5 shrink-0">
-                <a href="${item.fileData}" download="${escapeHtml(item.fileName)}"
+              <div class="min-w-0">
+                <h4 class="text-xs font-bold text-slate-900 truncate">${escapeHtml(titleText)}</h4>
+                <p class="text-[10px] text-slate-600">${escapeHtml(item.fileSize || item.ref || '')} • ${escapeHtml(item.addedBy || '')} • ${escapeHtml(item.date || '')}</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-1.5 shrink-0">
+              ${item.fileData ? `
+                <a href="${item.fileData}" download="${escapeHtml(titleText)}"
                   class="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[11px] font-bold">
                   ⬇ ડાઉનલોડ
                 </a>
-                <button type="button" onclick="deleteFolderEntry('${item.id}')" class="text-red-500 hover:bg-red-100 p-1.5 rounded-lg text-xs font-bold">✕</button>
-              </div>
+              ` : ''}
+              <button type="button" onclick="deleteFolderEntry('${item.id}')" class="text-red-500 hover:bg-red-100 p-1.5 rounded-lg text-xs font-bold">✕</button>
             </div>
-          `;
-        }
-
-        return `
-          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-start justify-between gap-2">
-            <div>
-              <h4 class="text-xs font-bold text-slate-900">${escapeHtml(item.title)}</h4>
-              <p class="text-xs font-semibold text-indigo-700 mt-0.5">નંબર/વિગત: ${escapeHtml(item.ref)}</p>
-              ${item.note ? `<p class="text-[11px] text-slate-600 mt-0.5">${escapeHtml(item.note)}</p>` : ''}
-              <p class="text-[10px] text-slate-400 mt-1">ઉમેરનાર: ${escapeHtml(item.addedBy || '')} • ${escapeHtml(item.date || '')}</p>
-            </div>
-            <button type="button" onclick="deleteFolderEntry('${item.id}')" class="text-red-500 hover:bg-red-100 p-1.5 rounded-lg text-xs font-bold">✕</button>
           </div>
         `;
       }).join('');
-    }
-
-    async function addFolderEntry(e) {
-      e.preventDefault();
-      const folder = appState.folders.find(f => f.id === activeFolderId);
-      if (!folder) return;
-
-      const title = document.getElementById('entry-title').value.trim();
-      const ref = document.getElementById('entry-ref').value.trim();
-      const note = document.getElementById('entry-note').value.trim();
-      const user = appState.users[currentUserMobile];
-
-      if (!folder.entries) folder.entries = [];
-      folder.entries.unshift({
-        id: 'ent_' + Date.now(),
-        isFile: false,
-        title,
-        ref,
-        note,
-        addedBy: user ? user.name : currentUserMobile,
-        date: new Date().toLocaleString('gu-IN')
-      });
-      folder.updatedAt = Date.now();
-
-      document.getElementById('entry-title').value = '';
-      document.getElementById('entry-ref').value = '';
-      document.getElementById('entry-note').value = '';
-      await persistAndBroadcast(true);
-      showToast('વિગત ફોલ્ડરમાં સેવ થઈ ગઈ!');
     }
 
     async function deleteFolderEntry(entryId) {
@@ -1686,10 +1629,10 @@
       folder.entries = (folder.entries || []).filter(item => item.id !== entryId);
       folder.updatedAt = Date.now();
       await persistAndBroadcast(true);
-      showToast('એન્ટ્રી દૂર કરવામાં આવી.', 'info');
+      showToast('ફાઇલ દૂર કરવામાં આવી.', 'info');
     }
 
-    // 12. ADMIN PANEL CONTROLS
+    // 12. ADMIN PANEL CONTROLS (INCLUDING CHANGING ANY OPERATOR'S DISTRICT & TALUKA)
     async function saveFirebaseConfig() {
       let url = document.getElementById('firebase-url-input').value.trim();
       url = url.replace(/\/+$/, '').replace(/\/purvatha_portal\.json$/i, '');
@@ -1769,10 +1712,50 @@
       showToast(target.locked ? 'લોકેશન લૉક કરાયું.' : 'લોકેશન અનલૉક કરાયું (હવે ઓપરેટર બદલી શકશે).');
     }
 
+    function onAdminRowDistrictChange(mobile) {
+      const distSel = document.getElementById('adm-dist-' + mobile);
+      const talSel = document.getElementById('adm-tal-' + mobile);
+      if (!distSel || !talSel) return;
+      const dist = distSel.value;
+      if (!dist || !GUJARAT_DATA[dist]) {
+        talSel.innerHTML = '<option value="">-- તાલુકો પસંદ કરો --</option>';
+        return;
+      }
+      talSel.innerHTML = '<option value="">-- તાલુકો પસંદ કરો --</option>' +
+        GUJARAT_DATA[dist].map(t => `<option value="${t}">${t}</option>`).join('');
+    }
+
+    async function adminSaveOperatorLocation(mobile) {
+      const target = appState.users[mobile];
+      if (!target) return;
+      const distSel = document.getElementById('adm-dist-' + mobile);
+      const talSel = document.getElementById('adm-tal-' + mobile);
+      if (!distSel || !talSel) return;
+
+      const newDist = distSel.value;
+      const newTal = talSel.value;
+      if (!newDist || !newTal) {
+        showToast('કૃપા કરીને ઓપરેટર માટે જિલ્લો અને તાલુકો બંને પસંદ કરો.', 'error');
+        return;
+      }
+
+      target.district = newDist;
+      target.taluka = newTal;
+      target.locked = true;
+      target.updatedAt = Date.now();
+      await persistAndBroadcast(true);
+      showToast(`${target.name} નો જિલ્લો (${newDist}) અને તાલુકો (${newTal}) અપડેટ થઈ ગયો!`);
+    }
+
     function renderAdminOperators() {
       const listEl = document.getElementById('admin-operators-list');
       const countEl = document.getElementById('admin-op-count');
       if (!listEl) return;
+
+      // Do not re-render while admin is actively clicking inside an operator's dropdown
+      if (document.activeElement && document.activeElement.id && document.activeElement.id.startsWith('adm-')) {
+        return;
+      }
 
       const ops = Object.values(appState.users || {}).filter(u => u.mobile !== ADMIN_MOBILE);
       if (countEl) countEl.textContent = `${ops.length} ઓપરેટર`;
@@ -1782,24 +1765,53 @@
         return;
       }
 
-      listEl.innerHTML = ops.map(op => `
-        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between gap-2">
-          <div class="min-w-0">
-            <p class="text-xs font-bold text-slate-900 truncate">${escapeHtml(op.name)} (${escapeHtml(op.mobile)})</p>
-            <p class="text-[11px] text-slate-600 truncate">${op.district ? escapeHtml(op.district + ' - ' + op.taluka) : 'જિલ્લો બાકી'}</p>
+      const allDistricts = Object.keys(GUJARAT_DATA).sort();
+
+      listEl.innerHTML = ops.map(op => {
+        const distOptions = '<option value="">-- જિલ્લો પસંદ કરો --</option>' +
+          allDistricts.map(d => `<option value="${d}" ${op.district === d ? 'selected' : ''}>${d}</option>`).join('');
+
+        const talukasForDist = (op.district && GUJARAT_DATA[op.district]) ? GUJARAT_DATA[op.district] : [];
+        const talOptions = '<option value="">-- તાલુકો પસંદ કરો --</option>' +
+          talukasForDist.map(t => `<option value="${t}" ${op.taluka === t ? 'selected' : ''}>${t}</option>`).join('');
+
+        return `
+          <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2.5">
+            <div class="flex items-center justify-between gap-2">
+              <div class="min-w-0">
+                <p class="text-xs font-bold text-slate-900 truncate">${escapeHtml(op.name)} (${escapeHtml(op.mobile)})</p>
+                <p class="text-[11px] text-blue-800 font-semibold truncate">હાલનું લોકેશન: ${op.district ? escapeHtml(op.district + ' • ' + op.taluka) : 'પસંદ કરેલ નથી'}</p>
+              </div>
+              <div class="flex items-center gap-1.5 shrink-0">
+                <button type="button" onclick="adminToggleLock('${op.mobile}')"
+                  class="px-2.5 py-1.5 rounded-lg text-[11px] font-bold ${op.locked ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}">
+                  ${op.locked ? '🔒 લૉક છે' : '🔓 અનલૉક'}
+                </button>
+                <button type="button" onclick="adminRemoveOperator('${op.mobile}')"
+                  class="px-2.5 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-[11px] font-bold">
+                  દૂર કરો
+                </button>
+              </div>
+            </div>
+
+            <!-- Admin Direct District & Taluka Editor for this Operator -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-2 border-t border-slate-200/80">
+              <select id="adm-dist-${op.mobile}" onchange="onAdminRowDistrictChange('${op.mobile}')"
+                class="w-full px-2.5 py-2 bg-white border border-slate-300 rounded-xl text-xs font-semibold">
+                ${distOptions}
+              </select>
+              <select id="adm-tal-${op.mobile}"
+                class="w-full px-2.5 py-2 bg-white border border-slate-300 rounded-xl text-xs font-semibold">
+                ${talOptions}
+              </select>
+              <button type="button" onclick="adminSaveOperatorLocation('${op.mobile}')"
+                class="w-full py-2 px-3 bg-blue-900 hover:bg-blue-800 text-white font-bold rounded-xl text-xs shadow">
+                જિલ્લો/તાલુકો સેવ કરો
+              </button>
+            </div>
           </div>
-          <div class="flex items-center gap-1.5 shrink-0">
-            <button type="button" onclick="adminToggleLock('${op.mobile}')"
-              class="px-2.5 py-1.5 rounded-lg text-[11px] font-bold ${op.locked ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}">
-              ${op.locked ? '🔒 અનલૉક કરો' : '🔓 અનલૉક છે'}
-            </button>
-            <button type="button" onclick="adminRemoveOperator('${op.mobile}')"
-              class="px-2.5 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-[11px] font-bold">
-              દૂર કરો
-            </button>
-          </div>
-        </div>
-      `).join('');
+        `;
+      }).join('');
     }
 
     // 13. PROFILE, SEPARATE WHATSAPP NUMBER, DOB & CHANGE PASSWORD
@@ -1947,10 +1959,12 @@
         populateTalukas('assign-district', 'assign-taluka', user.taluka);
       }
 
+      // Admin can always change their own District & Taluka; Operators lock after saving
       if (user.locked && user.role !== 'admin') {
         distEl.disabled = true;
         talEl.disabled = true;
         saveBtn.disabled = true;
+        saveBtn.textContent = 'જિલ્લો અને તાલુકો લૉક થયેલ છે';
         saveBtn.classList.add('opacity-50', 'cursor-not-allowed');
         badge.textContent = '🔒 લૉક થયેલ છે';
         badge.className = 'text-[11px] font-bold px-2.5 py-1 rounded-full bg-amber-100 text-amber-800';
@@ -1958,12 +1972,13 @@
         distEl.disabled = false;
         talEl.disabled = false;
         saveBtn.disabled = false;
+        saveBtn.textContent = user.role === 'admin' ? 'એડમિન જિલ્લો અને તાલુકો અપડેટ કરો' : 'જિલ્લો અને તાલુકો સેવ અને લૉક કરો';
         saveBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-        badge.textContent = user.district ? 'સેવ થયેલ (અનલૉક)' : 'અનલૉક (પસંદગી બાકી)';
+        badge.textContent = user.role === 'admin' ? '🔓 એડમિન (ગમે ત્યારે બદલી શકાશે)' : (user.district ? 'સેવ થયેલ (અનલૉક)' : 'અનલૉક (પસંદગી બાકી)');
         badge.className = 'text-[11px] font-bold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800';
       }
 
-      renderTopAdminNotice();
+      renderHomeAdminNotice();
       checkBirthdaysAndNotify(false);
       renderGroupChat();
       renderDirectory();
@@ -1993,6 +2008,7 @@
       if (tabName === 'chat') renderGroupChat();
       if (tabName === 'data') renderFolders();
       if (tabName === 'profile') renderProfile();
+      if (tabName === 'admin') renderAdminOperators();
     }
 
     function escapeHtml(str) {
