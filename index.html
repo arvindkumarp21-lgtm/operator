@@ -3,191 +3,791 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ગુજરાત ઓપરેટર પોર્ટલ PWA</title>
+  <title>ગુજરાત ઓપરેટર સેવા પોર્ટલ - PWA</title>
+
+  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="manifest" href="data:application/manifest+json;utf-8,%7B%22name%22%3A%22Gujarat%20Operator%20Portal%22%2C%22short_name%22%3A%22GJ%20Operator%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23f3f4f6%22%2C%22theme_color%22%3A%22%232563eb%22%7D">
-</head>
-<body class="bg-gray-100 min-h-screen text-gray-800 flex flex-col items-center">
-
-  <div id="app" class="w-full max-w-md bg-white min-h-screen shadow-lg flex flex-col relative pb-20">
-    <!-- હેડર -->
-    <header class="bg-blue-600 text-white p-4 flex justify-between items-center shadow-md">
-      <div class="flex items-center space-x-2">
-        <i class="fa-solid fa-id-card-clip text-2xl"></i>
-        <h1 class="font-bold text-lg">ઓપરેટર પોર્ટલ</h1>
-      </div>
-      <button id="installBtn" class="hidden bg-white text-blue-600 text-xs px-2.5 py-1.5 rounded-full font-bold shadow hover:bg-gray-100">
-        <i class="fa-solid fa-download mr-1"></i> ઇન્સ્ટોલ
-      </button>
-    </header>
-
-    <!-- મેઇન કન્ટેન્ટ -->
-    <main class="flex-1 p-4 overflow-y-auto">
-      <!-- 1. લોગિન સ્ક્રીન -->
-      <section id="loginSection" class="space-y-4 pt-6">
-        <div class="text-center">
-          <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto text-2xl mb-2">
-            <i class="fa-solid fa-user-lock"></i>
-          </div>
-          <h2 class="text-xl font-bold">ઓપરેટર લૉગિન</h2>
-          <p class="text-xs text-gray-500">તમારા રજિસ્ટર્ડ નંબર દ્વારા સાઇન-ઇન કરો</p>
-        </div>
-
-        <form id="loginForm" class="space-y-3 pt-4">
-          <div>
-            <label class="block text-xs font-semibold text-gray-600 mb-1">મોબાઇલ નંબર</label>
-            <input type="tel" id="loginPhone" required placeholder="૧૦ આંકડાનો મોબાઇલ નંબર" class="w-full border rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-gray-600 mb-1">પાસવર્ડ</label>
-            <input type="password" id="loginPass" required placeholder="પાસવર્ડ" class="w-full border rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-          </div>
-          <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-lg text-sm shadow">
-            પ્રવેશ કરો (Login)
-          </button>
-        </form>
-
-        <div class="mt-4 pt-4 border-t border-gray-200">
-          <p class="text-xs text-gray-500 font-medium mb-2 text-center">ઝડપી ટેસ્ટિંગ લૉગિન:</p>
-          <div class="grid grid-cols-2 gap-2">
-            <button onclick="quickLogin('operator')" class="bg-blue-50 border border-blue-200 text-blue-700 text-xs py-2 rounded-lg font-medium hover:bg-blue-100">
-              ઓપરેટર ડેમો
-            </button>
-            <button onclick="quickLogin('admin')" class="bg-purple-50 border border-purple-200 text-purple-700 text-xs py-2 rounded-lg font-medium hover:bg-purple-100">
-              એડમિન ડેમો
-            </button>
-          </div>
-        </div>
-      </section>
-
-      <!-- 2. હોમ / જિલ્લો-તાલુકો પેજ -->
-      <section id="homeSection" class="hidden space-y-4">
-        <div class="bg-blue-50 border-l-4 border-blue-600 p-3 rounded">
-          <h3 class="font-bold text-sm text-blue-900" id="welcomeUser">નમસ્તે</h3>
-          <p class="text-xs text-blue-700" id="userRoleBadge">રોલ: ઓપરેટર</p>
-        </div>
-
-        <div id="lockedNotice" class="hidden bg-amber-50 border border-amber-300 text-amber-800 p-3 rounded-lg text-xs flex items-center justify-between">
-          <div class="flex items-center space-x-2">
-            <i class="fa-solid fa-lock text-amber-600"></i>
-            <span>જિલ્લો અને તાલુકો લૉક કરેલ છે.</span>
-          </div>
-          <button onclick="unlockSelection()" id="adminUnlockBtn" class="hidden text-xs bg-amber-200 text-amber-900 px-2 py-1 rounded font-bold hover:bg-amber-300">
-            અનલોક
-          </button>
-        </div>
-
-        <form id="districtForm" class="space-y-4 bg-white border border-gray-200 p-4 rounded-xl shadow-sm">
-          <div>
-            <label class="block text-xs font-bold text-gray-700 mb-1">૧. જિલ્લો પસંદ કરો</label>
-            <select id="districtSelect" required class="w-full border rounded-lg p-2.5 text-sm bg-white outline-none focus:ring-2 focus:ring-blue-500">
-              <option value="">-- જિલ્લો પસંદ કરો --</option>
-            </select>
-          </div>
-
-          <div>
-            <label class="block text-xs font-bold text-gray-700 mb-1">૨. તાલુકો પસંદ કરો</label>
-            <select id="talukaSelect" required disabled class="w-full border rounded-lg p-2.5 text-sm bg-gray-50 outline-none focus:ring-2 focus:ring-blue-500">
-              <option value="">-- પહેલા જિલ્લો પસંદ કરો --</option>
-            </select>
-          </div>
-
-          <button type="submit" id="saveLockBtn" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2.5 rounded-lg text-sm shadow">
-            <i class="fa-solid fa-lock mr-1"></i> સેવ કરો અને લૉક કરો
-          </button>
-        </form>
-      </section>
-
-      <!-- 3. ડિરેક્ટરી પેજ -->
-      <section id="directorySection" class="hidden space-y-3">
-        <h2 class="text-base font-bold text-gray-800">અન્ય ઓપરેટરોની યાદી</h2>
-        <input type="text" id="dirSearch" placeholder="નામ, જિલ્લો કે તાલુકો શોધો..." class="w-full border rounded-lg p-2 text-xs outline-none focus:ring-2 focus:ring-blue-500">
-        <div id="directoryList" class="space-y-2.5 pt-2"></div>
-      </section>
-
-      <!-- 4. પ્રોફાઇલ પેજ -->
-      <section id="profileSection" class="hidden space-y-4">
-        <div class="text-center pt-2">
-          <div class="relative w-24 h-24 mx-auto mb-2">
-            <div id="profileAvatar" class="w-24 h-24 rounded-full bg-blue-600 text-white flex items-center justify-center text-3xl font-bold shadow-md overflow-hidden">
-              OP
-            </div>
-            <label for="photoUpload" class="absolute bottom-0 right-0 bg-blue-600 text-white p-2 rounded-full cursor-pointer shadow hover:bg-blue-700">
-              <i class="fa-solid fa-camera text-xs"></i>
-              <input type="file" id="photoUpload" accept="image/*" class="hidden">
-            </label>
-          </div>
-          <h2 id="profileNameDisplay" class="font-bold text-base">ઓપરેટર નામ</h2>
-          <p id="profileRoleDisplay" class="text-xs text-gray-500">ઓપરેટર ID: GJ-OP-4892</p>
-        </div>
-
-        <form id="profileForm" class="space-y-3 bg-white border border-gray-200 p-4 rounded-xl shadow-sm text-xs">
-          <div>
-            <label class="block font-semibold text-gray-600 mb-1">પૂરું નામ</label>
-            <input type="text" id="profName" class="w-full border rounded-lg p-2 text-xs">
-          </div>
-          <div>
-            <label class="block font-semibold text-gray-600 mb-1">ઇમેઇલ</label>
-            <input type="email" id="profEmail" class="w-full border rounded-lg p-2 text-xs">
-          </div>
-          <div>
-            <label class="block font-semibold text-gray-600 mb-1">ઓફિસનું સરનામું</label>
-            <div class="flex gap-1.5 mb-1.5">
-              <button type="button" onclick="getCurrentLocation()" class="bg-gray-100 hover:bg-gray-200 border border-gray-300 text-gray-700 px-2.5 py-1.5 rounded-lg text-xs font-medium flex items-center">
-                <i class="fa-solid fa-location-crosshairs mr-1 text-blue-600"></i> કરન્ટ લોકેશન લો
-              </button>
-            </div>
-            <textarea id="profAddress" rows="2" placeholder="મેન્યુઅલ સરનામું ટાઇપ કરો..." class="w-full border rounded-lg p-2 text-xs"></textarea>
-          </div>
-          <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg text-xs shadow">
-            પ્રોફાઇલ અપડેટ કરો
-          </button>
-        </form>
-      </section>
-
-      <!-- 5. એડમિન / સહાય પેજ -->
-      <section id="adminSection" class="hidden space-y-4">
-        <h2 class="text-base font-bold text-gray-800">એડમિન સહાય & નોટિફિકેશન</h2>
-        <div id="adminInbox" class="hidden space-y-2">
-          <p class="text-xs font-semibold text-gray-500">ઓપરેટર મેસેજ ઇનબૉક્સ:</p>
-          <div id="messagesList" class="space-y-2"></div>
-        </div>
-        <form id="msgForm" class="space-y-3 bg-white border border-gray-200 p-4 rounded-xl shadow-sm text-xs">
-          <label class="block font-semibold text-gray-700">એડમિનને સંદેશ મોકલો</label>
-          <textarea id="msgBody" rows="3" placeholder="તમારી સમસ્યા અથવા વિનંતી અહીં લખો..." required class="w-full border rounded-lg p-2 outline-none focus:ring-2 focus:ring-blue-500 text-xs"></textarea>
-          <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg text-xs shadow">
-            સંદેશ મોકલો
-          </button>
-        </form>
-      </section>
-    </main>
-
-    <!-- બોટમ નેવિગેશન બાર -->
-    <nav id="bottomNav" class="hidden absolute bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around py-2 shadow-lg">
-      <button onclick="switchTab('home')" class="nav-item flex flex-col items-center text-blue-600 text-xs" data-tab="home">
-        <i class="fa-solid fa-house text-lg"></i>
-        <span>હોમ</span>
-      </button>
-      <button onclick="switchTab('directory')" class="nav-item flex flex-col items-center text-gray-500 text-xs" data-tab="directory">
-        <i class="fa-solid fa-address-book text-lg"></i>
-        <span>ડિરેક્ટરી</span>
-      </button>
-      <button onclick="switchTab('profile')" class="nav-item flex flex-col items-center text-gray-500 text-xs" data-tab="profile">
-        <i class="fa-solid fa-user text-lg"></i>
-        <span>પ્રોફાઇલ</span>
-      </button>
-      <button onclick="switchTab('admin')" class="nav-item flex flex-col items-center text-gray-500 text-xs relative" data-tab="admin">
-        <i class="fa-solid fa-headset text-lg"></i>
-        <span>એડમિન</span>
-        <span id="unreadBadge" class="hidden absolute top-0 right-3 bg-red-600 text-white rounded-full text-[10px] w-4 h-4 flex items-center justify-center">0</span>
-      </button>
-    </nav>
-  </div>
+  <!-- Google Fonts: Hind Vadodara & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Vadodara:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 
   <script>
-    // CONTACT.xlsx પરથી મળેલ તમામ ૩૫ જિલ્લાઓ અને તાલુકાઓનો સંપૂર્ણ ડેટાબેઝ
-    const districtData = {
+    // PWA Dynamic Web App Manifest
+    const manifestData = {
+      name: "ગુજરાત ઓપરેટર પોર્ટલ",
+      short_name: "GJ Portal",
+      start_url: window.location.href,
+      display: "standalone",
+      background_color: "#f8fafc",
+      theme_color: "#1d4ed8",
+      icons: [
+        {
+          src: "https://placehold.co/192x192/1d4ed8/ffffff?text=GJ+PWA",
+          sizes: "192x192",
+          type: "image/png"
+        },
+        {
+          src: "https://placehold.co/512x512/1d4ed8/ffffff?text=GJ+Portal",
+          sizes: "512x512",
+          type: "image/png"
+        }
+      ]
+    };
+    const blob = new Blob([JSON.stringify(manifestData)], { type: 'application/json' });
+    const manifestLink = document.createElement('link');
+    manifestLink.rel = 'manifest';
+    manifestLink.href = URL.createObjectURL(blob);
+    document.head.appendChild(manifestLink);
+  </script>
+
+  <style>
+    body {
+      font-family: 'Hind Vadodara', 'Inter', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .scrollbar-thin::-webkit-scrollbar {
+      width: 4px;
+    }
+    .scrollbar-thin::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+
+<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col justify-between pb-24 select-none">
+
+  <!-- ================= HEADER ================= -->
+  <header class="bg-white/95 backdrop-blur-md sticky top-0 z-40 border-b border-slate-200 shadow-xs">
+    <div class="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-700 to-indigo-600 text-white flex items-center justify-center font-bold text-lg shadow-md shadow-blue-500/20 shrink-0">
+          ગુ
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-base font-bold text-slate-900 leading-tight">ગુજરાત ઓપરેટર પોર્ટલ</h1>
+            <span id="roleBadge" class="hidden text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 uppercase tracking-wider">Operator</span>
+          </div>
+          <p class="text-xs text-slate-500" id="headerSubtitle">PWA Application • Mobile & PC</p>
+        </div>
+      </div>
+
+      <div class="flex items-center space-x-2">
+        <!-- Install PWA Button -->
+        <button id="installAppBtn" class="hidden text-xs bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-medium px-3 py-1.5 rounded-xl transition-all shadow-xs flex items-center gap-1.5">
+          <i class="fa-solid fa-download"></i>
+          <span>ઇન્સ્ટોલ</span>
+        </button>
+
+        <!-- Notification Bell -->
+        <button id="headerNotifBtn" onclick="handleNotificationClick()" class="hidden relative p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl transition-all">
+          <i class="fa-regular fa-bell"></i>
+          <span id="headerNotifBadge" class="hidden absolute -top-1 -right-1 bg-red-600 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center animate-pulse">0</span>
+        </button>
+
+        <!-- Logout Button -->
+        <button id="logoutNavBtn" onclick="executeLogout()" class="hidden text-xs bg-slate-100 hover:bg-red-50 text-slate-600 hover:text-red-600 px-3 py-2 rounded-xl border border-slate-200 font-semibold transition-all flex items-center gap-1.5">
+          <i class="fa-solid fa-right-from-bracket"></i>
+          <span class="hidden sm:inline">લૉગઆઉટ</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= TOAST NOTIFICATION ================= -->
+  <div id="toast" class="fixed top-16 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 opacity-0 pointer-events-none translate-y-[-10px] w-11/12 max-w-md">
+    <div id="toastContent" class="px-4 py-3 rounded-2xl shadow-xl border text-sm flex items-center space-x-3 bg-white border-slate-200 text-slate-800">
+      <i id="toastIcon" class="fa-solid fa-circle-info text-blue-600 text-lg shrink-0"></i>
+      <span id="toastMsg" class="font-medium flex-1">સંદેશ</span>
+    </div>
+  </div>
+
+  <!-- ================= MAIN CONTAINER ================= -->
+  <main class="flex-1 max-w-2xl w-full mx-auto p-4 sm:p-5 flex flex-col justify-start">
+
+    <!-- ================= 1. LOGIN SCREEN ================= -->
+    <div id="loginScreen" class="w-full my-auto transition-all duration-300">
+      <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200 max-w-md mx-auto">
+        <div class="text-center mb-6">
+          <div class="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-inner text-2xl">
+            <i class="fa-solid fa-shield-halved"></i>
+          </div>
+          <h2 class="text-2xl font-bold text-slate-900">સુરક્ષિત લૉગિન</h2>
+          <p class="text-slate-500 text-xs sm:text-sm mt-1">રજિસ્ટર્ડ મોબાઇલ નંબર અને પાસવર્ડથી પ્રવેશ કરો</p>
+        </div>
+
+        <!-- Inline Error Alert Box -->
+        <div id="loginErrorAlert" class="hidden mb-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-semibold flex items-center gap-2">
+          <i class="fa-solid fa-circle-exclamation text-sm shrink-0"></i>
+          <span id="loginErrorText">ખોટો મોબાઇલ નંબર અથવા પાસવર્ડ!</span>
+        </div>
+
+        <!-- Login Form -->
+        <form id="loginForm" onsubmit="handleManualLogin(event)" class="space-y-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5" for="loginMobile">મોબાઇલ નંબર</label>
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                <i class="fa-solid fa-phone text-sm"></i>
+              </span>
+              <input 
+                type="tel" 
+                id="loginMobile" 
+                required 
+                maxlength="10"
+                placeholder="૧૦ આંકડાનો મોબાઇલ નંબર"
+                class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all text-slate-800"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5" for="loginPassword">પાસવર્ડ</label>
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                <i class="fa-solid fa-lock text-sm"></i>
+              </span>
+              <input 
+                type="password" 
+                id="loginPassword" 
+                required 
+                placeholder="તમારો પાસવર્ડ દાખલ કરો"
+                class="w-full pl-10 pr-11 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all text-slate-800"
+              />
+              <button type="button" onclick="togglePasswordVisibility('loginPassword', 'eyeIcon')" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none">
+                <i id="eyeIcon" class="fa-solid fa-eye"></i>
+              </button>
+            </div>
+          </div>
+
+          <button 
+            type="submit" 
+            class="w-full mt-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 active:scale-[0.99] text-white font-semibold py-3 px-4 rounded-xl shadow-md shadow-blue-500/25 transition-all flex items-center justify-center space-x-2 text-sm"
+          >
+            <span>લૉગિન કરો (Login)</span>
+            <i class="fa-solid fa-arrow-right text-xs"></i>
+          </button>
+        </form>
+
+        <!-- Default Credentials Helper Box -->
+        <div class="mt-6 pt-4 border-t border-slate-100 space-y-2.5">
+          <p class="text-[11px] font-semibold text-slate-500 text-center">ડિફોલ્ટ લૉગિન માહિતી (Quick Fill):</p>
+          <div class="grid grid-cols-2 gap-2">
+            <button type="button" onclick="fillDemoCredentials('operator')" class="p-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-blue-50 hover:border-blue-300 transition-all text-left">
+              <span class="block text-xs font-bold text-blue-700">ઓપરેટર (Operator)</span>
+              <span class="block text-[11px] text-slate-600 font-mono mt-0.5">9876543210</span>
+              <span class="block text-[10px] text-slate-400 font-mono">Pass: 123456</span>
+            </button>
+            <button type="button" onclick="fillDemoCredentials('admin')" class="p-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-purple-50 hover:border-purple-300 transition-all text-left">
+              <span class="block text-xs font-bold text-purple-700">એડમિન (Admin)</span>
+              <span class="block text-[11px] text-slate-600 font-mono mt-0.5">9999988888</span>
+              <span class="block text-[10px] text-slate-400 font-mono">Pass: 654321</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= 2. AUTHENTICATED APP VIEWS ================= -->
+    <div id="authenticatedApp" class="w-full hidden space-y-4">
+
+      <!-- ================= TAB 1: HOME (DISTRICT & TALUKA) ================= -->
+      <section id="tab-home" class="tab-pane space-y-4">
+        <!-- Welcome Banner -->
+        <div class="bg-gradient-to-r from-blue-700 via-indigo-700 to-blue-800 rounded-3xl p-5 sm:p-6 text-white shadow-md relative overflow-hidden">
+          <div class="flex items-center justify-between">
+            <div>
+              <span id="userStatusTag" class="inline-block px-2.5 py-0.5 rounded-full bg-white/20 text-white text-[11px] font-medium mb-1.5 backdrop-blur-sm">
+                સક્રિય ઓપરેટર
+              </span>
+              <h2 class="text-xl sm:text-2xl font-bold tracking-tight">નમસ્તે, <span id="displayName">ઓપરેટર</span></h2>
+              <p class="text-blue-100 text-xs sm:text-sm mt-0.5" id="bannerDistrictStatus">જિલ્લો અને તાલુકો સેટ કરો અથવા ચકાસો</p>
+            </div>
+            <div class="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center backdrop-blur-sm border border-white/20 shrink-0 text-xl">
+              <i class="fa-solid fa-location-dot text-white"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Lock Warning Notice -->
+        <div id="lockNoticeCard" class="hidden bg-amber-50 border border-amber-200 rounded-2xl p-3.5 flex items-start gap-3">
+          <div class="p-2 bg-amber-100 text-amber-700 rounded-xl shrink-0 text-base">
+            <i class="fa-solid fa-lock"></i>
+          </div>
+          <div class="text-xs">
+            <span class="font-bold text-amber-900 block text-sm">જિલ્લો અને તાલુકો લૉક કરેલ છે!</span>
+            <p class="text-amber-800 mt-0.5">આ વિગતો સેવ કરીને લૉક કરવામાં આવી છે. તેને માત્ર **એડમિન** જ બદલી શકે છે. સુધારા માટે એડમિન ટેબમાંથી વિનંતી મોકલો.</p>
+          </div>
+        </div>
+
+        <!-- District & Taluka Selection Card -->
+        <div class="bg-white rounded-3xl p-5 sm:p-6 shadow-xs border border-slate-200">
+          <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+            <div>
+              <h3 class="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
+                <i class="fa-solid fa-layer-group text-blue-600"></i>
+                <span>કાર્યક્ષેત્ર પસંદગી (District & Taluka)</span>
+              </h3>
+              <p class="text-xs text-slate-500 mt-0.5">તમારો જિલ્લો અને તાલુકો પસંદ કરો</p>
+            </div>
+            <div id="lockStatusPill"></div>
+          </div>
+
+          <form id="districtForm" onsubmit="handleSaveDistrictTaluka(event)" class="space-y-4">
+            <!-- District -->
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5" for="districtSelect">
+                ૧. જિલ્લો (District) <span class="text-red-500">*</span>
+              </label>
+              <div class="relative">
+                <select 
+                  id="districtSelect" 
+                  onchange="onDistrictChange(this.value, 'talukaSelect')"
+                  class="w-full appearance-none pl-4 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all cursor-pointer"
+                >
+                  <option value="" disabled selected>-- જિલ્લો પસંદ કરો --</option>
+                </select>
+                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3.5 text-slate-400">
+                  <i class="fa-solid fa-chevron-down text-xs"></i>
+                </div>
+              </div>
+            </div>
+
+            <!-- Taluka -->
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5" for="talukaSelect">
+                ૨. તાલુકો (Taluka) <span class="text-red-500">*</span>
+              </label>
+              <div class="relative">
+                <select 
+                  id="talukaSelect" 
+                  disabled 
+                  class="w-full appearance-none pl-4 pr-10 py-3 bg-slate-100 border border-slate-200 rounded-xl text-sm font-medium text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all cursor-not-allowed"
+                >
+                  <option value="" disabled selected>-- પહેલા જિલ્લો પસંદ કરો --</option>
+                </select>
+                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3.5 text-slate-400">
+                  <i class="fa-solid fa-chevron-down text-xs"></i>
+                </div>
+              </div>
+            </div>
+
+            <!-- Save / Unlock Buttons -->
+            <div class="pt-2 flex flex-col sm:flex-row gap-2">
+              <button 
+                id="saveDistrictBtn"
+                type="submit" 
+                class="flex-1 bg-blue-600 hover:bg-blue-700 active:scale-[0.99] text-white font-semibold py-3 px-4 rounded-xl shadow-md shadow-blue-500/20 transition-all flex items-center justify-center space-x-2 text-sm"
+              >
+                <i class="fa-solid fa-check"></i>
+                <span>સેવ કરો અને લૉક કરો</span>
+              </button>
+
+              <!-- Admin Unlock Self Button -->
+              <button 
+                id="adminUnlockBtn"
+                type="button" 
+                onclick="adminDirectUnlockSelf()"
+                class="hidden bg-purple-600 hover:bg-purple-700 active:scale-[0.99] text-white font-semibold py-3 px-4 rounded-xl shadow-md shadow-purple-500/20 transition-all flex items-center justify-center space-x-2 text-sm"
+              >
+                <i class="fa-solid fa-unlock"></i>
+                <span>અનલોક કરો</span>
+              </button>
+            </div>
+          </form>
+
+          <!-- Confirmed Display Card -->
+          <div id="confirmedDisplayCard" class="hidden mt-5 pt-5 border-t border-slate-100">
+            <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+              <i class="fa-solid fa-circle-check text-emerald-600"></i>
+              માન્યતા પ્રાપ્ત કાર્યક્ષેત્ર
+            </h4>
+            <div class="grid grid-cols-2 gap-3 text-sm">
+              <div class="bg-slate-50 border border-slate-200/80 p-3 rounded-2xl">
+                <span class="text-[11px] text-slate-400 block font-medium">જિલ્લો (District):</span>
+                <span id="savedDistrictLabel" class="font-bold text-slate-800 text-sm mt-0.5 block">-</span>
+              </div>
+              <div class="bg-slate-50 border border-slate-200/80 p-3 rounded-2xl">
+                <span class="text-[11px] text-slate-400 block font-medium">તાલુકો (Taluka):</span>
+                <span id="savedTalukaLabel" class="font-bold text-slate-800 text-sm mt-0.5 block">-</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= TAB 2: DATA & FOLDERS MANAGEMENT (NEW) ================= -->
+      <section id="tab-data" class="tab-pane hidden space-y-4">
+        <div class="bg-white rounded-3xl p-5 sm:p-6 shadow-xs border border-slate-200">
+          
+          <!-- LEVEL 1: ALL FOLDERS VIEW -->
+          <div id="foldersListView" class="space-y-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                  <i class="fa-solid fa-folder-open text-amber-500"></i>
+                  <span>ડેટા અને ફોલ્ડર મેનેજમેન્ટ</span>
+                </h3>
+                <p class="text-xs text-slate-500 mt-0.5">ફોલ્ડર બનાવો અને તેમાં જરૂરી ડેટા સેવ કરો</p>
+              </div>
+              <span id="folderTotalCount" class="text-xs bg-amber-50 text-amber-800 font-bold px-2.5 py-1 rounded-full border border-amber-200">
+                0 ફોલ્ડર
+              </span>
+            </div>
+
+            <!-- Create New Folder Form -->
+            <form onsubmit="handleCreateFolder(event)" class="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 flex flex-col sm:flex-row gap-2">
+              <input 
+                type="text" 
+                id="newFolderNameInput" 
+                required 
+                placeholder="નવા ફોલ્ડરનું નામ (દા.ત. આધાર ડેટા, આવક દાખલા)..." 
+                class="flex-1 px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
+              />
+              <button 
+                type="submit" 
+                class="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-xs flex items-center justify-center gap-1.5 shrink-0 transition-all"
+              >
+                <i class="fa-solid fa-folder-plus"></i>
+                <span>ફોલ્ડર બનાવો</span>
+              </button>
+            </form>
+
+            <!-- Folders Grid -->
+            <div id="foldersGridContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+
+          <!-- LEVEL 2: INSIDE SPECIFIC FOLDER VIEW -->
+          <div id="insideFolderView" class="hidden space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div class="flex items-center gap-2.5">
+                <button onclick="closeCurrentFolder()" class="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl transition-all" title="પાછા જાઓ">
+                  <i class="fa-solid fa-arrow-left text-xs"></i>
+                </button>
+                <div>
+                  <h3 id="activeFolderTitle" class="text-base sm:text-lg font-bold text-slate-900">ફોલ્ડર નામ</h3>
+                  <p id="activeFolderMeta" class="text-[11px] text-slate-500">0 એન્ટ્રી</p>
+                </div>
+              </div>
+
+              <button onclick="deleteActiveFolder()" class="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 text-xs font-bold rounded-xl border border-red-200 transition-all flex items-center gap-1">
+                <i class="fa-solid fa-trash-can"></i>
+                <span>ફોલ્ડર હટાવો</span>
+              </button>
+            </div>
+
+            <!-- Add Data Entry Form -->
+            <form onsubmit="handleAddDataEntry(event)" class="bg-blue-50/50 border border-blue-200/80 p-4 rounded-2xl space-y-3">
+              <h4 class="text-xs font-bold text-blue-900 uppercase tracking-wider flex items-center gap-1.5">
+                <i class="fa-solid fa-plus-circle text-blue-600"></i>
+                આ ફોલ્ડરમાં નવો ડેટા ઉમેરો
+              </h4>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <input 
+                  type="text" 
+                  id="entryTitleInput" 
+                  required 
+                  placeholder="અરજદારનું નામ / શીર્ષક *" 
+                  class="px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <input 
+                  type="text" 
+                  id="entryRefInput" 
+                  placeholder="મોબાઇલ નંબર / અરજી નંબર" 
+                  class="px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <textarea 
+                id="entryNotesInput" 
+                rows="2" 
+                placeholder="વધારાની વિગત / નોંધ લખો..." 
+                class="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              ></textarea>
+              <button 
+                type="submit" 
+                class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-xs transition-all flex items-center justify-center gap-1.5"
+              >
+                <i class="fa-solid fa-floppy-disk"></i>
+                <span>ડેટા સેવ કરો (Save Data)</span>
+              </button>
+            </form>
+
+            <!-- Search Inside Folder -->
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                <i class="fa-solid fa-magnifying-glass text-xs"></i>
+              </span>
+              <input 
+                type="text" 
+                id="folderItemSearch" 
+                oninput="renderFolderItems()"
+                placeholder="ફોલ્ડરમાં ડેટા શોધો..." 
+                class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            <!-- Entries List -->
+            <div id="folderItemsList" class="space-y-2.5 max-h-[450px] overflow-y-auto pr-1 scrollbar-thin">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ================= TAB 3: OPERATOR DIRECTORY ================= -->
+      <section id="tab-directory" class="tab-pane hidden space-y-4">
+        <div class="bg-white rounded-3xl p-5 sm:p-6 shadow-xs border border-slate-200">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                <i class="fa-solid fa-users text-blue-600"></i>
+                <span>ગુજરાત ઓપરેટર ડિરેક્ટરી</span>
+              </h3>
+              <p class="text-xs text-slate-500 mt-0.5">અન્ય જિલ્લા અને તાલુકાના ઓપરેટરોના નામ અને મોબાઇલ નંબર</p>
+            </div>
+            <span id="operatorTotalCount" class="text-xs bg-slate-100 text-slate-700 font-bold px-2.5 py-1 rounded-full border border-slate-200">
+              0 ઓપરેટર
+            </span>
+          </div>
+
+          <!-- Search & Filter -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                <i class="fa-solid fa-magnifying-glass text-xs"></i>
+              </span>
+              <input 
+                type="text" 
+                id="directorySearchInput" 
+                oninput="renderDirectoryList()"
+                placeholder="નામ, જિલ્લો અથવા તાલુકો શોધો..."
+                class="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all text-slate-800"
+              />
+            </div>
+
+            <div class="relative">
+              <select 
+                id="directoryDistrictFilter"
+                onchange="renderDirectoryList()"
+                class="w-full appearance-none pl-3 pr-8 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+              >
+                <option value="ALL">બધા જિલ્લાઓ (All Districts)</option>
+              </select>
+              <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-400">
+                <i class="fa-solid fa-filter text-xs"></i>
+              </div>
+            </div>
+          </div>
+
+          <!-- Operators List -->
+          <div id="operatorsListContainer" class="space-y-3 max-h-[550px] overflow-y-auto pr-1 scrollbar-thin">
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= TAB 4: PROFILE & CHANGE PASSWORD ================= -->
+      <section id="tab-profile" class="tab-pane hidden space-y-4">
+        <div class="bg-white rounded-3xl p-5 sm:p-6 shadow-xs border border-slate-200 space-y-6">
+          
+          <!-- Profile Header Banner -->
+          <div class="relative">
+            <div class="h-24 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-800"></div>
+            <div class="px-3 sm:px-4 flex flex-col sm:flex-row sm:items-end justify-between -mt-12 gap-3">
+              <div class="flex items-end gap-3.5">
+                <div class="relative">
+                  <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-white p-1 shadow-md border border-slate-200">
+                    <img id="profileImageDisplay" src="" alt="Profile Photo" class="hidden w-full h-full object-cover rounded-xl" />
+                    <div id="profileAvatarFallback" class="w-full h-full rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-bold text-2xl">
+                      <span id="profileAvatarLetter">ઓ</span>
+                    </div>
+                  </div>
+                  <label for="avatarFileInput" class="absolute -bottom-1 -right-1 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white p-2 rounded-xl shadow cursor-pointer border-2 border-white text-xs" title="ફોટો બદલો">
+                    <i class="fa-solid fa-camera"></i>
+                  </label>
+                  <input type="file" id="avatarFileInput" accept="image/*" class="hidden" onchange="handlePhotoUpload(event)" />
+                </div>
+
+                <div class="mb-1">
+                  <div class="flex items-center gap-2">
+                    <h3 class="text-lg font-bold text-slate-900" id="profileFullNameDisplay">ઓપરેટર</h3>
+                    <span id="profileRoleTag" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 uppercase">OPERATOR</span>
+                  </div>
+                  <p class="text-xs text-slate-500 font-mono" id="profilePhoneBadge">મોબાઇલ: -</p>
+                </div>
+              </div>
+
+              <span class="inline-flex items-center gap-1.5 text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200 w-fit">
+                <i class="fa-solid fa-circle-check text-emerald-600"></i>
+                વેરિફાઇડ એકાઉન્ટ
+              </span>
+            </div>
+          </div>
+
+          <!-- District/Taluka Summary Tiles -->
+          <div class="grid grid-cols-3 gap-2.5 text-xs">
+            <div class="p-3 bg-slate-50 border border-slate-200/80 rounded-2xl">
+              <span class="text-slate-400 block text-[11px]">જિલ્લો:</span>
+              <span id="profileDistrictVal" class="font-bold text-slate-800 block truncate mt-0.5">-</span>
+            </div>
+            <div class="p-3 bg-slate-50 border border-slate-200/80 rounded-2xl">
+              <span class="text-slate-400 block text-[11px]">તાલુકો:</span>
+              <span id="profileTalukaVal" class="font-bold text-slate-800 block truncate mt-0.5">-</span>
+            </div>
+            <div class="p-3 bg-slate-50 border border-slate-200/80 rounded-2xl">
+              <span class="text-slate-400 block text-[11px]">લૉક સ્થિતિ:</span>
+              <span id="profileLockBadge" class="font-bold block mt-0.5 text-slate-800">-</span>
+            </div>
+          </div>
+
+          <!-- Profile Details Form -->
+          <form onsubmit="handleProfileUpdate(event)" class="border border-slate-200/80 rounded-2xl p-4 sm:p-5 space-y-3.5">
+            <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5 pb-2 border-b border-slate-100">
+              <i class="fa-solid fa-user-pen text-blue-600"></i>
+              ૧. વ્યક્તિગત અને ઓફિસ માહિતી
+            </h4>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1" for="profileEditName">પૂરું નામ *</label>
+                <input type="text" id="profileEditName" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white" />
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1" for="profileEditEmail">ઇમેઇલ (Email ID)</label>
+                <input type="email" id="profileEditEmail" placeholder="example@gmail.com" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white" />
+              </div>
+            </div>
+
+            <div class="space-y-2">
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <label class="block text-xs font-semibold text-slate-600">ઓફિસનું સરનામું</label>
+                <button type="button" onclick="fetchCurrentLocation()" class="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-xl text-xs font-semibold transition-all">
+                  <i class="fa-solid fa-crosshairs text-xs"></i>
+                  <span id="locationBtnText">વર્તમાન લોકેશન મેળવો</span>
+                </button>
+              </div>
+              <textarea id="profileEditAddress" rows="2" placeholder="ઓફિસનું સરનામું ટાઇપ કરો અથવા ઉપરના બટનથી GPS લોકેશન લો..." class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white"></textarea>
+            </div>
+
+            <div class="flex items-center gap-2 pt-1">
+              <button type="submit" class="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white text-xs sm:text-sm font-bold rounded-xl shadow-xs transition-all">
+                પ્રોફાઇલ સાચવો
+              </button>
+              <button type="button" id="removePhotoBtn" onclick="removeProfilePhoto()" class="hidden px-3.5 py-2.5 bg-slate-100 hover:bg-red-50 text-slate-600 hover:text-red-600 text-xs font-bold rounded-xl border border-slate-200">
+                ફોટો હટાવો
+              </button>
+            </div>
+          </form>
+
+          <!-- CHANGE PASSWORD CARD (NEW) -->
+          <form onsubmit="handleChangePassword(event)" class="border border-amber-200/80 bg-amber-50/20 rounded-2xl p-4 sm:p-5 space-y-3.5">
+            <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5 pb-2 border-b border-amber-200/60">
+              <i class="fa-solid fa-key text-amber-600"></i>
+              ૨. પાસવર્ડ બદલો (Change Password)
+            </h4>
+
+            <div class="space-y-3">
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1" for="currentPassInput">હાલનો પાસવર્ડ (Current Password) *</label>
+                <input type="password" id="currentPassInput" required placeholder="હાલનો પાસવર્ડ લખો" class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-amber-500" />
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-xs font-semibold text-slate-600 mb-1" for="newPassInput">નવો પાસવર્ડ (New Password) *</label>
+                  <input type="password" id="newPassInput" required minlength="4" placeholder="ઓછામાં ઓછા 4 અક્ષર" class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-amber-500" />
+                </div>
+
+                <div>
+                  <label class="block text-xs font-semibold text-slate-600 mb-1" for="confirmNewPassInput">નવો પાસવર્ડ ફરીથી લખો *</label>
+                  <input type="password" id="confirmNewPassInput" required minlength="4" placeholder="ફરીથી નવો પાસવર્ડ" class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-amber-500" />
+                </div>
+              </div>
+            </div>
+
+            <button type="submit" class="w-full py-2.5 bg-amber-600 hover:bg-amber-700 active:scale-95 text-white text-xs sm:text-sm font-bold rounded-xl shadow-xs transition-all flex items-center justify-center gap-1.5">
+              <i class="fa-solid fa-lock"></i>
+              <span>નવો પાસવર્ડ અપડેટ કરો</span>
+            </button>
+          </form>
+
+          <!-- LOGOUT BUTTON SECTION -->
+          <div class="pt-2 border-t border-slate-100">
+            <button 
+              type="button" 
+              onclick="executeLogout()" 
+              class="w-full py-3 bg-red-50 hover:bg-red-600 text-red-600 hover:text-white border border-red-200 hover:border-red-600 active:scale-[0.99] text-sm font-bold rounded-2xl shadow-xs transition-all flex items-center justify-center gap-2"
+            >
+              <i class="fa-solid fa-right-from-bracket"></i>
+              <span>લોગઆઉટ કરો (Logout)</span>
+            </button>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ================= TAB 5: ADMIN PANEL / OPERATOR MANAGEMENT & HELP ================= -->
+      <section id="tab-admin" class="tab-pane hidden space-y-4">
+        
+        <!-- ============= ADMIN EXCLUSIVE VIEW ============= -->
+        <div id="adminExclusiveView" class="hidden space-y-4">
+          
+          <!-- 1. ADD & REMOVE OPERATORS MANAGEMENT (NEW) -->
+          <div class="bg-white rounded-3xl p-5 sm:p-6 shadow-xs border border-purple-200 space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div>
+                <h3 class="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
+                  <i class="fa-solid fa-user-plus text-purple-600"></i>
+                  <span>ઓપરેટર મેનેજમેન્ટ (Add / Remove Operators)</span>
+                </h3>
+                <p class="text-xs text-slate-500 mt-0.5">નવો ઓપરેટર ઉમેરો (ડિફોલ્ટ પાસવર્ડ: 123456) અથવા દૂર કરો</p>
+              </div>
+              <span id="adminOpCountBadge" class="px-2.5 py-1 bg-purple-100 text-purple-800 font-bold text-xs rounded-full">0 ઓપરેટર</span>
+            </div>
+
+            <!-- Add Operator Form -->
+            <form onsubmit="handleAdminAddOperator(event)" class="bg-purple-50/40 border border-purple-200/80 p-4 rounded-2xl space-y-3">
+              <h4 class="text-xs font-bold text-purple-900 uppercase tracking-wider">નવો ઓપરેટર ઉમેરો</h4>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <input type="text" id="newOpName" required placeholder="ઓપરેટરનું પૂરું નામ *" class="px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-purple-500" />
+                <input type="tel" id="newOpPhone" required maxlength="10" pattern="[0-9]{10}" placeholder="૧૦ આંકડાનો મોબાઇલ નંબર *" class="px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-purple-500" />
+                
+                <select id="newOpDistrict" onchange="onDistrictChange(this.value, 'newOpTaluka')" class="px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-purple-500">
+                  <option value="">-- જિલ્લો (વૈકલ્પિક) --</option>
+                </select>
+                
+                <select id="newOpTaluka" disabled class="px-3 py-2 bg-slate-100 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-400">
+                  <option value="">-- તાલુકો (વૈકલ્પિક) --</option>
+                </select>
+              </div>
+
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1">
+                <span class="text-[11px] text-slate-600 font-medium">
+                  <i class="fa-solid fa-key text-purple-600 mr-1"></i> નવા ઓપરેટરનો ડિફોલ્ટ પાસવર્ડ: <strong class="font-mono text-purple-800">123456</strong>
+                </span>
+                <button type="submit" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 active:scale-95 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-xs transition-all flex items-center justify-center gap-1.5">
+                  <i class="fa-solid fa-plus"></i>
+                  <span>ઓપરેટર ઉમેરો</span>
+                </button>
+              </div>
+            </form>
+
+            <!-- Manage / Remove Existing Operators List -->
+            <div class="space-y-2">
+              <h4 class="text-xs font-bold text-slate-600 uppercase tracking-wider">રજિસ્ટર્ડ ઓપરેટરોની યાદી</h4>
+              <div id="adminOperatorsManageList" class="space-y-2 max-h-[320px] overflow-y-auto pr-1 scrollbar-thin">
+                <!-- Rendered dynamically -->
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. ADMIN MESSAGES INBOX -->
+          <div class="bg-white rounded-3xl p-5 sm:p-6 shadow-xs border border-slate-200">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div>
+                <h3 class="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
+                  <i class="fa-solid fa-inbox text-blue-600"></i>
+                  <span>ઓપરેટર મેસેજ અને અનલોક વિનંતીઓ</span>
+                </h3>
+              </div>
+              <span id="adminPendingBadge" class="px-2.5 py-1 bg-amber-100 text-amber-800 font-bold text-xs rounded-full">0 પેન્ડિંગ</span>
+            </div>
+
+            <div id="adminMessagesList" class="mt-4 space-y-3 max-h-[450px] overflow-y-auto pr-1 scrollbar-thin">
+            </div>
+          </div>
+        </div>
+
+        <!-- ============= OPERATOR HELP & MESSAGES VIEW ============= -->
+        <div id="operatorContactView" class="space-y-4">
+          <div class="bg-white rounded-3xl p-5 sm:p-6 shadow-xs border border-slate-200">
+            <div class="mb-4">
+              <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                <i class="fa-solid fa-headset text-blue-600"></i>
+                <span>એડમિન સહાય અને સંપર્ક કેન્દ્ર</span>
+              </h3>
+              <p class="text-xs text-slate-500 mt-0.5">જિલ્લો/તાલુકો અનલોક કરવા અથવા સહાય માટે એડમિનને સંદેશ મોકલો</p>
+            </div>
+
+            <!-- Contact Admin Form -->
+            <form onsubmit="handleSendAdminMessage(event)" class="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-3">
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">વિષય (Subject)</label>
+                <select id="reqSubject" class="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-800">
+                  <option value="જિલ્લો / તાલુકો બદલવા માટે વિનંતી">જિલ્લો / તાલુકો બદલવા માટે વિનંતી</option>
+                  <option value="પ્રોફાઇલ વિગત સુધારો">પ્રોફાઇલ વિગત સુધારો</option>
+                  <option value="અન્ય સહાય">અન્ય સહાય</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">સંદેશની વિગત</label>
+                <textarea id="reqMessage" rows="3" required placeholder="તમારો સંદેશ અહીં લખો..." class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-blue-500"></textarea>
+              </div>
+
+              <button type="submit" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-xs flex items-center justify-center gap-2">
+                <i class="fa-solid fa-paper-plane text-xs"></i>
+                <span>એડમિનને સંદેશ મોકલો</span>
+              </button>
+            </form>
+
+            <!-- Sent Messages History -->
+            <div class="mt-5 pt-4 border-t border-slate-100">
+              <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-3">તમારા મોકલેલા સંદેશ અને એડમિનનો જવાબ</h4>
+              <div id="operatorMessagesList" class="space-y-2.5"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+  </main>
+
+  <!-- ================= BOTTOM NAVIGATION BAR (5 TABS) ================= -->
+  <nav id="bottomNavBar" class="hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 py-1.5 px-2 shadow-lg">
+    <div class="max-w-2xl mx-auto grid grid-cols-5 gap-1">
+      <button onclick="switchTab('home')" class="nav-tab-btn active flex flex-col items-center justify-center py-1.5 text-blue-600 rounded-xl transition-colors" data-tab="home">
+        <i class="fa-solid fa-house text-base"></i>
+        <span class="text-[10px] font-semibold mt-1">હોમ</span>
+      </button>
+
+      <button onclick="switchTab('data')" class="nav-tab-btn flex flex-col items-center justify-center py-1.5 text-slate-400 hover:text-slate-600 rounded-xl transition-colors" data-tab="data">
+        <i class="fa-solid fa-folder-open text-base"></i>
+        <span class="text-[10px] font-semibold mt-1">ડેટા</span>
+      </button>
+
+      <button onclick="switchTab('directory')" class="nav-tab-btn flex flex-col items-center justify-center py-1.5 text-slate-400 hover:text-slate-600 rounded-xl transition-colors" data-tab="directory">
+        <i class="fa-solid fa-users text-base"></i>
+        <span class="text-[10px] font-semibold mt-1">ડિરેક્ટરી</span>
+      </button>
+
+      <button onclick="switchTab('profile')" class="nav-tab-btn flex flex-col items-center justify-center py-1.5 text-slate-400 hover:text-slate-600 rounded-xl transition-colors" data-tab="profile">
+        <i class="fa-solid fa-user text-base"></i>
+        <span class="text-[10px] font-semibold mt-1">પ્રોફાઇલ</span>
+      </button>
+
+      <button onclick="switchTab('admin')" class="nav-tab-btn relative flex flex-col items-center justify-center py-1.5 text-slate-400 hover:text-slate-600 rounded-xl transition-colors" data-tab="admin">
+        <div class="relative">
+          <i class="fa-solid fa-headset text-base"></i>
+          <span id="navNotifBadge" class="hidden absolute -top-1 -right-2 bg-red-600 text-white text-[9px] font-bold w-3.5 h-3.5 rounded-full flex items-center justify-center">0</span>
+        </div>
+        <span id="navAdminLabel" class="text-[10px] font-semibold mt-1">એડમિન</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ================= JAVASCRIPT APPLICATION CODE ================= -->
+  <script>
+    // 1. EXACT 35 DISTRICTS & TALUKAS DATA FROM CONTACT.xlsx
+    const gujaratData = {
       "Ahmedabad": ["Ghatlodia", "DETROJ", "DASKROI", "DHANDHUKA", "DHOLERA", "DHOZHAKA", "BAVLA", "MANDAL", "VIRAMGAM", "SANAND"],
       "Ahmedabad City": ["AMRAIWADI ZONE", "ASARWA-DARIYAPUR ZONE", "ELISBRIDGE ZONE", "GHATLODIA ZONE", "JAMALPUR-KHADIA ZONE", "THAKKARBAPA NAGAR ZONE", "DANILIMDA ZONE", "NARODA ZONE", "NARANPURA ZONE", "NIKOL ZONE", "BAPUNAGAR ZONE", "MANINAGAR ZONE", "VEJALPUR ZONE", "VATVA ZONE", "SABARMATI ZONE"],
       "Amreli": ["AMARELI", "AMARELI (City)", "KHAMBHA", "JAFRABAD", "DHARI", "BAGSRA", "BABRA", "RAJULA", "LATHI", "LILIA", "VADIA", "SAVARKUNDLA"],
@@ -225,123 +825,1087 @@
       "Sabarkantha": ["IDAR", "KHEDBRAHMA", "TALOD", "PRANTIJ", "POSHINA", "VADALI", "VIJAYANAGAR", "HIMATNAGAR"]
     };
 
-    let currentUser = null;
-    let deferredPrompt = null;
+    // 2. UNIFIED USERS DATABASE INITIALIZATION (Strict Passwords: Operator=123456, Admin=654321)
+    const USERS_DB_KEY = 'gj_portal_users_v2';
+    const FOLDERS_DB_KEY = 'gj_portal_folders_v2';
+    const MESSAGES_DB_KEY = 'gj_portal_messages_v2';
+    const SESSION_KEY = 'gj_portal_session_v2';
 
-    // જિલ્લા ડ્રોપડાઉન લોડ કરવું
-    function loadDistricts() {
-      const select = document.getElementById('districtSelect');
-      select.innerHTML = '<option value="">-- જિલ્લો પસંદ કરો --</option>';
-      Object.keys(districtData).sort().forEach(dist => {
-        const opt = document.createElement('option');
-        opt.value = dist;
-        opt.textContent = dist;
-        select.appendChild(opt);
+    function initializeDatabase() {
+      if (!localStorage.getItem(USERS_DB_KEY)) {
+        const initialUsers = [
+          {
+            phone: "9999988888",
+            password: "654321",
+            name: "એડમિન અધિકારી (State Admin)",
+            role: "admin",
+            email: "admin@gujarat.gov.in",
+            district: "Gandhinagar",
+            taluka: "GANDHINAGAR",
+            address: "બ્લોક નં. ૧, સચિવાલય, ગાંધીનગર",
+            photo: "",
+            isLocked: false
+          },
+          {
+            phone: "9876543210",
+            password: "123456",
+            name: "રમેશભાઈ પટેલ",
+            role: "operator",
+            email: "ramesh.patel@gujarat.in",
+            district: "",
+            taluka: "",
+            address: "",
+            photo: "",
+            isLocked: false
+          },
+          {
+            phone: "9825123456",
+            password: "123456",
+            name: "ભાવેશભાઈ ચૌહાણ",
+            role: "operator",
+            email: "bhavesh.c@gujarat.in",
+            district: "Ahmedabad",
+            taluka: "SANAND",
+            address: "તાલુકા સેવા સદન, સાણંદ",
+            photo: "",
+            isLocked: true
+          },
+          {
+            phone: "9879054321",
+            password: "123456",
+            name: "અંકિતભાઈ શાહ",
+            role: "operator",
+            email: "ankit.shah@gujarat.in",
+            district: "Surat",
+            taluka: "KAMAREZ",
+            address: "જન સેવા કેન્દ્ર, કામરેજ",
+            photo: "",
+            isLocked: true
+          },
+          {
+            phone: "9824411223",
+            password: "123456",
+            name: "જયેશભાઈ જાડેજા",
+            role: "operator",
+            email: "jayesh.j@gujarat.in",
+            district: "Rajkot",
+            taluka: "GONDAL",
+            address: "મામલતદાર કચેરી પાસે, ગોંડલ",
+            photo: "",
+            isLocked: true
+          }
+        ];
+        localStorage.setItem(USERS_DB_KEY, JSON.stringify(initialUsers));
+      }
+
+      if (!localStorage.getItem(FOLDERS_DB_KEY)) {
+        const initialFolders = [
+          {
+            id: "fld_1",
+            name: "આધાર કાર્ડ અરજી ડેટા",
+            createdAt: "14/11/2026",
+            items: [
+              { id: "itm_101", title: "મહેશભાઈ કે. પટેલ", ref: "9825011223", notes: "નવું આધાર કાર્ડ અને મોબાઇલ નંબર લિંક", date: "14/11/2026" }
+            ]
+          },
+          {
+            id: "fld_2",
+            name: "આવક અને જાતિના દાખલા",
+            createdAt: "14/11/2026",
+            items: []
+          }
+        ];
+        localStorage.setItem(FOLDERS_DB_KEY, JSON.stringify(initialFolders));
+      }
+
+      if (!localStorage.getItem(MESSAGES_DB_KEY)) {
+        localStorage.setItem(MESSAGES_DB_KEY, JSON.stringify([]));
+      }
+    }
+
+    initializeDatabase();
+
+    let currentUser = null;
+    let activeFolderId = null;
+
+    function getUsers() {
+      try {
+        return JSON.parse(localStorage.getItem(USERS_DB_KEY) || '[]');
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function saveUsers(users) {
+      localStorage.setItem(USERS_DB_KEY, JSON.stringify(users));
+    }
+
+    function getFolders() {
+      try {
+        return JSON.parse(localStorage.getItem(FOLDERS_DB_KEY) || '[]');
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function saveFolders(folders) {
+      localStorage.setItem(FOLDERS_DB_KEY, JSON.stringify(folders));
+    }
+
+    // 3. TOAST UTILITY
+    function showToast(message, type = 'info') {
+      const toast = document.getElementById('toast');
+      const toastMsg = document.getElementById('toastMsg');
+      const toastIcon = document.getElementById('toastIcon');
+      const toastContent = document.getElementById('toastContent');
+
+      toastMsg.textContent = message;
+
+      if (type === 'success') {
+        toastIcon.className = 'fa-solid fa-circle-check text-emerald-600 text-lg shrink-0';
+        toastContent.className = 'px-4 py-3 rounded-2xl shadow-xl border text-sm flex items-center space-x-3 bg-emerald-50 border-emerald-200 text-emerald-900';
+      } else if (type === 'error') {
+        toastIcon.className = 'fa-solid fa-triangle-exclamation text-red-600 text-lg shrink-0';
+        toastContent.className = 'px-4 py-3 rounded-2xl shadow-xl border text-sm flex items-center space-x-3 bg-red-50 border-red-200 text-red-900';
+      } else {
+        toastIcon.className = 'fa-solid fa-circle-info text-blue-600 text-lg shrink-0';
+        toastContent.className = 'px-4 py-3 rounded-2xl shadow-xl border text-sm flex items-center space-x-3 bg-white border-slate-200 text-slate-800';
+      }
+
+      toast.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-[-10px]');
+      toast.classList.add('opacity-100', 'translate-y-0');
+
+      clearTimeout(window.toastTimer);
+      window.toastTimer = setTimeout(() => {
+        toast.classList.remove('opacity-100', 'translate-y-0');
+        toast.classList.add('opacity-0', 'pointer-events-none', 'translate-y-[-10px]');
+      }, 3200);
+    }
+
+    function togglePasswordVisibility(inputId, iconId) {
+      const input = document.getElementById(inputId);
+      const icon = document.getElementById(iconId);
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.className = 'fa-solid fa-eye-slash';
+      } else {
+        input.type = 'password';
+        icon.className = 'fa-solid fa-eye';
+      }
+    }
+
+    // 4. STRICT AUTHENTICATION (NO BYPASSES)
+    function fillDemoCredentials(role) {
+      document.getElementById('loginErrorAlert').classList.add('hidden');
+      if (role === 'admin') {
+        document.getElementById('loginMobile').value = '9999988888';
+        document.getElementById('loginPassword').value = '654321';
+      } else {
+        document.getElementById('loginMobile').value = '9876543210';
+        document.getElementById('loginPassword').value = '123456';
+      }
+    }
+
+    function handleManualLogin(e) {
+      if (e) e.preventDefault();
+      const mobile = document.getElementById('loginMobile').value.trim();
+      const password = document.getElementById('loginPassword').value.trim();
+      const errorAlert = document.getElementById('loginErrorAlert');
+      const errorText = document.getElementById('loginErrorText');
+
+      errorAlert.classList.add('hidden');
+
+      const users = getUsers();
+      const matchedUser = users.find(u => u.phone === mobile);
+
+      if (!matchedUser) {
+        errorText.textContent = "આ મોબાઇલ નંબર રજિસ્ટર્ડ નથી! કૃપા કરીને સાચો નંબર નાખો.";
+        errorAlert.classList.remove('hidden');
+        showToast("ખોટો મોબાઇલ નંબર!", "error");
+        return;
+      }
+
+      if (matchedUser.password !== password) {
+        errorText.textContent = "ખોટો પાસવર્ડ! કૃપા કરીને સાચો પાસવર્ડ દાખલ કરો.";
+        errorAlert.classList.remove('hidden');
+        showToast("ખોટો પાસવર્ડ! લૉગિન નિષ્ફળ.", "error");
+        return;
+      }
+
+      // Valid user & password
+      currentUser = matchedUser;
+      localStorage.setItem(SESSION_KEY, currentUser.phone);
+      renderAppView();
+      showToast(`${currentUser.role === 'admin' ? 'એડમિન' : 'ઓપરેટર'} તરીકે સફળતાપૂર્વક લૉગિન થયા છો!`, 'success');
+    }
+
+    function syncCurrentUserToStorage() {
+      if (!currentUser) return;
+      const users = getUsers();
+      const idx = users.findIndex(u => u.phone === currentUser.phone);
+      if (idx !== -1) {
+        users[idx] = currentUser;
+        saveUsers(users);
+      }
+    }
+
+    // 5. RENDER AUTHENTICATED APP
+    function renderAppView() {
+      document.getElementById('loginScreen').classList.add('hidden');
+      document.getElementById('authenticatedApp').classList.remove('hidden');
+      document.getElementById('bottomNavBar').classList.remove('hidden');
+      document.getElementById('logoutNavBtn').classList.remove('hidden');
+      document.getElementById('roleBadge').classList.remove('hidden');
+      document.getElementById('headerNotifBtn').classList.remove('hidden');
+
+      const roleBadge = document.getElementById('roleBadge');
+      const userStatusTag = document.getElementById('userStatusTag');
+      const navAdminLabel = document.getElementById('navAdminLabel');
+      const adminExclusiveView = document.getElementById('adminExclusiveView');
+      const operatorContactView = document.getElementById('operatorContactView');
+
+      if (currentUser.role === 'admin') {
+        roleBadge.textContent = 'ADMIN';
+        roleBadge.className = 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-100 text-purple-800 uppercase tracking-wider';
+        userStatusTag.textContent = 'મુખ્ય એડમિનિસ્ટ્રેટર (Full Control)';
+        document.getElementById('adminUnlockBtn').classList.remove('hidden');
+        navAdminLabel.textContent = 'એડમિન';
+        adminExclusiveView.classList.remove('hidden');
+        operatorContactView.classList.add('hidden');
+      } else {
+        roleBadge.textContent = 'OPERATOR';
+        roleBadge.className = 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 uppercase tracking-wider';
+        userStatusTag.textContent = 'સક્રિય તાલુકા ઓપરેટર';
+        document.getElementById('adminUnlockBtn').classList.add('hidden');
+        navAdminLabel.textContent = 'સહાય';
+        adminExclusiveView.classList.add('hidden');
+        operatorContactView.classList.remove('hidden');
+      }
+
+      document.getElementById('displayName').textContent = currentUser.name;
+      document.getElementById('profileFullNameDisplay').textContent = currentUser.name;
+      document.getElementById('profileRoleTag').textContent = currentUser.role.toUpperCase();
+      document.getElementById('profilePhoneBadge').textContent = `મોબાઇલ: ${currentUser.phone}`;
+
+      document.getElementById('profileEditName').value = currentUser.name || "";
+      document.getElementById('profileEditEmail').value = currentUser.email || "";
+      document.getElementById('profileEditAddress').value = currentUser.address || "";
+
+      populateAllDistrictDropdowns();
+      renderDistrictLockState();
+      renderAvatarPhoto();
+      renderFoldersGrid();
+      renderDirectoryList();
+      renderAdminOperatorsList();
+      updateNotificationsAndMessages();
+    }
+
+    // 6. DISTRICT & TALUKA LOGIC
+    function populateAllDistrictDropdowns() {
+      const districtNames = Object.keys(gujaratData);
+      const homeDist = document.getElementById('districtSelect');
+      const dirFilter = document.getElementById('directoryDistrictFilter');
+      const newOpDist = document.getElementById('newOpDistrict');
+
+      homeDist.innerHTML = '<option value="" disabled selected>-- જિલ્લો પસંદ કરો --</option>';
+      dirFilter.innerHTML = '<option value="ALL">બધા જિલ્લાઓ (All Districts)</option>';
+      if (newOpDist) newOpDist.innerHTML = '<option value="">-- જિલ્લો (વૈકલ્પિક) --</option>';
+
+      districtNames.forEach(d => {
+        const opt1 = document.createElement('option');
+        opt1.value = d;
+        opt1.textContent = d;
+        homeDist.appendChild(opt1);
+
+        const opt2 = document.createElement('option');
+        opt2.value = d;
+        opt2.textContent = d;
+        dirFilter.appendChild(opt2);
+
+        if (newOpDist) {
+          const opt3 = document.createElement('option');
+          opt3.value = d;
+          opt3.textContent = d;
+          newOpDist.appendChild(opt3);
+        }
       });
     }
 
-    document.getElementById('districtSelect').addEventListener('change', function() {
-      const dist = this.value;
-      const talukaSelect = document.getElementById('talukaSelect');
-      talukaSelect.innerHTML = '<option value="">-- તાલુકો પસંદ કરો --</option>';
-      if (dist && districtData[dist]) {
-        talukaSelect.disabled = false;
-        talukaSelect.classList.remove('bg-gray-50');
-        districtData[dist].forEach(tal => {
+    function onDistrictChange(districtName, targetTalukaId) {
+      const talukaSelect = document.getElementById(targetTalukaId);
+      if (!talukaSelect) return;
+      const talukas = gujaratData[districtName] || [];
+
+      talukaSelect.innerHTML = '<option value="" disabled selected>-- તાલુકો પસંદ કરો --</option>';
+
+      if (talukas.length > 0) {
+        talukas.forEach(t => {
           const opt = document.createElement('option');
-          opt.value = tal;
-          opt.textContent = tal;
+          opt.value = t;
+          opt.textContent = t;
           talukaSelect.appendChild(opt);
         });
+        talukaSelect.disabled = false;
+        talukaSelect.classList.remove('bg-slate-100', 'text-slate-400', 'cursor-not-allowed');
+        talukaSelect.classList.add('bg-slate-50', 'text-slate-800', 'cursor-pointer');
       } else {
         talukaSelect.disabled = true;
-        talukaSelect.classList.add('bg-gray-50');
+        talukaSelect.classList.add('bg-slate-100', 'text-slate-400', 'cursor-not-allowed');
       }
-    });
+    }
 
-    function quickLogin(role) {
-      if (role === 'admin') {
-        currentUser = { name: "એડમિન અધિકારી", phone: "9999988888", role: "admin", isLocked: false };
+    function renderDistrictLockState() {
+      const districtSelect = document.getElementById('districtSelect');
+      const talukaSelect = document.getElementById('talukaSelect');
+      const saveBtn = document.getElementById('saveDistrictBtn');
+      const lockNoticeCard = document.getElementById('lockNoticeCard');
+      const lockStatusPill = document.getElementById('lockStatusPill');
+      const confirmedDisplayCard = document.getElementById('confirmedDisplayCard');
+
+      document.getElementById('profileDistrictVal').textContent = currentUser.district || "બાકી";
+      document.getElementById('profileTalukaVal').textContent = currentUser.taluka || "બાકી";
+
+      if (currentUser.district) {
+        districtSelect.value = currentUser.district;
+        onDistrictChange(currentUser.district, 'talukaSelect');
+        if (currentUser.taluka) talukaSelect.value = currentUser.taluka;
+
+        document.getElementById('savedDistrictLabel').textContent = currentUser.district;
+        document.getElementById('savedTalukaLabel').textContent = currentUser.taluka || "બાકી";
+        confirmedDisplayCard.classList.remove('hidden');
+        document.getElementById('bannerDistrictStatus').textContent = `${currentUser.district} • ${currentUser.taluka || ''}`;
       } else {
-        currentUser = { name: "ઓપરેટર યુઝર", phone: "9876543210", role: "operator", isLocked: false };
+        confirmedDisplayCard.classList.add('hidden');
+        document.getElementById('bannerDistrictStatus').textContent = "કૃપા કરીને જિલ્લો અને તાલુકો પસંદ કરો";
       }
-      initUserSession();
+
+      const isLocked = Boolean(currentUser.isLocked && currentUser.role !== 'admin');
+
+      if (isLocked) {
+        districtSelect.disabled = true;
+        talukaSelect.disabled = true;
+        districtSelect.classList.add('bg-slate-100', 'text-slate-500', 'cursor-not-allowed');
+        talukaSelect.classList.add('bg-slate-100', 'text-slate-500', 'cursor-not-allowed');
+        saveBtn.disabled = true;
+        saveBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        lockNoticeCard.classList.remove('hidden');
+
+        lockStatusPill.innerHTML = `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800"><i class="fa-solid fa-lock text-xs"></i> લૉક કરેલ</span>`;
+        document.getElementById('profileLockBadge').innerHTML = `<span class="text-amber-700 font-bold">લૉક (Locked)</span>`;
+      } else {
+        districtSelect.disabled = false;
+        districtSelect.classList.remove('bg-slate-100', 'text-slate-500', 'cursor-not-allowed');
+        if (currentUser.district) {
+          talukaSelect.disabled = false;
+          talukaSelect.classList.remove('bg-slate-100', 'text-slate-400', 'cursor-not-allowed');
+        }
+        saveBtn.disabled = false;
+        saveBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        lockNoticeCard.classList.add('hidden');
+
+        lockStatusPill.innerHTML = `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800"><i class="fa-solid fa-lock-open text-xs"></i> ઓપન</span>`;
+        document.getElementById('profileLockBadge').innerHTML = `<span class="text-emerald-700 font-bold">ઓપન</span>`;
+      }
     }
 
-    document.getElementById('loginForm').addEventListener('submit', (e) => {
-      e.preventDefault();
-      const phone = document.getElementById('loginPhone').value;
-      currentUser = { name: "ઓપરેટર યુઝર", phone: phone, role: (phone === '9999988888' ? 'admin' : 'operator'), isLocked: false };
-      initUserSession();
-    });
+    function handleSaveDistrictTaluka(e) {
+      if (e) e.preventDefault();
+      const district = document.getElementById('districtSelect').value;
+      const taluka = document.getElementById('talukaSelect').value;
 
-    function initUserSession() {
-      document.getElementById('loginSection').classList.add('hidden');
-      document.getElementById('bottomNav').classList.remove('hidden');
-      document.getElementById('welcomeUser').textContent = "નમસ્તે, " + currentUser.name;
-      document.getElementById('userRoleBadge').textContent = "રોલ: " + (currentUser.role === 'admin' ? 'એડમિન' : 'ઓપરેટર');
-      
-      loadDistricts();
-      switchTab('home');
+      if (!district || !taluka) {
+        showToast('કૃપા કરીને જિલ્લો અને તાલુકો બંને પસંદ કરો', 'error');
+        return;
+      }
+
+      currentUser.district = district;
+      currentUser.taluka = taluka;
+      if (currentUser.role !== 'admin') {
+        currentUser.isLocked = true;
+      }
+
+      syncCurrentUserToStorage();
+      renderDistrictLockState();
+      renderDirectoryList();
+      showToast('જિલ્લો અને તાલુકો સેવ કરીને લૉક કરવામાં આવ્યા!', 'success');
     }
 
+    function adminDirectUnlockSelf() {
+      currentUser.isLocked = false;
+      syncCurrentUserToStorage();
+      renderDistrictLockState();
+      showToast('અનલોક કરવામાં આવ્યું.', 'info');
+    }
+
+    // 7. DATA & FOLDERS MANAGEMENT (NEW FEATURE)
+    function handleCreateFolder(e) {
+      if (e) e.preventDefault();
+      const input = document.getElementById('newFolderNameInput');
+      const name = input.value.trim();
+      if (!name) return;
+
+      const folders = getFolders();
+      const newFolder = {
+        id: "fld_" + Date.now(),
+        name: name,
+        createdAt: new Date().toLocaleDateString('en-GB'),
+        items: []
+      };
+      folders.unshift(newFolder);
+      saveFolders(folders);
+
+      input.value = "";
+      renderFoldersGrid();
+      showToast(`"${name}" ફોલ્ડર બનાવવામાં આવ્યું!`, 'success');
+    }
+
+    function renderFoldersGrid() {
+      const folders = getFolders();
+      const container = document.getElementById('foldersGridContainer');
+      document.getElementById('folderTotalCount').textContent = `${folders.length} ફોલ્ડર`;
+
+      if (folders.length === 0) {
+        container.innerHTML = `
+          <div class="col-span-full text-center py-10 text-slate-400">
+            <i class="fa-solid fa-folder-open text-3xl mb-2 text-slate-300"></i>
+            <p class="text-xs font-medium">કોઈ ફોલ્ડર નથી. ઉપરથી નવું ફોલ્ડર બનાવો.</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = folders.map(f => `
+        <div onclick="openFolder('${f.id}')" class="p-4 rounded-2xl border border-slate-200 bg-white hover:border-blue-400 hover:shadow-sm transition-all cursor-pointer flex items-center justify-between group">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-11 h-11 rounded-2xl bg-amber-50 text-amber-500 border border-amber-200/80 flex items-center justify-center text-xl shrink-0 group-hover:scale-105 transition-transform">
+              <i class="fa-solid fa-folder"></i>
+            </div>
+            <div class="min-w-0">
+              <h4 class="font-bold text-slate-900 text-sm truncate">${f.name}</h4>
+              <p class="text-[11px] text-slate-500 mt-0.5">${f.items.length} ડેટા એન્ટ્રી • ${f.createdAt}</p>
+            </div>
+          </div>
+          <i class="fa-solid fa-chevron-right text-slate-300 group-hover:text-blue-600 text-xs"></i>
+        </div>
+      `).join('');
+    }
+
+    function openFolder(folderId) {
+      activeFolderId = folderId;
+      const folders = getFolders();
+      const folder = folders.find(f => f.id === folderId);
+      if (!folder) return;
+
+      document.getElementById('foldersListView').classList.add('hidden');
+      document.getElementById('insideFolderView').classList.remove('hidden');
+      document.getElementById('activeFolderTitle').textContent = folder.name;
+      document.getElementById('folderItemSearch').value = '';
+      renderFolderItems();
+    }
+
+    function closeCurrentFolder() {
+      activeFolderId = null;
+      document.getElementById('insideFolderView').classList.add('hidden');
+      document.getElementById('foldersListView').classList.remove('hidden');
+      renderFoldersGrid();
+    }
+
+    function deleteActiveFolder() {
+      if (!activeFolderId) return;
+      let folders = getFolders();
+      folders = folders.filter(f => f.id !== activeFolderId);
+      saveFolders(folders);
+      closeCurrentFolder();
+      showToast('ફોલ્ડર દૂર કરવામાં આવ્યું', 'info');
+    }
+
+    function handleAddDataEntry(e) {
+      if (e) e.preventDefault();
+      if (!activeFolderId) return;
+
+      const title = document.getElementById('entryTitleInput').value.trim();
+      const ref = document.getElementById('entryRefInput').value.trim();
+      const notes = document.getElementById('entryNotesInput').value.trim();
+
+      if (!title) return;
+
+      const folders = getFolders();
+      const folder = folders.find(f => f.id === activeFolderId);
+      if (folder) {
+        folder.items.unshift({
+          id: "itm_" + Date.now(),
+          title: title,
+          ref: ref,
+          notes: notes,
+          date: new Date().toLocaleDateString('en-GB')
+        });
+        saveFolders(folders);
+      }
+
+      document.getElementById('entryTitleInput').value = '';
+      document.getElementById('entryRefInput').value = '';
+      document.getElementById('entryNotesInput').value = '';
+      renderFolderItems();
+      showToast('ડેટા ફોલ્ડરમાં સેવ થઈ ગયો!', 'success');
+    }
+
+    function renderFolderItems() {
+      if (!activeFolderId) return;
+      const folders = getFolders();
+      const folder = folders.find(f => f.id === activeFolderId);
+      if (!folder) return;
+
+      const query = (document.getElementById('folderItemSearch').value || '').toLowerCase().trim();
+      const filtered = folder.items.filter(item =>
+        item.title.toLowerCase().includes(query) ||
+        (item.ref && item.ref.toLowerCase().includes(query)) ||
+        (item.notes && item.notes.toLowerCase().includes(query))
+      );
+
+      document.getElementById('activeFolderMeta').textContent = `${folder.items.length} કુલ ડેટા એન્ટ્રી`;
+      const container = document.getElementById('folderItemsList');
+
+      if (filtered.length === 0) {
+        container.innerHTML = `<div class="text-center py-8 text-slate-400 text-xs">આ ફોલ્ડરમાં કોઈ ડેટા નથી.</div>`;
+        return;
+      }
+
+      container.innerHTML = filtered.map(item => `
+        <div class="p-3.5 rounded-2xl border border-slate-200 bg-white flex items-start justify-between gap-3">
+          <div class="space-y-1 min-w-0">
+            <div class="flex items-center gap-2 flex-wrap">
+              <h5 class="font-bold text-slate-900 text-sm">${item.title}</h5>
+              ${item.ref ? `<span class="text-[11px] bg-blue-50 text-blue-700 font-mono px-2 py-0.5 rounded-md border border-blue-100">${item.ref}</span>` : ''}
+            </div>
+            ${item.notes ? `<p class="text-xs text-slate-600">${item.notes}</p>` : ''}
+            <span class="text-[10px] text-slate-400 block">તારીખ: ${item.date}</span>
+          </div>
+          <button onclick="deleteFolderItem('${item.id}')" class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all shrink-0" title="ડેટા ડિલીટ કરો">
+            <i class="fa-solid fa-trash-can text-xs"></i>
+          </button>
+        </div>
+      `).join('');
+    }
+
+    function deleteFolderItem(itemId) {
+      if (!activeFolderId) return;
+      const folders = getFolders();
+      const folder = folders.find(f => f.id === activeFolderId);
+      if (folder) {
+        folder.items = folder.items.filter(i => i.id !== itemId);
+        saveFolders(folders);
+        renderFolderItems();
+        showToast('ડેટા એન્ટ્રી હટાવવામાં આવી', 'info');
+      }
+    }
+
+    // 8. OPERATOR DIRECTORY (Shows all operators from Users DB)
+    function renderDirectoryList() {
+      const container = document.getElementById('operatorsListContainer');
+      const searchVal = (document.getElementById('directorySearchInput').value || '').toLowerCase().trim();
+      const filterDist = document.getElementById('directoryDistrictFilter').value;
+      const countBadge = document.getElementById('operatorTotalCount');
+
+      const operators = getUsers().filter(u => u.role === 'operator');
+
+      const filtered = operators.filter(op => {
+        const dName = (op.district || '').toLowerCase();
+        const tName = (op.taluka || '').toLowerCase();
+        const matchesSearch = op.name.toLowerCase().includes(searchVal) ||
+                              dName.includes(searchVal) ||
+                              tName.includes(searchVal) ||
+                              op.phone.includes(searchVal);
+        const matchesDist = (filterDist === 'ALL') || (op.district === filterDist);
+        return matchesSearch && matchesDist;
+      });
+
+      countBadge.textContent = `${filtered.length} ઓપરેટર`;
+
+      if (filtered.length === 0) {
+        container.innerHTML = `<div class="text-center py-10 text-slate-400 text-xs">કોઈ મેળ ખાતા ઓપરેટર મળ્યા નથી</div>`;
+        return;
+      }
+
+      container.innerHTML = filtered.map(op => `
+        <div class="p-3.5 rounded-2xl border border-slate-200/80 bg-white hover:border-blue-300 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white font-bold text-sm flex items-center justify-center shrink-0">
+              ${op.name ? op.name.charAt(0) : 'ઓ'}
+            </div>
+            <div>
+              <h4 class="font-bold text-slate-900 text-sm">${op.name}</h4>
+              <p class="text-xs text-slate-500 mt-0.5">
+                <i class="fa-solid fa-location-dot text-slate-400 text-[10px]"></i>
+                <span>${op.district || 'જિલ્લો બાકી'} • <strong class="text-slate-700">${op.taluka || 'તાલુકો બાકી'}</strong></span>
+              </p>
+              <span class="text-[11px] font-mono text-slate-500">${op.phone}</span>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2 self-end sm:self-center">
+            <a href="tel:${op.phone}" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-xl text-xs font-bold border border-blue-200">
+              <i class="fa-solid fa-phone text-xs"></i>
+              <span>કૉલ</span>
+            </a>
+            <a href="https://wa.me/91${op.phone}?text=નમસ્તે%20${encodeURIComponent(op.name)}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-xl text-xs font-bold border border-emerald-200">
+              <i class="fa-brands fa-whatsapp text-sm"></i>
+              <span>WhatsApp</span>
+            </a>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // 9. ADMIN EXCLUSIVE: ADD & REMOVE OPERATORS
+    function handleAdminAddOperator(e) {
+      if (e) e.preventDefault();
+      if (!currentUser || currentUser.role !== 'admin') return;
+
+      const name = document.getElementById('newOpName').value.trim();
+      const phone = document.getElementById('newOpPhone').value.trim();
+      const district = document.getElementById('newOpDistrict').value;
+      const taluka = document.getElementById('newOpTaluka').value;
+
+      if (!name || phone.length !== 10) {
+        showToast('કૃપા કરીને ઓપરેટરનું નામ અને ૧૦ આંકડાનો સાચો નંબર નાખો', 'error');
+        return;
+      }
+
+      const users = getUsers();
+      if (users.some(u => u.phone === phone)) {
+        showToast('આ મોબાઇલ નંબર પહેલેથી રજિસ્ટર્ડ છે!', 'error');
+        return;
+      }
+
+      const newOperator = {
+        phone: phone,
+        password: "123456", // Default operator password
+        name: name,
+        role: "operator",
+        email: "",
+        district: district || "",
+        taluka: taluka || "",
+        address: "",
+        photo: "",
+        isLocked: Boolean(district && taluka)
+      };
+
+      users.push(newOperator);
+      saveUsers(users);
+
+      document.getElementById('newOpName').value = '';
+      document.getElementById('newOpPhone').value = '';
+      document.getElementById('newOpDistrict').value = '';
+      document.getElementById('newOpTaluka').innerHTML = '<option value="">-- તાલુકો (વૈકલ્પિક) --</option>';
+      document.getElementById('newOpTaluka').disabled = true;
+
+      renderAdminOperatorsList();
+      renderDirectoryList();
+      showToast(`નવો ઓપરેટર "${name}" ઉમેરાયો! (પાસવર્ડ: 123456)`, 'success');
+    }
+
+    function handleAdminRemoveOperator(phone) {
+      if (!currentUser || currentUser.role !== 'admin') return;
+      if (phone === currentUser.phone) return;
+
+      let users = getUsers();
+      const target = users.find(u => u.phone === phone);
+      users = users.filter(u => u.phone !== phone);
+      saveUsers(users);
+
+      renderAdminOperatorsList();
+      renderDirectoryList();
+      showToast(`ઓપરેટર (${target ? target.name : phone}) ને સિસ્ટમમાંથી દૂર કરવામાં આવ્યા.`, 'info');
+    }
+
+    function renderAdminOperatorsList() {
+      if (!currentUser || currentUser.role !== 'admin') return;
+      const container = document.getElementById('adminOperatorsManageList');
+      const operators = getUsers().filter(u => u.role === 'operator');
+      document.getElementById('adminOpCountBadge').textContent = `${operators.length} ઓપરેટર`;
+
+      if (operators.length === 0) {
+        container.innerHTML = `<p class="text-xs text-slate-400 text-center py-4">કોઈ ઓપરેટર રજિસ્ટર્ડ નથી.</p>`;
+        return;
+      }
+
+      container.innerHTML = operators.map(op => `
+        <div class="p-3 rounded-xl border border-slate-200 bg-slate-50/70 flex items-center justify-between gap-2 text-xs">
+          <div>
+            <span class="font-bold text-slate-900 block">${op.name}</span>
+            <span class="text-slate-500 font-mono">${op.phone}</span> • 
+            <span class="text-blue-700">${op.district || 'જિલ્લો બાકી'} ${op.taluka ? '(' + op.taluka + ')' : ''}</span>
+          </div>
+          <button 
+            onclick="handleAdminRemoveOperator('${op.phone}')" 
+            class="px-3 py-1.5 bg-red-50 hover:bg-red-600 text-red-600 hover:text-white font-bold rounded-lg border border-red-200 transition-all flex items-center gap-1 shrink-0"
+          >
+            <i class="fa-solid fa-trash-can"></i>
+            <span>દૂર કરો</span>
+          </button>
+        </div>
+      `).join('');
+    }
+
+    // 10. PROFILE & CHANGE PASSWORD
+    function handleChangePassword(e) {
+      if (e) e.preventDefault();
+      const currentPass = document.getElementById('currentPassInput').value.trim();
+      const newPass = document.getElementById('newPassInput').value.trim();
+      const confirmPass = document.getElementById('confirmNewPassInput').value.trim();
+
+      if (currentPass !== currentUser.password) {
+        showToast('હાલનો પાસવર્ડ ખોટો છે!', 'error');
+        return;
+      }
+      if (newPass.length < 4) {
+        showToast('નવો પાસવર્ડ ઓછામાં ઓછો ૪ અક્ષરનો હોવો જોઈએ', 'error');
+        return;
+      }
+      if (newPass !== confirmPass) {
+        showToast('નવો પાસવર્ડ અને કન્ફર્મ પાસવર્ડ મેળ ખાતા નથી!', 'error');
+        return;
+      }
+
+      currentUser.password = newPass;
+      syncCurrentUserToStorage();
+
+      document.getElementById('currentPassInput').value = '';
+      document.getElementById('newPassInput').value = '';
+      document.getElementById('confirmNewPassInput').value = '';
+      showToast('તમારો પાસવર્ડ સફળતાપૂર્વક બદલાઈ ગયો છે!', 'success');
+    }
+
+    function fetchCurrentLocation() {
+      const btnText = document.getElementById('locationBtnText');
+      const addressBox = document.getElementById('profileEditAddress');
+
+      if (!navigator.geolocation) {
+        showToast('બ્રાઉઝરમાં GPS સપોર્ટ નથી', 'error');
+        return;
+      }
+
+      btnText.textContent = 'લોકેશન મેળવી રહ્યું છે...';
+      navigator.geolocation.getCurrentPosition(
+        async (pos) => {
+          const lat = pos.coords.latitude.toFixed(6);
+          const lng = pos.coords.longitude.toFixed(6);
+          try {
+            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18`);
+            const data = await res.json();
+            addressBox.value = (data && data.display_name) ? `${data.display_name} (GPS: ${lat}, ${lng})` : `GPS: ${lat}, ${lng}`;
+          } catch (err) {
+            addressBox.value = `GPS: ${lat}, ${lng}`;
+          }
+          btnText.textContent = 'વર્તમાન લોકેશન મેળવો';
+          showToast('GPS લોકેશન મેળવ્યું!', 'success');
+        },
+        () => {
+          btnText.textContent = 'વર્તમાન લોકેશન મેળવો';
+          showToast('GPS પરમિશન નકારી. સરનામું મેન્યુઅલ ટાઇપ કરો.', 'error');
+        }
+      );
+    }
+
+    function renderAvatarPhoto() {
+      const img = document.getElementById('profileImageDisplay');
+      const fallback = document.getElementById('profileAvatarFallback');
+      const letter = document.getElementById('profileAvatarLetter');
+      const removeBtn = document.getElementById('removePhotoBtn');
+
+      if (currentUser.photo && currentUser.photo.startsWith('data:image')) {
+        img.src = currentUser.photo;
+        img.classList.remove('hidden');
+        fallback.classList.add('hidden');
+        removeBtn.classList.remove('hidden');
+      } else {
+        img.classList.add('hidden');
+        fallback.classList.remove('hidden');
+        letter.textContent = currentUser.name ? currentUser.name.trim()[0] : 'ઓ';
+        removeBtn.classList.add('hidden');
+      }
+    }
+
+    function handlePhotoUpload(e) {
+      const file = e.target.files[0];
+      if (!file || !file.type.startsWith('image/')) return;
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        currentUser.photo = evt.target.result;
+        syncCurrentUserToStorage();
+        renderAvatarPhoto();
+        showToast('પ્રોફાઇલ ફોટો અપડેટ થયો!', 'success');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function removeProfilePhoto() {
+      currentUser.photo = "";
+      document.getElementById('avatarFileInput').value = "";
+      syncCurrentUserToStorage();
+      renderAvatarPhoto();
+      showToast('ફોટો દૂર કર્યો', 'info');
+    }
+
+    function handleProfileUpdate(e) {
+      if (e) e.preventDefault();
+      currentUser.name = document.getElementById('profileEditName').value.trim();
+      currentUser.email = document.getElementById('profileEditEmail').value.trim();
+      currentUser.address = document.getElementById('profileEditAddress').value.trim();
+
+      syncCurrentUserToStorage();
+      renderAppView();
+      showToast('પ્રોફાઇલ વિગતો સાચવવામાં આવી!', 'success');
+    }
+
+    // 11. MESSAGING & NOTIFICATIONS
+    function handleSendAdminMessage(e) {
+      if (e) e.preventDefault();
+      const subject = document.getElementById('reqSubject').value;
+      const message = document.getElementById('reqMessage').value.trim();
+      if (!message) return;
+
+      const msgs = JSON.parse(localStorage.getItem(MESSAGES_DB_KEY) || '[]');
+      msgs.unshift({
+        id: "msg_" + Date.now(),
+        senderPhone: currentUser.phone,
+        senderName: currentUser.name,
+        senderDistrict: currentUser.district || "બાકી",
+        senderTaluka: currentUser.taluka || "બાકી",
+        subject: subject,
+        message: message,
+        timestamp: new Date().toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' }),
+        status: "Pending",
+        adminReply: "",
+        isReadByAdmin: false,
+        isReadByOperator: true
+      });
+      localStorage.setItem(MESSAGES_DB_KEY, JSON.stringify(msgs));
+      document.getElementById('reqMessage').value = '';
+      updateNotificationsAndMessages();
+      showToast('તમારો સંદેશ એડમિનને મોકલાઈ ગયો છે!', 'success');
+    }
+
+    function handleNotificationClick() {
+      switchTab('admin');
+    }
+
+    function updateNotificationsAndMessages() {
+      if (!currentUser) return;
+      const msgs = JSON.parse(localStorage.getItem(MESSAGES_DB_KEY) || '[]');
+      const headerBadge = document.getElementById('headerNotifBadge');
+      const navBadge = document.getElementById('navNotifBadge');
+
+      if (currentUser.role === 'admin') {
+        const unread = msgs.filter(m => !m.isReadByAdmin).length;
+        const pending = msgs.filter(m => m.status === 'Pending').length;
+        document.getElementById('adminPendingBadge').textContent = `${pending} પેન્ડિંગ`;
+
+        if (unread > 0) {
+          headerBadge.textContent = unread;
+          headerBadge.classList.remove('hidden');
+          navBadge.textContent = unread;
+          navBadge.classList.remove('hidden');
+        } else {
+          headerBadge.classList.add('hidden');
+          navBadge.classList.add('hidden');
+        }
+        renderAdminInbox(msgs);
+      } else {
+        const unreadReplies = msgs.filter(m => m.senderPhone === currentUser.phone && m.adminReply && !m.isReadByOperator).length;
+        if (unreadReplies > 0) {
+          headerBadge.textContent = unreadReplies;
+          headerBadge.classList.remove('hidden');
+          navBadge.textContent = unreadReplies;
+          navBadge.classList.remove('hidden');
+        } else {
+          headerBadge.classList.add('hidden');
+          navBadge.classList.add('hidden');
+        }
+        renderOperatorMessages(msgs);
+      }
+    }
+
+    function renderAdminInbox(messages) {
+      const container = document.getElementById('adminMessagesList');
+      if (messages.length === 0) {
+        container.innerHTML = `<p class="text-xs text-slate-400 text-center py-6">કોઈ સંદેશ નથી.</p>`;
+        return;
+      }
+
+      container.innerHTML = messages.map(msg => `
+        <div class="p-3.5 rounded-2xl border ${msg.status === 'Pending' ? 'border-amber-200 bg-amber-50/20' : 'border-slate-200 bg-white'} space-y-2.5 text-xs">
+          <div class="flex justify-between items-center">
+            <span class="font-bold text-slate-900">${msg.senderName} (${msg.senderPhone})</span>
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${msg.status === 'Pending' ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}">
+              ${msg.status === 'Pending' ? 'પેન્ડિંગ' : 'ઉકેલાયેલ'}
+            </span>
+          </div>
+          <p class="text-slate-700 font-medium">${msg.subject}: <span class="font-normal text-slate-600">${msg.message}</span></p>
+          ${msg.adminReply ? `<div class="p-2 bg-purple-50 text-purple-900 rounded-xl font-medium">જવાબ: ${msg.adminReply}</div>` : ''}
+          <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
+            <button onclick="adminUnlockOperator('${msg.id}', '${msg.senderPhone}')" class="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-semibold">
+              <i class="fa-solid fa-unlock mr-1"></i> જિલ્લો અનલોક કરો
+            </button>
+            <div class="flex gap-1.5 flex-1 sm:flex-initial">
+              <input type="text" id="reply_${msg.id}" placeholder="જવાબ લખો..." class="flex-1 px-2.5 py-1.5 border border-slate-200 rounded-xl" />
+              <button onclick="sendAdminReply('${msg.id}')" class="px-3 py-1.5 bg-blue-600 text-white rounded-xl font-semibold">જવાબ</button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderOperatorMessages(messages) {
+      const container = document.getElementById('operatorMessagesList');
+      const myMsgs = messages.filter(m => m.senderPhone === currentUser.phone);
+      if (myMsgs.length === 0) {
+        container.innerHTML = `<p class="text-xs text-slate-400 text-center py-4">તમે કોઈ સંદેશ મોકલ્યો નથી.</p>`;
+        return;
+      }
+
+      container.innerHTML = myMsgs.map(msg => `
+        <div class="p-3 rounded-2xl border border-slate-200 bg-white text-xs space-y-1.5">
+          <div class="flex justify-between">
+            <span class="font-bold text-slate-800">${msg.subject}</span>
+            <span class="text-[10px] text-slate-400">${msg.timestamp}</span>
+          </div>
+          <p class="text-slate-600">${msg.message}</p>
+          ${msg.adminReply ? `<div class="p-2 bg-purple-50 text-purple-900 rounded-xl font-medium">એડમિન જવાબ: ${msg.adminReply}</div>` : `<span class="text-amber-600 text-[11px]">પ્રત્યુત્તર બાકી...</span>`}
+        </div>
+      `).join('');
+    }
+
+    function sendAdminReply(msgId) {
+      const input = document.getElementById('reply_' + msgId);
+      const val = input ? input.value.trim() : '';
+      if (!val) return;
+
+      const msgs = JSON.parse(localStorage.getItem(MESSAGES_DB_KEY) || '[]');
+      const m = msgs.find(x => x.id === msgId);
+      if (m) {
+        m.adminReply = val;
+        m.status = 'Resolved';
+        m.isReadByOperator = false;
+        localStorage.setItem(MESSAGES_DB_KEY, JSON.stringify(msgs));
+        updateNotificationsAndMessages();
+        showToast('પ્રત્યુત્તર મોકલાઈ ગયો!', 'success');
+      }
+    }
+
+    function adminUnlockOperator(msgId, opPhone) {
+      const users = getUsers();
+      const target = users.find(u => u.phone === opPhone);
+      if (target) {
+        target.isLocked = false;
+        saveUsers(users);
+      }
+
+      const msgs = JSON.parse(localStorage.getItem(MESSAGES_DB_KEY) || '[]');
+      const m = msgs.find(x => x.id === msgId);
+      if (m) {
+        m.adminReply = "તમારો જિલ્લો અને તાલુકો અનલોક કરી દેવામાં આવ્યો છે.";
+        m.status = 'Resolved';
+        m.isReadByOperator = false;
+        localStorage.setItem(MESSAGES_DB_KEY, JSON.stringify(msgs));
+      }
+
+      updateNotificationsAndMessages();
+      showToast(`ઓપરેટર (${opPhone}) નો જિલ્લો અનલોક થયો!`, 'success');
+    }
+
+    // 12. NAVIGATION & LOGOUT
     function switchTab(tabId) {
-      ['home', 'directory', 'profile', 'admin'].forEach(t => {
-        document.getElementById(t + 'Section').classList.add('hidden');
+      document.querySelectorAll('.tab-pane').forEach(el => el.classList.add('hidden'));
+      const pane = document.getElementById('tab-' + tabId);
+      if (pane) pane.classList.remove('hidden');
+
+      document.querySelectorAll('.nav-tab-btn').forEach(btn => {
+        if (btn.getAttribute('data-tab') === tabId) {
+          btn.classList.remove('text-slate-400');
+          btn.classList.add('text-blue-600');
+        } else {
+          btn.classList.remove('text-blue-600');
+          btn.classList.add('text-slate-400');
+        }
       });
-      document.querySelectorAll('.nav-item').forEach(el => {
-        el.classList.remove('text-blue-600');
-        el.classList.add('text-gray-500');
-      });
 
-      document.getElementById(tabId + 'Section').classList.remove('hidden');
-      const activeBtn = document.querySelector(`[data-tab="${tabId}"]`);
-      if (activeBtn) {
-        activeBtn.classList.add('text-blue-600');
-        activeBtn.classList.remove('text-gray-500');
+      if (tabId === 'data') {
+        closeCurrentFolder();
+      } else if (tabId === 'directory') {
+        renderDirectoryList();
+      } else if (tabId === 'admin') {
+        const msgs = JSON.parse(localStorage.getItem(MESSAGES_DB_KEY) || '[]');
+        if (currentUser.role === 'admin') {
+          msgs.forEach(m => m.isReadByAdmin = true);
+          renderAdminOperatorsList();
+        } else {
+          msgs.forEach(m => { if (m.senderPhone === currentUser.phone) m.isReadByOperator = true; });
+        }
+        localStorage.setItem(MESSAGES_DB_KEY, JSON.stringify(msgs));
+        updateNotificationsAndMessages();
       }
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    document.getElementById('districtForm').addEventListener('submit', (e) => {
-      e.preventDefault();
-      const dist = document.getElementById('districtSelect').value;
-      const tal = document.getElementById('talukaSelect').value;
-      if (!dist || !tal) return;
-
-      document.getElementById('districtSelect').disabled = true;
-      document.getElementById('talukaSelect').disabled = true;
-      document.getElementById('saveLockBtn').classList.add('hidden');
-      document.getElementById('lockedNotice').classList.remove('hidden');
-      alert(`જિલ્લો: ${dist} અને તાલુકો: ${talukaSelect.value} સફળતાપૂર્વક લૉક થયા છે!`);
-    });
-
-    function unlockSelection() {
-      document.getElementById('districtSelect').disabled = false;
-      document.getElementById('talukaSelect').disabled = false;
-      document.getElementById('saveLockBtn').classList.remove('hidden');
-      document.getElementById('lockedNotice').classList.add('hidden');
+    function executeLogout() {
+      localStorage.removeItem(SESSION_KEY);
+      currentUser = null;
+      document.getElementById('authenticatedApp').classList.add('hidden');
+      document.getElementById('bottomNavBar').classList.add('hidden');
+      document.getElementById('logoutNavBtn').classList.add('hidden');
+      document.getElementById('roleBadge').classList.add('hidden');
+      document.getElementById('headerNotifBtn').classList.add('hidden');
+      document.getElementById('loginScreen').classList.remove('hidden');
+      document.getElementById('loginPassword').value = '';
+      showToast('સફળતાપૂર્વક લૉગઆઉટ થયા છો', 'info');
     }
 
-    function getCurrentLocation() {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition((pos) => {
-          document.getElementById('profAddress').value = `અક્ષાંશ: ${pos.coords.latitude.toFixed(4)}, રેખાંશ: ${pos.coords.longitude.toFixed(4)}`;
-        }, () => alert("GPS લોકેશન મેળવવામાં નિષ્ફળ!"));
-      }
-    }
-
+    // 13. PWA INSTALL & SERVICE WORKER
+    let deferredPrompt;
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
       deferredPrompt = e;
-      document.getElementById('installBtn').classList.remove('hidden');
+      const btn = document.getElementById('installAppBtn');
+      btn.classList.remove('hidden');
+      btn.classList.add('flex');
     });
 
-    document.getElementById('installBtn').addEventListener('click', () => {
-      if (deferredPrompt) {
-        deferredPrompt.prompt();
-        deferredPrompt = null;
+    document.getElementById('installAppBtn').addEventListener('click', async () => {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        document.getElementById('installAppBtn').classList.add('hidden');
+      }
+      deferredPrompt = null;
+    });
+
+    if ('serviceWorker' in navigator) {
+      const swCode = `
+        self.addEventListener('install', (e) => self.skipWaiting());
+        self.addEventListener('activate', (e) => clients.claim());
+        self.addEventListener('fetch', (e) => e.respondWith(fetch(e.request).catch(() => new Response('Offline'))));
+      `;
+      navigator.serviceWorker.register(URL.createObjectURL(new Blob([swCode], { type: 'application/javascript' }))).catch(() => {});
+    }
+
+    // 14. AUTO-RESTORE SESSION
+    window.addEventListener('DOMContentLoaded', () => {
+      const savedPhone = localStorage.getItem(SESSION_KEY);
+      if (savedPhone) {
+        const users = getUsers();
+        const found = users.find(u => u.phone === savedPhone);
+        if (found) {
+          currentUser = found;
+          renderAppView();
+        } else {
+          localStorage.removeItem(SESSION_KEY);
+        }
       }
     });
   </script>
+
 </body>
 </html>
