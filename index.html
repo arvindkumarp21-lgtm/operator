@@ -172,23 +172,6 @@
             <i class="fa-solid fa-arrow-right text-xs"></i>
           </button>
         </form>
-
-        <!-- Default Credentials Helper Box -->
-        <div class="mt-6 pt-4 border-t border-slate-100 space-y-2.5">
-          <p class="text-[11px] font-semibold text-slate-500 text-center">ડિફોલ્ટ લૉગિન માહિતી (Quick Fill):</p>
-          <div class="grid grid-cols-2 gap-2">
-            <button type="button" onclick="fillDemoCredentials('operator')" class="p-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-blue-50 hover:border-blue-300 transition-all text-left">
-              <span class="block text-xs font-bold text-blue-700">ઓપરેટર (Operator)</span>
-              <span class="block text-[11px] text-slate-600 font-mono mt-0.5">9876543210</span>
-              <span class="block text-[10px] text-slate-400 font-mono">Pass: 123456</span>
-            </button>
-            <button type="button" onclick="fillDemoCredentials('admin')" class="p-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-purple-50 hover:border-purple-300 transition-all text-left">
-              <span class="block text-xs font-bold text-purple-700">એડમિન (Admin)</span>
-              <span class="block text-[11px] text-slate-600 font-mono mt-0.5">9999988888</span>
-              <span class="block text-[10px] text-slate-400 font-mono">Pass: 654321</span>
-            </button>
-          </div>
-        </div>
       </div>
     </div>
 
@@ -618,15 +601,11 @@
             </button>
           </form>
 
-          <!-- LOGOUT BUTTON SECTION -->
+          <!-- LOGOUT BUTTON CARD -->
           <div class="pt-2 border-t border-slate-100">
-            <button 
-              type="button" 
-              onclick="executeLogout()" 
-              class="w-full py-3 bg-red-50 hover:bg-red-600 text-red-600 hover:text-white border border-red-200 hover:border-red-600 active:scale-[0.99] text-sm font-bold rounded-2xl shadow-xs transition-all flex items-center justify-center gap-2"
-            >
+            <button type="button" onclick="executeLogout()" class="w-full py-3 bg-red-50 hover:bg-red-600 text-red-600 hover:text-white border border-red-200 active:scale-95 text-xs sm:text-sm font-bold rounded-2xl transition-all flex items-center justify-center gap-2 shadow-xs">
               <i class="fa-solid fa-right-from-bracket"></i>
-              <span>લોગઆઉટ કરો (Logout)</span>
+              <span>લૉગઆઉટ કરો (Logout)</span>
             </button>
           </div>
 
@@ -826,35 +805,24 @@
     };
 
     // 2. UNIFIED USERS DATABASE INITIALIZATION (Strict Passwords: Operator=123456, Admin=654321)
-    const USERS_DB_KEY = 'gj_portal_users_v2';
-    const FOLDERS_DB_KEY = 'gj_portal_folders_v2';
-    const MESSAGES_DB_KEY = 'gj_portal_messages_v2';
-    const SESSION_KEY = 'gj_portal_session_v2';
+    const USERS_DB_KEY = 'gj_portal_users_v3';
+    const FOLDERS_DB_KEY = 'gj_portal_folders_v3';
+    const MESSAGES_DB_KEY = 'gj_portal_messages_v3';
+    const SESSION_KEY = 'gj_portal_session_v3';
+    const ADMIN_PHONE = '9033483992';
 
     function initializeDatabase() {
       if (!localStorage.getItem(USERS_DB_KEY)) {
         const initialUsers = [
           {
-            phone: "9999988888",
+            phone: ADMIN_PHONE,
             password: "654321",
-            name: "એડમિન અધિકારી (State Admin)",
+            name: "એડમિન અધિકારી (Admin)",
             role: "admin",
             email: "admin@gujarat.gov.in",
             district: "Gandhinagar",
             taluka: "GANDHINAGAR",
             address: "બ્લોક નં. ૧, સચિવાલય, ગાંધીનગર",
-            photo: "",
-            isLocked: false
-          },
-          {
-            phone: "9876543210",
-            password: "123456",
-            name: "રમેશભાઈ પટેલ",
-            role: "operator",
-            email: "ramesh.patel@gujarat.in",
-            district: "",
-            taluka: "",
-            address: "",
             photo: "",
             isLocked: false
           },
@@ -954,58 +922,7 @@
 
     // 3. TOAST UTILITY
     function showToast(message, type = 'info') {
-      const toast = document.getElementById('toast');
-      const toastMsg = document.getElementById('toastMsg');
-      const toastIcon = document.getElementById('toastIcon');
-      const toastContent = document.getElementById('toastContent');
-
-      toastMsg.textContent = message;
-
-      if (type === 'success') {
-        toastIcon.className = 'fa-solid fa-circle-check text-emerald-600 text-lg shrink-0';
-        toastContent.className = 'px-4 py-3 rounded-2xl shadow-xl border text-sm flex items-center space-x-3 bg-emerald-50 border-emerald-200 text-emerald-900';
-      } else if (type === 'error') {
-        toastIcon.className = 'fa-solid fa-triangle-exclamation text-red-600 text-lg shrink-0';
-        toastContent.className = 'px-4 py-3 rounded-2xl shadow-xl border text-sm flex items-center space-x-3 bg-red-50 border-red-200 text-red-900';
-      } else {
-        toastIcon.className = 'fa-solid fa-circle-info text-blue-600 text-lg shrink-0';
-        toastContent.className = 'px-4 py-3 rounded-2xl shadow-xl border text-sm flex items-center space-x-3 bg-white border-slate-200 text-slate-800';
-      }
-
-      toast.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-[-10px]');
-      toast.classList.add('opacity-100', 'translate-y-0');
-
-      clearTimeout(window.toastTimer);
-      window.toastTimer = setTimeout(() => {
-        toast.classList.remove('opacity-100', 'translate-y-0');
-        toast.classList.add('opacity-0', 'pointer-events-none', 'translate-y-[-10px]');
-      }, 3200);
-    }
-
-    function togglePasswordVisibility(inputId, iconId) {
-      const input = document.getElementById(inputId);
-      const icon = document.getElementById(iconId);
-      if (input.type === 'password') {
-        input.type = 'text';
-        icon.className = 'fa-solid fa-eye-slash';
-      } else {
-        input.type = 'password';
-        icon.className = 'fa-solid fa-eye';
-      }
-    }
-
-    // 4. STRICT AUTHENTICATION (NO BYPASSES)
-    function fillDemoCredentials(role) {
-      document.getElementById('loginErrorAlert').classList.add('hidden');
-      if (role === 'admin') {
-        document.getElementById('loginMobile').value = '9999988888';
-        document.getElementById('loginPassword').value = '654321';
-      } else {
-        document.getElementById('loginMobile').value = '9876543210';
-        document.getElementById('loginPassword').value = '123456';
-      }
-    }
-
+    // 4. STRICT AUTHENTICATION (Admin = 9033483992 / 654321; Any 10-digit Operator = 123456 or updated password)
     function handleManualLogin(e) {
       if (e) e.preventDefault();
       const mobile = document.getElementById('loginMobile').value.trim();
@@ -1015,21 +932,72 @@
 
       errorAlert.classList.add('hidden');
 
-      const users = getUsers();
-      const matchedUser = users.find(u => u.phone === mobile);
-
-      if (!matchedUser) {
-        errorText.textContent = "આ મોબાઇલ નંબર રજિસ્ટર્ડ નથી! કૃપા કરીને સાચો નંબર નાખો.";
+      if (!/^\d{10}$/.test(mobile)) {
+        errorText.textContent = "કૃપા કરીને ૧૦ આંકડાનો માન્ય મોબાઇલ નંબર દાખલ કરો!";
         errorAlert.classList.remove('hidden');
-        showToast("ખોટો મોબાઇલ નંબર!", "error");
+        showToast("અમાન્ય મોબાઇલ નંબર!", "error");
         return;
       }
 
-      if (matchedUser.password !== password) {
-        errorText.textContent = "ખોટો પાસવર્ડ! કૃપા કરીને સાચો પાસવર્ડ દાખલ કરો.";
-        errorAlert.classList.remove('hidden');
-        showToast("ખોટો પાસવર્ડ! લૉગિન નિષ્ફળ.", "error");
-        return;
+      const users = getUsers();
+      let matchedUser = users.find(u => u.phone === mobile);
+
+      if (mobile === ADMIN_PHONE) {
+        if (!matchedUser) {
+          matchedUser = {
+            phone: ADMIN_PHONE,
+            password: "654321",
+            name: "એડમિન અધિકારી (Admin)",
+            role: "admin",
+            email: "admin@gujarat.gov.in",
+            district: "Gandhinagar",
+            taluka: "GANDHINAGAR",
+            address: "સચિવાલય, ગાંધીનગર",
+            photo: "",
+            isLocked: false
+          };
+          users.push(matchedUser);
+          saveUsers(users);
+        }
+
+        if (matchedUser.password !== password) {
+          errorText.textContent = "ખોટો પાસવર્ડ! કૃપા કરીને સાચો પાસવર્ડ દાખલ કરો.";
+          errorAlert.classList.remove('hidden');
+          showToast("ખોટો પાસવર્ડ! લૉગિન નિષ્ફળ.", "error");
+          return;
+        }
+      } else {
+        // Operator login: if user exists verify stored password; if new 10-digit mobile allow with '123456'
+        if (matchedUser) {
+          if (matchedUser.password !== password) {
+            errorText.textContent = "ખોટો પાસવર્ડ! કૃપા કરીને સાચો પાસવર્ડ દાખલ કરો.";
+            errorAlert.classList.remove('hidden');
+            showToast("ખોટો પાસવર્ડ! લૉગિન નિષ્ફળ.", "error");
+            return;
+          }
+        } else {
+          if (password !== "123456") {
+            errorText.textContent = "ખોટો પાસવર્ડ! નવા ઓપરેટર માટે ડિફોલ્ટ પાસવર્ડ નાખો.";
+            errorAlert.classList.remove('hidden');
+            showToast("ખોટો પાસવર્ડ! લૉગિન નિષ્ફળ.", "error");
+            return;
+          }
+          // Auto-register new operator with default password '123456'
+          matchedUser = {
+            phone: mobile,
+            password: "123456",
+            name: "ઓપરેટર (" + mobile.slice(-4) + ")",
+            role: "operator",
+            email: "",
+            district: "",
+            taluka: "",
+            address: "",
+            photo: "",
+            isLocked: false
+          };
+          users.push(matchedUser);
+          saveUsers(users);
+        }
       }
 
       // Valid user & password
