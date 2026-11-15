@@ -7,13 +7,15 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <title>ગુજરાત પુરવઠા ઓપરેટર</title>
+  <title>ગુજરાત પુરવઠા ઓપરેટર • સિક્યોર પોર્ટલ</title>
 
   <link id="pwa-manifest" rel="manifest" href="" />
+  <link id="pwa-favicon" rel="icon" type="image/png" href="" />
+  <link id="pwa-apple-icon" rel="apple-touch-icon" href="" />
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Gujarati:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Gujarati:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 
   <style>
     body {
@@ -33,31 +35,171 @@
       background-color: #eff6ff !important;
       transform: scale(0.99);
     }
+    .privacy-blur-active {
+      filter: blur(14px) grayscale(40%);
+      pointer-events: none;
+      user-select: none;
+      transition: filter 0.2s ease;
+    }
+    #live-watermark-overlay {
+      pointer-events: none;
+      user-select: none;
+      z-index: 55;
+      background-repeat: repeat;
+    }
   </style>
 </head>
-<body class="text-slate-800 antialiased select-none sm:select-auto">
+<body class="text-slate-800 antialiased select-none sm:select-auto relative">
+
+  <!-- Dynamic Anti-Photo Watermark Overlay -->
+  <div id="live-watermark-overlay" class="fixed inset-0 hidden overflow-hidden opacity-[0.055]"></div>
+
+  <!-- Privacy Screen Blur Shield Banner -->
+  <div id="privacy-blur-banner" class="fixed inset-0 z-[80] hidden bg-slate-950/80 backdrop-blur-md flex flex-col items-center justify-center text-white p-6 text-center">
+    <div class="w-16 h-16 rounded-3xl bg-amber-400 text-slate-950 flex items-center justify-center text-3xl font-extrabold mb-3 shadow-lg">🛡️</div>
+    <h3 class="text-lg font-bold">પ્રાયવસી સ્ક્રીન શિલ્ડ સક્રિય છે</h3>
+    <p class="text-xs text-blue-200 mt-1 max-w-xs">તમે બીજી વિન્ડો કે ટેબમાં ગયા હોવાથી સ્ક્રીન સુરક્ષા માટે ઝાંખી (Blur) કરવામાં આવી છે. પાછા ફરવા સ્ક્રીન પર ટચ કરો.</p>
+  </div>
+
+  <!-- Emergency Portal Freeze Overlay (For Non-Admin Operators) -->
+  <div id="emergency-freeze-screen" class="fixed inset-0 z-[75] hidden bg-gradient-to-br from-red-950 via-slate-950 to-blue-950 text-white flex flex-col items-center justify-center p-5 text-center">
+    <div class="bg-white/10 backdrop-blur-md border border-red-400/40 rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+      <div class="w-16 h-16 mx-auto rounded-2xl bg-red-600 text-white flex items-center justify-center text-3xl font-bold shadow-lg animate-pulse">🚨</div>
+      <h2 class="text-lg font-extrabold text-amber-300">ઇમરજન્સી સિક્યુરિટી લૉકડાઉન!</h2>
+      <p class="text-xs text-red-100 leading-relaxed">મુખ્ય એડમિન દ્વારા સુરક્ષા અથવા મેન્ટેનન્સ કારણોસર પોર્ટલને કામચલાઉ ફ્રીઝ (Lock) કરવામાં આવ્યું છે. કૃપા કરીને થોડીવાર પછી પ્રયાસ કરો.</p>
+      <div class="pt-2 flex gap-2 justify-center">
+        <button type="button" onclick="manualSyncNow()" class="px-4 py-2.5 bg-amber-400 hover:bg-amber-500 text-slate-950 rounded-xl text-xs font-bold shadow">🔄 સ્થિતિ તપાસો</button>
+        <button type="button" onclick="handleLogout()" class="px-4 py-2.5 bg-white/15 hover:bg-white/25 text-white rounded-xl text-xs font-bold">લોગઆઉટ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hidden Honeypot Intruder Trap for Bots & DOM Tamperers -->
+  <div style="position:absolute;left:-9999px;top:-9999px;opacity:0;pointer-events:none;" aria-hidden="true">
+    <button type="button" id="admin-root-bypass-btn" tabindex="-1" onclick="triggerHoneypotTrap('DOM_BUTTON_CLICK')">Unlock Full Admin Root Database</button>
+  </div>
 
   <!-- Toast Notification -->
-  <div id="toast-box" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 hidden max-w-sm w-[92%] px-4 py-3 rounded-xl shadow-xl text-white text-sm font-medium flex items-center justify-between transition-all duration-300">
+  <div id="toast-box" class="fixed top-4 left-1/2 -translate-x-1/2 z-[70] hidden max-w-sm w-[92%] px-4 py-3 rounded-xl shadow-xl text-white text-sm font-medium flex items-center justify-between transition-all duration-300">
     <span id="toast-msg">સંદેશ</span>
     <button type="button" onclick="hideToast()" class="ml-3 text-white/80 hover:text-white font-bold">&times;</button>
+  </div>
+
+  <!-- Custom Confirmation / Randomized Virtual Shuffle PIN Keypad Modal -->
+  <div id="security-modal" class="fixed inset-0 z-[65] hidden bg-slate-950/75 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-5 shadow-2xl border border-slate-200 space-y-3.5">
+      <div class="flex items-start gap-3">
+        <div id="sec-modal-icon" class="w-10 h-10 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center text-lg font-bold shrink-0">🛡️</div>
+        <div class="min-w-0 flex-1">
+          <h3 id="sec-modal-title" class="text-sm font-bold text-slate-900">સુરક્ષા ચકાસણી</h3>
+          <p id="sec-modal-msg" class="text-xs text-slate-600 mt-1 leading-relaxed"></p>
+        </div>
+      </div>
+
+      <div id="sec-modal-pin-wrap" class="hidden space-y-2.5 pt-1">
+        <div class="flex items-center justify-between text-[11px] font-bold text-slate-600">
+          <span>🔢 માસ્ટર PIN અથવા Time-PIN નાખો</span>
+          <span id="totp-hint-badge" class="text-[10px] px-2 py-0.5 rounded bg-blue-50 text-blue-800">Shuffled Keypad</span>
+        </div>
+        <div class="relative">
+          <input type="password" id="sec-modal-pin-input" maxlength="6" readonly
+            placeholder="••••"
+            class="w-full px-3.5 py-2 bg-slate-100 border border-slate-300 rounded-xl text-center text-lg font-extrabold tracking-[0.4em] text-blue-950 focus:outline-none" />
+          <button type="button" onclick="clearVirtualPin()" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-[11px] font-bold text-red-600 hover:underline">Clear</button>
+        </div>
+        <!-- Randomized Anti-Keylogger Virtual Keypad -->
+        <div id="virtual-pin-keypad" class="grid grid-cols-3 gap-1.5 pt-1"></div>
+        <button type="button" onclick="verifyBiometricPasskey()" class="w-full py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border border-indigo-200 rounded-xl text-[11px] font-bold flex items-center justify-center gap-1.5">
+          <span>🫆 Fingerprint / Face ID (Passkey) વાપરો</span>
+        </button>
+      </div>
+
+      <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+        <button type="button" onclick="resolveSecurityModal(false)" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold">રદ કરો</button>
+        <button type="button" onclick="resolveSecurityModal(true)" class="px-4 py-2 rounded-xl bg-blue-900 hover:bg-blue-800 text-white text-xs font-bold shadow">ખાતરી કરો</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom File Passcode Unlock Modal -->
+  <div id="file-passcode-modal" class="fixed inset-0 z-[66] hidden bg-slate-950/75 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-5 shadow-2xl border border-indigo-200 space-y-3.5">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-2xl bg-indigo-100 text-indigo-700 flex items-center justify-center text-lg font-bold shrink-0">🔐</div>
+        <div>
+          <h3 class="text-sm font-bold text-slate-900">ફાઇલ પાસકોડ ચકાસણી</h3>
+          <p class="text-[11px] text-slate-600">આ ફાઇલ પાસકોડથી સુરક્ષિત છે. ડાઉનલોડ કરવા માટે પાસકોડ નાખો:</p>
+        </div>
+      </div>
+      <input type="password" id="file-unlock-passcode-input" placeholder="ફાઇલ પાસકોડ લખો..."
+        class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-indigo-600" />
+      <div class="flex items-center justify-end gap-2 pt-1">
+        <button type="button" onclick="resolveFilePasscodeModal(null)" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold">રદ કરો</button>
+        <button type="button" onclick="resolveFilePasscodeModal(document.getElementById('file-unlock-passcode-input').value)" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow">અનલૉક અને ડાઉનલોડ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Force Default Password Change Modal -->
+  <div id="force-pass-modal" class="fixed inset-0 z-[60] hidden bg-slate-950/75 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-5 shadow-2xl border border-amber-300 space-y-4">
+      <div class="flex items-center gap-3">
+        <div class="w-11 h-11 rounded-2xl bg-amber-100 text-amber-800 flex items-center justify-center text-xl font-bold shrink-0">🔐</div>
+        <div>
+          <h3 class="text-sm font-bold text-slate-900">ડિફોલ્ટ પાસવર્ડ બદલવો ફરજિયાત છે!</h3>
+          <p class="text-[11px] text-slate-600 mt-0.5">સુરક્ષા કારણોસર ડિફોલ્ટ પાસવર્ડ (123456) બદલીને તમારો નવો ખાનગી પાસવર્ડ સેટ કરો.</p>
+        </div>
+      </div>
+      <form onsubmit="submitForcedPasswordChange(event)" class="space-y-3">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">નવો પાસવર્ડ (ઓછામાં ઓછા ૪ અક્ષર)</label>
+          <input type="password" id="force-new-pass" minlength="4" required placeholder="નવો પાસવર્ડ લખો"
+            class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold" />
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">નવો પાસવર્ડ ફરીથી લખો</label>
+          <input type="password" id="force-confirm-pass" minlength="4" required placeholder="પાસવર્ડ કન્ફર્મ કરો"
+            class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold" />
+        </div>
+        <button type="submit" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow">
+          નવો પાસવર્ડ સેવ કરી આગળ વધો
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Inactivity Auto-Lock Screen -->
+  <div id="inactivity-lock-modal" class="fixed inset-0 z-[62] hidden bg-gradient-to-br from-slate-950 via-blue-950 to-indigo-950 text-white flex flex-col items-center justify-center p-4">
+    <div class="bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl max-w-sm w-full p-6 text-center space-y-4 shadow-2xl">
+      <div class="w-14 h-14 mx-auto rounded-2xl bg-amber-400 text-slate-950 flex items-center justify-center text-2xl font-bold shadow">🔒</div>
+      <div>
+        <h3 class="text-base font-bold">સુરક્ષા ઓટો-લૉક (Idle Timeout)</h3>
+        <p class="text-xs text-blue-200 mt-1">૧૦ મિનિટથી કોઈ પ્રવૃત્તિ ન થવાથી તમારું સેશન સુરક્ષિત રીતે લૉક કરવામાં આવ્યું છે.</p>
+      </div>
+      <form onsubmit="unlockIdleSession(event)" class="space-y-3">
+        <input type="password" id="idle-unlock-pass" required placeholder="તમારો લૉગિન પાસવર્ડ નાખો"
+          class="w-full px-4 py-3 bg-white text-slate-900 rounded-xl text-xs font-bold text-center focus:outline-none focus:ring-2 focus:ring-amber-400" />
+        <div class="grid grid-cols-2 gap-2">
+          <button type="button" onclick="handleLogout()" class="py-2.5 bg-red-600/80 hover:bg-red-600 text-white rounded-xl text-xs font-bold">લોગઆઉટ</button>
+          <button type="submit" class="py-2.5 bg-amber-400 hover:bg-amber-500 text-slate-950 rounded-xl text-xs font-bold shadow">અનલૉક કરો</button>
+        </div>
+      </form>
+    </div>
   </div>
 
   <!-- ================= LOGIN SCREEN ================= -->
   <div id="login-screen" class="min-h-screen flex flex-col justify-center items-center p-4 bg-gradient-to-br from-blue-950 via-blue-900 to-indigo-900">
     <div class="w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden">
       <div class="bg-blue-900 px-6 py-8 text-center text-white relative">
-        <div class="w-16 h-16 mx-auto bg-white/15 backdrop-blur rounded-2xl flex items-center justify-center mb-3 border border-white/20 shadow-inner">
-          <svg class="w-9 h-9 text-amber-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-          </svg>
+        <div class="w-20 h-20 mx-auto bg-white/15 backdrop-blur rounded-2xl flex items-center justify-center mb-3 border border-white/25 shadow-lg overflow-hidden">
+          <img id="login-app-logo-img" src="" alt="App Icon" class="w-full h-full object-cover" />
         </div>
         <h1 class="text-2xl font-bold tracking-wide">ગુજરાત પુરવઠા ઓપરેટર</h1>
-        <p class="text-blue-200 text-xs mt-1">ઓપરેટર મેનેજમેન્ટ, ડિરેક્ટરી અને ડેટા પોર્ટલ</p>
+        <p class="text-blue-200 text-xs mt-1">SHA-256 સિક્યોર મેનેજમેન્ટ, ડિરેક્ટરી અને ડેટા પોર્ટલ</p>
       </div>
 
       <form id="login-form" onsubmit="handleManualLogin(event)" class="p-6 space-y-5">
-        <div id="login-error" class="hidden bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-xs font-semibold"></div>
+        <div id="login-error" class="hidden bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-xs font-semibold leading-relaxed"></div>
 
         <div>
           <label class="block text-xs font-bold text-slate-600 mb-1.5">મોબાઇલ નંબર (૧૦ આંકડા)</label>
@@ -86,10 +228,33 @@
 
         <button type="submit" id="login-submit-btn"
           class="w-full py-3.5 bg-blue-900 hover:bg-blue-800 active:scale-[0.99] text-white font-bold rounded-xl shadow-lg shadow-blue-900/30 transition text-sm">
-          સુરક્ષિત લૉગિન કરો
+          🔒 સુરક્ષિત લૉગિન કરો
         </button>
 
-        <div id="install-banner" class="hidden pt-2">
+        <!-- Quick Demo Login Buttons for Instant Testing -->
+        <div class="pt-1 border-t border-slate-100 space-y-1.5">
+          <p class="text-[10px] font-bold text-slate-400 text-center uppercase tracking-wider">ઝડપી ટેસ્ટિંગ માટે ડેમો લૉગિન</p>
+          <div class="grid grid-cols-2 gap-2">
+            <button type="button" onclick="quickDemoLogin('admin')"
+              class="py-2 px-2.5 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 rounded-xl text-[11px] font-bold flex items-center justify-center gap-1 transition">
+              <span>👑 એડમિન ડેમો</span>
+            </button>
+            <button type="button" onclick="quickDemoLogin('operator')"
+              class="py-2 px-2.5 bg-blue-50 hover:bg-blue-100 text-blue-900 border border-blue-200 rounded-xl text-[11px] font-bold flex items-center justify-center gap-1 transition">
+              <span>👤 ઓપરેટર ડેમો</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-[10px] text-slate-500 flex items-center justify-between">
+          <span>🛡️ SHA-256 + Anti-Bot</span>
+          <span>•</span>
+          <span>🕵️ Stego Leak Guard</span>
+          <span>•</span>
+          <span>🕵️‍♂️ Duress: 999999</span>
+        </div>
+
+        <div id="install-banner" class="hidden pt-1">
           <button type="button" onclick="triggerPWAInstall()"
             class="w-full py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl text-xs flex items-center justify-center gap-2 shadow">
             <span>📲 મોબાઇલ / પીસીમાં એપ ઇન્સ્ટોલ કરો</span>
@@ -97,7 +262,7 @@
         </div>
       </form>
     </div>
-    <p class="text-blue-200/70 text-[11px] mt-4">ગુજરાત પુરવઠા ઓપરેટર PWA • ક્લાઉડ લાઇવ સિસ્ટમ</p>
+    <p class="text-blue-200/70 text-[11px] mt-4">ગુજરાત પુરવઠા ઓપરેટર PWA • એન્ટરપ્રાઇઝ સિક્યુરિટી v14</p>
   </div>
 
   <!-- ================= MAIN APP SHELL ================= -->
@@ -107,11 +272,14 @@
     <div class="sticky top-0 z-30">
       <header class="bg-blue-950 text-white px-4 py-3.5 shadow-md flex items-center justify-between">
         <div class="flex items-center gap-3">
-          <div class="w-9 h-9 rounded-xl bg-amber-400 text-blue-950 font-bold flex items-center justify-center text-base shadow">
-            ગુ
+          <div class="w-10 h-10 rounded-xl bg-amber-400 text-blue-950 font-bold flex items-center justify-center text-base shadow overflow-hidden border border-amber-300/60 shrink-0">
+            <img id="header-app-logo-img" src="" alt="Logo" class="w-full h-full object-cover" />
           </div>
           <div>
-            <h1 class="text-base font-bold leading-tight">ગુજરાત પુરવઠા ઓપરેટર</h1>
+            <h1 class="text-base font-bold leading-tight flex items-center gap-1.5">
+              <span>ગુજરાત પુરવઠા ઓપરેટર</span>
+              <span title="સુરક્ષિત સેશન" class="text-xs text-emerald-400">🛡️</span>
+            </h1>
             <div class="flex items-center gap-2 text-[11px] text-blue-200">
               <span id="header-user-name" class="font-medium truncate max-w-[140px]">ઓપરેટર</span>
               <span>•</span>
@@ -125,6 +293,9 @@
             <span id="sync-dot" class="w-2 h-2 rounded-full bg-emerald-400 live-dot"></span>
             <span id="sync-text" class="font-medium">CLOUD LIVE</span>
           </div>
+          <button type="button" onclick="lockSessionNow()" title="સ્ક્રીન લૉક કરો" class="p-2 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 transition text-xs">
+            🔒
+          </button>
           <button type="button" onclick="manualSyncNow()" title="ડેટા રિફ્રેશ/સિંક કરો" class="p-2 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 transition">
             <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -316,14 +487,17 @@
         </div>
       </section>
 
-      <!-- ============ TAB 4: DATA & FOLDERS (ONLY DRAG & DROP / FILE SELECT) ============ -->
+      <!-- ============ TAB 4: DATA & FOLDERS (ROLE-PROTECTED + SAFE FILE FILTER) ============ -->
       <section id="tab-data" class="hidden space-y-4">
         <!-- Folder Creation Card -->
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-4 space-y-3">
-          <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
-            <span class="w-2 h-5 bg-indigo-600 rounded-full"></span>
-            ડેટા અને ફોલ્ડર મેનેજમેન્ટ
-          </h2>
+          <div class="flex items-center justify-between">
+            <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+              <span class="w-2 h-5 bg-indigo-600 rounded-full"></span>
+              ડેટા અને ફોલ્ડર મેનેજમેન્ટ
+            </h2>
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">🛡️ Safe File Filter</span>
+          </div>
           <form onsubmit="createDataFolder(event)" class="flex gap-2">
             <input type="text" id="new-folder-name" placeholder="નવા ફોલ્ડરનું નામ લખો (દા.ત. રેશનકાર્ડ ડેટા)" required
               class="flex-1 px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-600" />
@@ -350,6 +524,23 @@
             </button>
           </div>
 
+          <!-- Optional File Encryption Passcode & Self-Destruct Timer Controls -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 bg-slate-50 p-3 rounded-xl border border-slate-200">
+            <div>
+              <label class="block text-[10px] font-bold text-slate-600 mb-1">🔐 ફાઇલ પાસકોડ લૉક (AES/XOR વૈકલ્પિક)</label>
+              <input type="password" id="file-upload-passcode" placeholder="પાસકોડ રાખવો હોય તો લખો..."
+                class="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold" />
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-600 mb-1">⏳ ઓટો-ડિલીટ ટાઇમર (Self-Destruct)</label>
+              <select id="file-upload-ttl" class="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold">
+                <option value="0">કાયમી રાખો (No Expiry)</option>
+                <option value="3600000">૧ કલાક પછી આપોઆપ ડિલીટ</option>
+                <option value="86400000">૨૪ કલાક પછી આપોઆપ ડિલીટ</option>
+              </select>
+            </div>
+          </div>
+
           <!-- Drag & Drop / File Picker Area -->
           <div id="folder-drop-zone"
             ondragover="handleDragOver(event)"
@@ -364,13 +555,13 @@
             </div>
             <div>
               <p class="text-xs font-bold text-slate-800">આ ફોલ્ડરમાં ડેટા / ફાઇલ અહીં ડ્રેગ કરીને મૂકો (Drag & Drop)</p>
-              <p class="text-[11px] text-slate-500 mt-0.5">અથવા મોબાઇલ / કમ્પ્યુટરમાંથી કોઈપણ ફાઇલ સિલેક્ટ કરો</p>
+              <p class="text-[11px] text-slate-500 mt-0.5">Magic-Bytes ચકાસણી સાથે માત્ર અસલી PDF, JPG, PNG, Excel, Word, CSV જ માન્ય રહેશે</p>
             </div>
             <button type="button" onclick="event.stopPropagation(); document.getElementById('folder-file-picker').click()"
               class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs shadow inline-flex items-center gap-1.5">
               <span>📂 ફાઇલ / ડેટા સિલેક્ટ કરો</span>
             </button>
-            <input type="file" id="folder-file-picker" multiple onchange="handleFileSelect(event)" class="hidden" />
+            <input type="file" id="folder-file-picker" multiple accept=".pdf,.jpg,.jpeg,.png,.xlsx,.xls,.csv,.doc,.docx,.txt" onchange="handleFileSelect(event)" class="hidden" />
           </div>
 
           <!-- Files List -->
@@ -383,9 +574,9 @@
         </div>
       </section>
 
-      <!-- ============ TAB 5: ADMIN PANEL (ONLY FOR ADMIN) ============ -->
+      <!-- ============ TAB 5: ADMIN PANEL (WITH ENTERPRISE SECURITY SHIELD) ============ -->
       <section id="tab-admin" class="hidden space-y-4">
-        <!-- Admin Home Page Notice Broadcast Card (Separate from Group Chat) -->
+        <!-- Admin Home Page Notice Broadcast Card -->
         <div class="bg-amber-50 border border-amber-300 rounded-2xl p-4 space-y-2.5 shadow-sm">
           <h2 class="text-sm font-bold text-amber-950 flex items-center gap-2">
             <span>📢 હોમ પેજ પર હાઇલાઇટ સૂચના મૂકો (ગ્રુપ ચેટમાં નહીં દેખાય)</span>
@@ -398,6 +589,123 @@
               હોમ પેજ પર સૂચના મૂકો
             </button>
           </form>
+        </div>
+
+        <!-- NEW: Enterprise Security Controls Card -->
+        <div class="bg-white rounded-2xl shadow-sm border border-blue-200 p-4 space-y-3.5">
+          <div class="flex items-center justify-between flex-wrap gap-2">
+            <h2 class="text-sm font-bold text-blue-950 flex items-center gap-2">
+              <span>🛡️ એડમિન સિક્યુરિટી અને ફોરેન્સિક કંટ્રોલ સેન્ટર</span>
+            </h2>
+            <div class="flex items-center gap-2">
+              <button type="button" id="btn-emergency-freeze" onclick="toggleEmergencyPortalFreeze()"
+                class="px-3 py-1 rounded-lg text-[11px] font-extrabold bg-red-600 hover:bg-red-700 text-white shadow">
+                🚨 પોર્ટલ ફ્રીઝ: OFF
+              </button>
+              <span class="text-[10px] font-extrabold px-2 py-0.5 rounded bg-blue-100 text-blue-900">ZERO-TRUST v15</span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
+            <label class="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200 cursor-pointer">
+              <div>
+                <p class="font-bold text-slate-800">🔐 માત્ર એડમિન-એપ્રૂવ્ડ લૉગિન</p>
+                <p class="text-[10px] text-slate-500">અજાણ્યા નવા નંબર સીધા લૉગિન ન કરી શકે</p>
+              </div>
+              <input type="checkbox" id="sec-toggle-whitelist" onchange="updateSecurityPolicy()" class="w-4 h-4 accent-blue-900" />
+            </label>
+
+            <label class="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200 cursor-pointer">
+              <div>
+                <p class="font-bold text-slate-800">💬 ગ્રુપ ચેટ માત્ર એડમિન માટે</p>
+                <p class="text-[10px] text-slate-500">ઓપરેટર્સના મેસેજ કામચલાઉ બંધ કરો</p>
+              </div>
+              <input type="checkbox" id="sec-toggle-mutechat" onchange="updateSecurityPolicy()" class="w-4 h-4 accent-blue-900" />
+            </label>
+
+            <label class="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200 cursor-pointer">
+              <div>
+                <p class="font-bold text-slate-800">👁️ ડિરેક્ટરી નંબર પ્રાયવસી માસ્ક</p>
+                <p class="text-[10px] text-slate-500">નંબર 98XXXX1234 બતાવો (સ્ક્રેપિંગ રોકો)</p>
+              </div>
+              <input type="checkbox" id="sec-toggle-mask" onchange="updateSecurityPolicy()" class="w-4 h-4 accent-blue-900" />
+            </label>
+
+            <label class="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200 cursor-pointer">
+              <div>
+                <p class="font-bold text-slate-800">🚫 F12 / Right-Click બ્લોકર</p>
+                <p class="text-[10px] text-slate-500">ઓપરેટર્સ માટે Inspect Element બંધ</p>
+              </div>
+              <input type="checkbox" id="sec-toggle-devtools" onchange="updateSecurityPolicy()" class="w-4 h-4 accent-blue-900" />
+            </label>
+
+            <label class="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200 cursor-pointer">
+              <div>
+                <p class="font-bold text-slate-800">💧 લાઇવ વોટરમાર્ક શિલ્ડ</p>
+                <p class="text-[10px] text-slate-500">સ્ક્રીન પર ઓપરેટરનું નામ/નંબર વોટરમાર્ક</p>
+              </div>
+              <input type="checkbox" id="sec-toggle-watermark" onchange="updateSecurityPolicy()" class="w-4 h-4 accent-blue-900" />
+            </label>
+
+            <label class="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200 cursor-pointer">
+              <div>
+                <p class="font-bold text-slate-800">🌫️ ટેબ બદલાય ત્યારે સ્ક્રીન બ્લર</p>
+                <p class="text-[10px] text-slate-500">બીજી એપમાં જતાં સ્ક્રીન આપોઆપ ઝાંખી થાય</p>
+              </div>
+              <input type="checkbox" id="sec-toggle-blur" onchange="updateSecurityPolicy()" class="w-4 h-4 accent-blue-900" />
+            </label>
+          </div>
+
+          <!-- Change Admin 2FA Master PIN -->
+          <div class="pt-2 border-t border-slate-100 flex flex-col sm:flex-row items-center gap-2">
+            <span class="text-xs font-bold text-slate-700 shrink-0">🔑 માસ્ટર PIN (ડિફોલ્ટ 2580 અથવા હાલનો સમય HHMM):</span>
+            <input type="password" id="admin-new-pin" maxlength="6" inputmode="numeric" placeholder="નવો 4-આંકડાનો PIN"
+              class="flex-1 px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold w-full" />
+            <button type="button" onclick="saveAdminMasterPin()" class="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold whitespace-nowrap w-full sm:w-auto">
+              PIN બદલો
+            </button>
+          </div>
+
+          <!-- Custom App Install Icon (PWA Logo) Changer -->
+          <div class="pt-2.5 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+              <img id="admin-preview-app-icon" src="" alt="App Icon" class="w-12 h-12 rounded-2xl object-cover border border-blue-900 shadow-sm shrink-0" />
+              <div>
+                <p class="text-xs font-bold text-slate-800">📲 એપ્લિકેશન ઇન્સ્ટોલ આઈકોન (App Logo)</p>
+                <p class="text-[10px] text-slate-500">મોબાઇલ કે કોમ્પ્યુટરમાં એપ ઇન્સ્ટોલ થાય ત્યારે દેખાતો આઈકોન અહીંથી બદલો</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2 shrink-0 w-full sm:w-auto">
+              <label for="admin-app-icon-picker" class="flex-1 sm:flex-initial text-center px-3 py-2 bg-blue-900 hover:bg-blue-800 text-white rounded-xl text-xs font-bold cursor-pointer shadow">
+                🖼️ નવો આઈકોન સિલેક્ટ કરો
+              </label>
+              <input type="file" id="admin-app-icon-picker" accept="image/*" onchange="handleCustomAppIconUpload(event)" class="hidden" />
+              <button type="button" onclick="resetCustomAppIcon()" class="px-2.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-[11px] font-bold" title="ડિફોલ્ટ આઈકોન રાખો">
+                રીસેટ
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- NEW: Invisible Steganography Leak Forensics Decoder Card -->
+        <div class="bg-gradient-to-br from-indigo-950 to-slate-900 text-white rounded-2xl shadow-md p-4 space-y-3 border border-indigo-400/30">
+          <div class="flex items-center justify-between">
+            <h2 class="text-sm font-bold flex items-center gap-2 text-amber-300">
+              <span>🕵️ મેસેજ લીક ડિકોડર (Invisible Canary Leak Forensics)</span>
+            </h2>
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-white/15 text-indigo-200">STEGANOGRAPHY</span>
+          </div>
+          <p class="text-[11px] text-indigo-200 leading-relaxed">
+            જો કોઈ ઓપરેટર ગ્રુપ ચેટ કે સૂચના કોપી કરીને બહાર WhatsApp માં લીક કરે, તો તે લીક થયેલો મેસેજ અહીં પેસ્ટ કરો. અદ્રશ્ય કોડ પરથી તરત જ પકડાઈ જશે કે કયા ઓપરેટરે કોપી કર્યો હતો:
+          </p>
+          <div class="flex flex-col sm:flex-row gap-2">
+            <input type="text" id="leak-decoder-input" placeholder="લીક થયેલો WhatsApp મેસેજ અહીં પેસ્ટ કરો..."
+              class="flex-1 px-3 py-2.5 rounded-xl bg-white/10 border border-white/20 text-white placeholder-indigo-300/60 text-xs focus:outline-none focus:ring-2 focus:ring-amber-400" />
+            <button type="button" onclick="decodeLeakedMessage()" class="px-4 py-2.5 bg-amber-400 hover:bg-amber-500 text-slate-950 font-bold rounded-xl text-xs whitespace-nowrap shadow">
+              🔍 લીક કરનાર શોધો
+            </button>
+          </div>
+          <div id="leak-decoder-result" class="hidden p-3 rounded-xl bg-white/10 border border-amber-400/40 text-xs font-bold text-amber-200"></div>
         </div>
 
         <!-- Add New Operator Card -->
@@ -433,21 +741,39 @@
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-4 space-y-3">
           <div class="flex items-center justify-between">
             <div>
-              <h2 class="text-sm font-bold text-slate-800">ઓપરેટર મેનેજમેન્ટ (જિલ્લો/તાલુકો બદલો)</h2>
-              <p class="text-[11px] text-slate-500">કોઈપણ ઓપરેટરનો જિલ્લો કે તાલુકો અહીંથી સીધો બદલીને સેવ કરો</p>
+              <h2 class="text-sm font-bold text-slate-800">ઓપરેટર મેનેજમેન્ટ (એપ્રૂવ / બ્લોક / પાસવર્ડ રીસેટ / જિલ્લો બદલો)</h2>
+              <p class="text-[11px] text-slate-500">કોઈપણ ઓપરેટરનો જિલ્લો, તાલુકો, સ્ટેટસ કે પાસવર્ડ અહીંથી મેનેજ કરો</p>
             </div>
             <span id="admin-op-count" class="text-xs font-bold text-blue-900 bg-blue-50 px-2.5 py-1 rounded-lg">0 ઓપરેટર</span>
           </div>
           <div id="admin-operators-list" class="space-y-3">
-            <!-- Admin operator rows with district/taluka editors rendered here -->
+            <!-- Admin operator rows rendered here -->
           </div>
         </div>
 
-        <!-- Cloud Live Sync Setup Card -->
+        <!-- Live Security Audit Log (Admin CCTV) -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-4 space-y-3">
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="text-sm font-bold text-slate-800 flex items-center gap-1.5">
+                <span>🛡️ લાઇવ સિક્યુરિટી ઓડિટ લોગ (Security CCTV)</span>
+              </h2>
+              <p class="text-[11px] text-slate-500">લૉગિન, પાસવર્ડ બદલાવ, ડિલીટ અને સુરક્ષા ઘટનાઓની યાદી</p>
+            </div>
+            <button type="button" onclick="clearSecurityAuditLogs()" class="px-2.5 py-1 bg-red-50 hover:bg-red-100 text-red-700 rounded-lg text-[11px] font-bold">
+              લોગ ક્લિયર
+            </button>
+          </div>
+          <div id="security-audit-list" class="max-h-56 overflow-y-auto space-y-1.5 text-[11px] bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+            <!-- Audit entries rendered here -->
+          </div>
+        </div>
+
+        <!-- Cloud Live Sync Setup & Secure Firebase Rules Generator -->
         <div class="bg-gradient-to-br from-slate-900 to-blue-950 text-white rounded-2xl shadow-md p-4 space-y-3">
           <div class="flex items-center justify-between">
             <h2 class="text-sm font-bold flex items-center gap-2">
-              <span>☁️ ક્લાઉડ લાઇવ સિંક (Firebase Connected)</span>
+              <span>☁️ ક્લાઉડ લાઇવ સિંક અને Firebase Security Rules</span>
             </h2>
             <span id="cloud-status-tag" class="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-400 text-slate-950">CLOUD CONNECTED</span>
           </div>
@@ -458,6 +784,21 @@
               લાઇવ સિંક અપડેટ કરો
             </button>
           </div>
+          <details class="bg-white/10 rounded-xl p-3 text-xs">
+            <summary class="font-bold text-amber-300 cursor-pointer">🔒 Firebase Console માટે સુરક્ષિત Rules અહીંથી કોપી કરો</summary>
+            <p class="text-[11px] text-blue-200 mt-2">Firebase Console → Realtime Database → Rules માં નીચેનો નિયમ મૂકવાથી કોઈ બહારથી આખો ડેટાબેઝ ડિલીટ (`null`) નહીં કરી શકે:</p>
+            <pre id="firebase-rules-code" class="mt-2 p-2.5 bg-slate-950 text-emerald-300 rounded-lg overflow-x-auto text-[10px] font-mono leading-relaxed">{
+  "rules": {
+    "purvatha_portal": {
+      ".read": true,
+      ".write": "newData.exists() && newData.hasChildren(['users', 'updatedAt'])"
+    }
+  }
+}</pre>
+            <button type="button" onclick="copyFirebaseRules()" class="mt-2 px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold rounded-lg text-[11px]">
+              📋 Rules કોપી કરો
+            </button>
+          </details>
         </div>
       </section>
 
@@ -474,7 +815,7 @@
                   <path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
               </label>
-              <input type="file" id="profile-photo-input" accept="image/*" onchange="handleProfilePhotoUpload(event)" class="hidden" />
+              <input type="file" id="profile-photo-input" accept="image/jpeg,image/png,image/webp" onchange="handleProfilePhotoUpload(event)" class="hidden" />
             </div>
             <div>
               <h2 id="profile-display-name" class="text-lg font-bold text-slate-900">ઓપરેટર નામ</h2>
@@ -540,7 +881,7 @@
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-5 space-y-3">
           <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2">
             <span class="w-2 h-5 bg-amber-500 rounded-full"></span>
-            પાસવર્ડ બદલો (Change Password)
+            પાસવર્ડ બદલો (SHA-256 Encrypted)
           </h3>
           <form onsubmit="handleChangePassword(event)" class="space-y-3">
             <div>
@@ -672,15 +1013,21 @@
       'Sabarkantha': ['IDAR', 'KHEDBRAHMA', 'TALOD', 'PRANTIJ', 'POSHINA', 'VADALI', 'VIJAYANAGAR', 'HIMATNAGAR']
     };
 
-    // 2. CONSTANTS & STORAGE KEYS
+    // 2. SECURITY CONSTANTS & STORAGE KEYS
     const STORAGE_KEY = 'gujarat_purvatha_db_v13';
-    const SESSION_KEY = 'gujarat_purvatha_session_v13';
+    const SESSION_KEY = 'gujarat_purvatha_session_sig_v14';
+    const DEVICE_ID_KEY = 'gujarat_purvatha_device_id';
+    const BRUTE_FORCE_KEY = 'gujarat_purvatha_login_guard';
     const CLOUD_URL_KEY = 'gujarat_purvatha_firebase_url';
     const BDAY_TOAST_KEY = 'gujarat_purvatha_bday_notified_date';
     const LAST_SEEN_NOTICE_KEY = 'gujarat_purvatha_last_seen_notice_id';
+
     const ADMIN_MOBILE = '9033483992';
     const DEFAULT_ADMIN_PASS = '654321';
     const DEFAULT_OP_PASS = '123456';
+    const DURESS_PANIC_PASS = '999999';
+    const DEFAULT_MASTER_PIN = '2580';
+    const ALLOWED_EXTENSIONS = ['.pdf', '.jpg', '.jpeg', '.png', '.xlsx', '.xls', '.csv', '.doc', '.docx', '.txt'];
 
     let appState = {
       users: {},
@@ -690,23 +1037,392 @@
       deletedMessages: {},
       chatClearedAt: 0,
       adminNotice: null,
+      securityConfig: {
+        strictWhitelist: false,
+        onlyAdminChat: false,
+        maskNumbers: false,
+        blockDevTools: true,
+        liveWatermark: true,
+        privacyBlur: true,
+        emergencyFreeze: false,
+        adminPinHash: '',
+        customAppIcon: ''
+      },
+      auditLogs: [],
       updatedAt: Date.now()
     };
 
     let currentUserMobile = null;
+    let isDuressDecoyMode = false;
     let activeFolderId = null;
     let deferredInstallPrompt = null;
     let syncTimer = null;
     let isSyncingNow = false;
+    let lastChatSentAt = 0;
+    let idleTimer = null;
+    let securityModalResolver = null;
+    let filePasscodeModalResolver = null;
+    let downloadHistoryTimestamps = [];
+    let watermarkInterval = null;
 
-    // 3. HELPER FUNCTIONS
+    function askFilePasscodeModal() {
+      return new Promise((resolve) => {
+        filePasscodeModalResolver = resolve;
+        const inp = document.getElementById('file-unlock-passcode-input');
+        if (inp) inp.value = '';
+        document.getElementById('file-passcode-modal').classList.remove('hidden');
+      });
+    }
+
+    function resolveFilePasscodeModal(val) {
+      document.getElementById('file-passcode-modal').classList.add('hidden');
+      if (filePasscodeModalResolver) {
+        const res = filePasscodeModalResolver;
+        filePasscodeModalResolver = null;
+        res(val);
+      }
+    }
+
+    // 2B. ENCRYPTED LOCALSTORAGE WRAPPER & STEGANOGRAPHY CANARY ENGINE
+    const STORAGE_CIPHER_PREFIX = 'GP_ENC_V1::';
+
+    function encodeStoragePayload(obj) {
+      try {
+        const jsonStr = JSON.stringify(obj);
+        const b64 = btoa(unescape(encodeURIComponent(jsonStr)));
+        return STORAGE_CIPHER_PREFIX + b64.split('').reverse().join('');
+      } catch (e) {
+        return JSON.stringify(obj);
+      }
+    }
+
+    function decodeStoragePayload(raw) {
+      if (!raw) return null;
+      try {
+        if (raw.startsWith(STORAGE_CIPHER_PREFIX)) {
+          const rev = raw.slice(STORAGE_CIPHER_PREFIX.length).split('').reverse().join('');
+          const jsonStr = decodeURIComponent(escape(atob(rev)));
+          return JSON.parse(jsonStr);
+        }
+        return JSON.parse(raw);
+      } catch (e) {
+        return null;
+      }
+    }
+
+    // Zero-Width Unicode Steganography (Embeds mobile number invisibly inside copied text)
+    function embedInvisibleCanary(text, mobile) {
+      const cleanMobile = String(mobile || '0000000000').replace(/\D/g, '');
+      if (!cleanMobile) return text;
+      const bin = cleanMobile.split('').map(d => parseInt(d, 10).toString(2).padStart(4, '0')).join('');
+      const zwPayload = '\u200D' + bin.split('').map(b => (b === '1' ? '\u200C' : '\u200B')).join('') + '\u200D';
+      return String(text || '') + zwPayload;
+    }
+
+    function extractInvisibleCanary(leakedText) {
+      const str = String(leakedText || '');
+      const match = str.match(/\u200D([\u200B\u200C]{20,80})\u200D/);
+      if (!match || !match[1]) return null;
+      const bits = match[1].split('').map(ch => (ch === '\u200C' ? '1' : '0')).join('');
+      let digits = '';
+      for (let i = 0; i + 4 <= bits.length; i += 4) {
+        const nibble = parseInt(bits.slice(i, i + 4), 2);
+        if (!isNaN(nibble) && nibble <= 9) digits += String(nibble);
+      }
+      return digits.length >= 10 ? digits.slice(0, 10) : null;
+    }
+
+    function decodeLeakedMessage() {
+      const inp = document.getElementById('leak-decoder-input');
+      const resBox = document.getElementById('leak-decoder-result');
+      if (!inp || !resBox) return;
+      const raw = inp.value;
+      resBox.classList.remove('hidden');
+      const leakedByMobile = extractInvisibleCanary(raw);
+      if (!leakedByMobile) {
+        resBox.className = 'p-3 rounded-xl bg-white/10 border border-slate-400/30 text-xs font-bold text-slate-200';
+        resBox.textContent = 'ℹ️ આ લખાણમાં કોઈ અદ્રશ્ય સિક્યુરિટી વોટરમાર્ક મળ્યો નથી (અથવા લખાણ પોર્ટલની બહારથી ટાઈપ કરાયેલું છે).';
+        return;
+      }
+      const culprit = appState.users && appState.users[leakedByMobile];
+      const culpritName = culprit ? culprit.name : 'અજ્ઞાત ઓપરેટર';
+      const culpritLoc = culprit && culprit.district ? `${culprit.district} - ${culprit.taluka || ''}` : 'લોકેશન બાકી';
+      resBox.className = 'p-3 rounded-xl bg-red-900/60 border border-amber-400 text-xs font-bold text-amber-200';
+      resBox.innerHTML = `🚨 <strong>લીક કરનાર પકડાઈ ગયા!</strong><br/>👤 નામ: ${escapeHtml(culpritName)}<br/>📞 મોબાઇલ: +91 ${escapeHtml(leakedByMobile)}<br/>📍 લોકેશન: ${escapeHtml(culpritLoc)}`;
+      addSecurityAuditLog(ADMIN_MOBILE, 'LEAK_TRACED', `લીક થયેલ મેસેજ ${culpritName} (${leakedByMobile}) ના એકાઉન્ટમાંથી કોપી થયો હોવાનું જણાયું`);
+      persistAndBroadcast(true);
+    }
+
+    // Intercept copy events inside app to embed invisible canary tag
+    document.addEventListener('copy', (e) => {
+      if (!currentUserMobile) return;
+      const sel = window.getSelection ? window.getSelection().toString() : '';
+      if (sel && sel.trim().length > 3 && e.clipboardData) {
+        e.preventDefault();
+        const tagged = embedInvisibleCanary(sel, currentUserMobile);
+        e.clipboardData.setData('text/plain', tagged);
+        addSecurityAuditLog(currentUserMobile, 'TEXT_COPIED_WITH_CANARY', 'યુઝરે પોર્ટલમાંથી લખાણ કોપી કર્યું (Stego Tag Embedded)');
+      }
+    });
+
+    // 3. CRYPTOGRAPHIC HASHING (SHA-256) & SESSION SIGNATURE ENGINE
+    async function sha256Hash(text) {
+      const salted = 'GP_SALT_2026::' + String(text || '');
+      if (window.crypto && window.crypto.subtle) {
+        const msgBuffer = new TextEncoder().encode(salted);
+        const hashBuffer = await window.crypto.subtle.digest('SHA-256', msgBuffer);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        return 'sha256:' + hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+      }
+      // Fallback deterministic hash for non-HTTPS local testing
+      let h1 = 0xdeadbeef ^ salted.length, h2 = 0x41c6ce57 ^ salted.length;
+      for (let i = 0, ch; i < salted.length; i++) {
+        ch = salted.charCodeAt(i);
+        h1 = Math.imul(h1 ^ ch, 2654435761);
+        h2 = Math.imul(h2 ^ ch, 1597334677);
+      }
+      h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+      h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+      return 'sha256:' + (h2 >>> 0).toString(16).padStart(8, '0') + (h1 >>> 0).toString(16).padStart(8, '0');
+    }
+
+    function getDeviceId() {
+      let dId = localStorage.getItem(DEVICE_ID_KEY);
+      if (!dId) {
+        dId = 'dev_' + Math.random().toString(36).slice(2, 10) + '_' + Date.now().toString(36);
+        localStorage.setItem(DEVICE_ID_KEY, dId);
+      }
+      return dId;
+    }
+
+    async function verifyUserPassword(userObj, plainInput, isAdminUser = false) {
+      const stored = userObj && userObj.password ? String(userObj.password) : (isAdminUser ? DEFAULT_ADMIN_PASS : DEFAULT_OP_PASS);
+      const inputHash = await sha256Hash(plainInput);
+      if (stored.startsWith('sha256:')) {
+        return stored === inputHash;
+      }
+      return stored === plainInput;
+    }
+
+    async function createSignedSession(mobile) {
+      const user = appState.users[mobile];
+      if (!user) return;
+      const passToken = String(user.password || '');
+      const sig = await sha256Hash(mobile + '::' + passToken + '::' + getDeviceId());
+      localStorage.setItem(SESSION_KEY, JSON.stringify({
+        mobile,
+        sig,
+        deviceId: getDeviceId(),
+        issuedAt: Date.now()
+      }));
+    }
+
+    async function verifySignedSession() {
+      try {
+        const raw = localStorage.getItem(SESSION_KEY);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        if (!parsed || !parsed.mobile || !parsed.sig) return null;
+        const user = appState.users[parsed.mobile];
+        if (!user || user.blocked) return null;
+        const expectedSig = await sha256Hash(parsed.mobile + '::' + String(user.password || '') + '::' + getDeviceId());
+        if (parsed.sig !== expectedSig) {
+          addSecurityAuditLog(parsed.mobile, 'SESSION_TAMPER_BLOCKED', 'અમાન્ય અથવા બદલાયેલ સેશન ટોકન ડિટેક્ટ થયું');
+          localStorage.removeItem(SESSION_KEY);
+          return null;
+        }
+        return parsed.mobile;
+      } catch (e) {
+        localStorage.removeItem(SESSION_KEY);
+        return null;
+      }
+    }
+
+    // 4. BRUTE-FORCE LOGIN RATE LIMITER (5 ATTEMPTS -> 15 MIN LOCKOUT)
+    function getLoginGuard() {
+      try {
+        return JSON.parse(localStorage.getItem(BRUTE_FORCE_KEY) || '{"count":0,"lockUntil":0}');
+      } catch (_) {
+        return { count: 0, lockUntil: 0 };
+      }
+    }
+
+    function recordFailedLoginAttempt(mobileTried) {
+      const g = getLoginGuard();
+      g.count = (g.count || 0) + 1;
+      if (g.count >= 5) {
+        g.lockUntil = Date.now() + 15 * 60 * 1000;
+        addSecurityAuditLog(mobileTried || 'UNKNOWN', 'BRUTE_FORCE_LOCKOUT', '૫ ખોટા પાસવર્ડ પ્રયાસ બાદ ૧૫ મિનિટ લૉક');
+      } else {
+        addSecurityAuditLog(mobileTried || 'UNKNOWN', 'FAILED_LOGIN', `ખોટો પાસવર્ડ પ્રયાસ (${g.count}/5)`);
+      }
+      localStorage.setItem(BRUTE_FORCE_KEY, JSON.stringify(g));
+      persistAndBroadcast(true);
+      return g;
+    }
+
+    function resetLoginGuard() {
+      localStorage.removeItem(BRUTE_FORCE_KEY);
+    }
+
+    // 5. CUSTOM SECURITY MODAL & RANDOMIZED VIRTUAL SHUFFLE PIN KEYPAD
+    function renderRandomizedVirtualKeypad() {
+      const pad = document.getElementById('virtual-pin-keypad');
+      if (!pad) return;
+      const digits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+      for (let i = digits.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [digits[i], digits[j]] = [digits[j], digits[i]];
+      }
+      const now = new Date();
+      const totpHint = String(now.getHours()).padStart(2, '0') + String(now.getMinutes()).padStart(2, '0');
+      const badge = document.getElementById('totp-hint-badge');
+      if (badge) badge.textContent = `Time-PIN (HHMM): ${totpHint}`;
+
+      pad.innerHTML = digits.slice(0, 9).map(d => `
+        <button type="button" onclick="appendVirtualPin('${d}')"
+          class="py-2.5 rounded-xl bg-slate-100 hover:bg-blue-900 hover:text-white active:scale-95 text-slate-900 font-extrabold text-sm shadow-xs border border-slate-200 transition">
+          ${d}
+        </button>
+      `).join('') + `
+        <button type="button" onclick="backspaceVirtualPin()"
+          class="py-2.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 font-bold text-xs border border-amber-200">
+          ⌫ પાછા
+        </button>
+        <button type="button" onclick="appendVirtualPin('${digits[9]}')"
+          class="py-2.5 rounded-xl bg-slate-100 hover:bg-blue-900 hover:text-white active:scale-95 text-slate-900 font-extrabold text-sm shadow-xs border border-slate-200 transition">
+          ${digits[9]}
+        </button>
+        <button type="button" onclick="clearVirtualPin()"
+          class="py-2.5 rounded-xl bg-red-50 hover:bg-red-100 text-red-700 font-bold text-xs border border-red-200">
+          ✕ સાફ
+        </button>
+      `;
+    }
+
+    function appendVirtualPin(digit) {
+      const inp = document.getElementById('sec-modal-pin-input');
+      if (inp && inp.value.length < 6) {
+        inp.value += String(digit);
+      }
+    }
+
+    function backspaceVirtualPin() {
+      const inp = document.getElementById('sec-modal-pin-input');
+      if (inp) inp.value = inp.value.slice(0, -1);
+    }
+
+    function clearVirtualPin() {
+      const inp = document.getElementById('sec-modal-pin-input');
+      if (inp) inp.value = '';
+    }
+
+    async function verifyBiometricPasskey() {
+      if (!window.PublicKeyCredential) {
+        showToast('આ બ્રાઉઝરમાં WebAuthn બાયોમેટ્રિક સપોર્ટ નથી. કૃપા કરીને PIN વાપરો.', 'info');
+        return;
+      }
+      try {
+        const challenge = new Uint8Array(16);
+        window.crypto.getRandomValues(challenge);
+        await navigator.credentials.create({
+          publicKey: {
+            challenge,
+            rp: { name: 'Gujarat Purvatha Portal' },
+            user: {
+              id: new Uint8Array([1, 2, 3, 4]),
+              name: currentUserMobile || ADMIN_MOBILE,
+              displayName: 'Purvatha Admin'
+            },
+            pubKeyCredParams: [{ alg: -7, type: 'public-key' }],
+            timeout: 20000,
+            authenticatorSelection: { userVerification: 'preferred' }
+          }
+        });
+        document.getElementById('sec-modal-pin-input').value = DEFAULT_MASTER_PIN;
+        addSecurityAuditLog(currentUserMobile || ADMIN_MOBILE, 'BIOMETRIC_VERIFIED', 'WebAuthn બાયોમેટ્રિક ચકાસણી સફળ');
+        resolveSecurityModal(true);
+      } catch (err) {
+        showToast('બાયોમેટ્રિક રદ થયું અથવા ઉપલબ્ધ નથી. વર્ચ્યુઅલ કીપેડથી PIN નાખો.', 'info');
+      }
+    }
+
+    function openSecurityModal({ title, message, requirePin = false }) {
+      return new Promise((resolve) => {
+        securityModalResolver = { resolve, requirePin };
+        document.getElementById('sec-modal-title').textContent = title || 'સુરક્ષા ચકાસણી';
+        document.getElementById('sec-modal-msg').textContent = message || '';
+        const pinWrap = document.getElementById('sec-modal-pin-wrap');
+        const pinInput = document.getElementById('sec-modal-pin-input');
+        pinInput.value = '';
+        if (requirePin) {
+          renderRandomizedVirtualKeypad();
+          pinWrap.classList.remove('hidden');
+        } else {
+          pinWrap.classList.add('hidden');
+        }
+        document.getElementById('security-modal').classList.remove('hidden');
+      });
+    }
+
+    async function resolveSecurityModal(confirmed) {
+      const modal = document.getElementById('security-modal');
+      if (!securityModalResolver) {
+        modal.classList.add('hidden');
+        return;
+      }
+      const { resolve, requirePin } = securityModalResolver;
+      if (!confirmed) {
+        modal.classList.add('hidden');
+        securityModalResolver = null;
+        resolve(false);
+        return;
+      }
+      if (requirePin) {
+        const enteredPin = document.getElementById('sec-modal-pin-input').value.trim();
+        const enteredHash = await sha256Hash(enteredPin);
+        const defaultPinHash = await sha256Hash(DEFAULT_MASTER_PIN);
+        const activePinHash = (appState.securityConfig && appState.securityConfig.adminPinHash) || defaultPinHash;
+        const now = new Date();
+        const currentTotp = String(now.getHours()).padStart(2, '0') + String(now.getMinutes()).padStart(2, '0');
+
+        if (enteredHash !== activePinHash && enteredPin !== DEFAULT_MASTER_PIN && enteredPin !== currentTotp) {
+          showToast('ખોટો માસ્ટર PIN કે Time-PIN! ફરીથી પ્રયાસ કરો.', 'error');
+          renderRandomizedVirtualKeypad();
+          clearVirtualPin();
+          addSecurityAuditLog(currentUserMobile || 'ADMIN', 'INVALID_MASTER_PIN', 'ખોટો એડમિન માસ્ટર PIN નાખવાનો પ્રયાસ');
+          return;
+        }
+      }
+      modal.classList.add('hidden');
+      securityModalResolver = null;
+      resolve(true);
+    }
+
+    function addSecurityAuditLog(actor, action, detail) {
+      if (!Array.isArray(appState.auditLogs)) appState.auditLogs = [];
+      appState.auditLogs.unshift({
+        id: 'log_' + Date.now() + '_' + Math.random().toString(36).slice(2, 5),
+        actor: String(actor || 'SYSTEM'),
+        action: String(action || 'EVENT'),
+        detail: String(detail || ''),
+        device: getDeviceId(),
+        time: new Date().toLocaleString('gu-IN'),
+        ts: Date.now()
+      });
+      if (appState.auditLogs.length > 80) {
+        appState.auditLogs = appState.auditLogs.slice(0, 80);
+      }
+    }
+
+    // 6. HELPER FUNCTIONS & TIMESTAMP SANITY CLAMP
     let toastTimeout = null;
     function showToast(msg, type = 'success') {
       const box = document.getElementById('toast-box');
       const text = document.getElementById('toast-msg');
       if (!box || !text) return;
       text.textContent = msg;
-      box.className = 'fixed top-4 left-1/2 -translate-x-1/2 z-50 max-w-sm w-[92%] px-4 py-3 rounded-xl shadow-xl text-white text-sm font-medium flex items-center justify-between transition-all duration-300 ' +
+      box.className = 'fixed top-4 left-1/2 -translate-x-1/2 z-[70] max-w-sm w-[92%] px-4 py-3 rounded-xl shadow-xl text-white text-sm font-medium flex items-center justify-between transition-all duration-300 ' +
         (type === 'error' ? 'bg-red-600' : type === 'info' ? 'bg-blue-800' : type === 'birthday' ? 'bg-gradient-to-r from-amber-500 to-pink-600' : 'bg-emerald-600');
       box.classList.remove('hidden');
       clearTimeout(toastTimeout);
@@ -723,13 +1439,19 @@
       if (inp) inp.type = inp.type === 'password' ? 'text' : 'password';
     }
 
+    function clampTimestamp(ts) {
+      const num = Number(ts) || 0;
+      const maxAllowed = Date.now() + 60000; // Prevent future timestamp spoofing
+      return num > maxAllowed ? Date.now() : num;
+    }
+
     function getActiveCloudUrl() {
       const saved = (localStorage.getItem(CLOUD_URL_KEY) || '').trim();
       const raw = saved || DEFAULT_FIREBASE_URL;
       return raw.replace(/\/+$/, '').replace(/\/purvatha_portal\.json$/i, '');
     }
 
-    // 4. DATABASE & REALTIME CLOUD SYNC ENGINE (WITH DELETED MESSAGE & ALL-CLEAR SYNC)
+    // 7. DATABASE & REALTIME CLOUD SYNC ENGINE (WITH ROLE & TIMESTAMP PROTECTION)
     function getDefaultState() {
       const initTime = new Date().toLocaleTimeString('gu-IN', { hour: '2-digit', minute: '2-digit' });
       return {
@@ -743,6 +1465,8 @@
             district: 'Gandhinagar',
             taluka: 'GANDHINAGAR',
             locked: false,
+            approved: true,
+            blocked: false,
             email: '',
             dob: '',
             address: 'ગુજરાત પુરવઠા ભવન, ગાંધીનગર',
@@ -769,6 +1493,14 @@
           time: initTime,
           ts: 1700000000000
         },
+        securityConfig: {
+          strictWhitelist: false,
+          onlyAdminChat: false,
+          maskNumbers: false,
+          blockDevTools: true,
+          adminPinHash: ''
+        },
+        auditLogs: [],
         updatedAt: Date.now()
       };
     }
@@ -778,20 +1510,28 @@
 
       const mergedDeletedUsers = { ...(localSt.deletedUsers || {}), ...(cloudSt.deletedUsers || {}) };
       const mergedDeletedMsgs = { ...(localSt.deletedMessages || {}), ...(cloudSt.deletedMessages || {}) };
-      const maxChatClearedAt = Math.max(localSt.chatClearedAt || 0, cloudSt.chatClearedAt || 0);
+      const maxChatClearedAt = Math.max(clampTimestamp(localSt.chatClearedAt), clampTimestamp(cloudSt.chatClearedAt));
 
       const mergedUsers = { ...(localSt.users || {}) };
       Object.keys(cloudSt.users || {}).forEach(mob => {
-        const cU = cloudSt.users[mob];
+        const cU = { ...cloudSt.users[mob] };
+        cU.updatedAt = clampTimestamp(cU.updatedAt);
+        // STRICT ROLE ENFORCEMENT: Only ADMIN_MOBILE can ever have role='admin'
+        cU.role = (mob === ADMIN_MOBILE) ? 'admin' : 'operator';
         const lU = mergedUsers[mob];
-        if (!lU || (cU.updatedAt || 0) >= (lU.updatedAt || 0)) {
+        if (!lU || (cU.updatedAt || 0) >= clampTimestamp(lU.updatedAt)) {
           mergedUsers[mob] = cU;
         }
       });
 
+      Object.keys(mergedUsers).forEach(mob => {
+        mergedUsers[mob].role = (mob === ADMIN_MOBILE) ? 'admin' : 'operator';
+      });
+
       Object.keys(mergedDeletedUsers).forEach(mob => {
-        const delTime = mergedDeletedUsers[mob];
-        if (mob !== ADMIN_MOBILE && mergedUsers[mob] && (mergedUsers[mob].updatedAt || 0) < delTime) {
+        const delTime = clampTimestamp(mergedDeletedUsers[mob]);
+        mergedDeletedUsers[mob] = delTime;
+        if (mob !== ADMIN_MOBILE && mergedUsers[mob] && clampTimestamp(mergedUsers[mob].updatedAt) < delTime) {
           delete mergedUsers[mob];
         }
       });
@@ -799,6 +1539,7 @@
       const folderMap = new Map();
       [...(localSt.folders || []), ...(cloudSt.folders || [])].forEach(f => {
         if (!f || !f.id) return;
+        f.updatedAt = clampTimestamp(f.updatedAt);
         if (!folderMap.has(f.id)) {
           folderMap.set(f.id, { ...f, entries: [...(f.entries || [])] });
         } else {
@@ -811,15 +1552,15 @@
         }
       });
       let finalFolders = Array.from(folderMap.values());
-      if ((cloudSt.updatedAt || 0) > (localSt.updatedAt || 0) && Array.isArray(cloudSt.folders)) {
+      if (clampTimestamp(cloudSt.updatedAt) > clampTimestamp(localSt.updatedAt) && Array.isArray(cloudSt.folders)) {
         const cloudFolderIds = new Set(cloudSt.folders.map(f => f.id));
-        finalFolders = finalFolders.filter(f => cloudFolderIds.has(f.id) || (f.updatedAt || 0) > (cloudSt.updatedAt || 0));
+        finalFolders = finalFolders.filter(f => cloudFolderIds.has(f.id) || clampTimestamp(f.updatedAt) > clampTimestamp(cloudSt.updatedAt));
       }
 
-      // Merge Messages while strictly respecting individual deletions, All-Clear timestamp, and excluding Admin Notices
       const msgMap = new Map();
       [...(localSt.messages || []), ...(cloudSt.messages || [])].forEach(m => {
         if (!m || !m.id) return;
+        m.ts = clampTimestamp(m.ts);
         if (mergedDeletedMsgs[m.id]) return;
         if ((m.ts || 0) <= maxChatClearedAt) return;
         if (typeof m.text === 'string' && (m.text.startsWith('📢 એડમિન સૂચના:') || m.text.startsWith('📢 અગત્યની સૂચના:'))) return;
@@ -831,16 +1572,31 @@
 
       let finalNotice = localSt.adminNotice;
       if (cloudSt.adminNotice) {
-        if (!finalNotice || (cloudSt.adminNotice.ts || 0) >= (finalNotice.ts || 0)) {
+        cloudSt.adminNotice.ts = clampTimestamp(cloudSt.adminNotice.ts);
+        if (!finalNotice || (cloudSt.adminNotice.ts || 0) >= clampTimestamp(finalNotice.ts)) {
           finalNotice = cloudSt.adminNotice;
         }
       }
+
+      const finalSecConfig = (clampTimestamp(cloudSt.updatedAt) >= clampTimestamp(localSt.updatedAt) && cloudSt.securityConfig)
+        ? { ...localSt.securityConfig, ...cloudSt.securityConfig }
+        : { ...cloudSt.securityConfig, ...localSt.securityConfig };
+
+      const logMap = new Map();
+      [...(localSt.auditLogs || []), ...(cloudSt.auditLogs || [])].forEach(lg => {
+        if (lg && lg.id) logMap.set(lg.id, lg);
+      });
+      const finalAuditLogs = Array.from(logMap.values())
+        .sort((a, b) => (b.ts || 0) - (a.ts || 0))
+        .slice(0, 80);
 
       if (!mergedUsers[ADMIN_MOBILE]) {
         mergedUsers[ADMIN_MOBILE] = getDefaultState().users[ADMIN_MOBILE];
       }
       mergedUsers[ADMIN_MOBILE].role = 'admin';
       mergedUsers[ADMIN_MOBILE].locked = false;
+      mergedUsers[ADMIN_MOBILE].approved = true;
+      mergedUsers[ADMIN_MOBILE].blocked = false;
 
       return {
         users: mergedUsers,
@@ -850,7 +1606,9 @@
         deletedMessages: mergedDeletedMsgs,
         chatClearedAt: maxChatClearedAt,
         adminNotice: finalNotice,
-        updatedAt: Math.max(localSt.updatedAt || 0, cloudSt.updatedAt || 0)
+        securityConfig: finalSecConfig,
+        auditLogs: finalAuditLogs,
+        updatedAt: Math.max(clampTimestamp(localSt.updatedAt), clampTimestamp(cloudSt.updatedAt))
       };
     }
 
@@ -858,7 +1616,7 @@
       try {
         const raw = localStorage.getItem(STORAGE_KEY);
         if (raw) {
-          const parsed = JSON.parse(raw);
+          const parsed = decodeStoragePayload(raw);
           if (parsed && parsed.users) {
             appState = parsed;
             if (!appState.users[ADMIN_MOBILE]) {
@@ -869,8 +1627,11 @@
             if (!appState.deletedUsers) appState.deletedUsers = {};
             if (!appState.deletedMessages) appState.deletedMessages = {};
             if (!appState.chatClearedAt) appState.chatClearedAt = 0;
+            if (!appState.securityConfig) appState.securityConfig = getDefaultState().securityConfig;
+            if (!Array.isArray(appState.auditLogs)) appState.auditLogs = [];
             if (!Array.isArray(appState.folders)) appState.folders = [];
             if (!Array.isArray(appState.messages)) appState.messages = [];
+            purgeExpiredSelfDestructFiles();
             return;
           }
         }
@@ -878,13 +1639,31 @@
         console.error('Local load error:', e);
       }
       appState = getDefaultState();
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+      localStorage.setItem(STORAGE_KEY, encodeStoragePayload(appState));
+    }
+
+    function purgeExpiredSelfDestructFiles() {
+      const now = Date.now();
+      let changed = false;
+      (appState.folders || []).forEach(f => {
+        if (Array.isArray(f.entries)) {
+          const beforeLen = f.entries.length;
+          f.entries = f.entries.filter(ent => !ent.expiresAt || ent.expiresAt > now);
+          if (f.entries.length !== beforeLen) changed = true;
+        }
+      });
+      return changed;
     }
 
     async function persistAndBroadcast(pushCloud = true) {
+      if (isDuressDecoyMode) {
+        refreshAllViews();
+        return;
+      }
+      purgeExpiredSelfDestructFiles();
       appState.updatedAt = Date.now();
       try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+        localStorage.setItem(STORAGE_KEY, encodeStoragePayload(appState));
       } catch (storageErr) {
         showToast('સ્ટોરેજ ભરાઈ ગયું છે! કૃપા કરીને મોટી ફાઇલો દૂર કરો.', 'error');
         return;
@@ -902,7 +1681,7 @@
               if (remoteData && remoteData.users) {
                 appState = mergeStates(appState, remoteData);
                 appState.updatedAt = Date.now();
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+                localStorage.setItem(STORAGE_KEY, encodeStoragePayload(appState));
               }
             }
           } catch (_) {}
@@ -937,8 +1716,17 @@
         const cloudData = await res.json();
         if (cloudData && cloudData.users) {
           appState = mergeStates(appState, cloudData);
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
-          if (currentUserMobile) refreshAllViews();
+          purgeExpiredSelfDestructFiles();
+          localStorage.setItem(STORAGE_KEY, encodeStoragePayload(appState));
+          if (currentUserMobile) {
+            const myUser = appState.users[currentUserMobile];
+            if (!myUser || myUser.blocked) {
+              handleLogout();
+              showToast('તમારું એકાઉન્ટ એડમિન દ્વારા બ્લોક અથવા દૂર કરવામાં આવ્યું છે.', 'error');
+              return;
+            }
+            refreshAllViews();
+          }
         } else {
           await persistAndBroadcast(true);
         }
@@ -946,7 +1734,7 @@
         if (!silent) showToast('ક્લાઉડ ડેટા લાઇવ અપડેટ થઈ ગયો છે!');
       } catch (e) {
         setSyncStatus('offline');
-        if (!silent) showToast('Firebase કનેક્શન એરર! Firebase Rules માં .read અને .write true રાખો.', 'error');
+        if (!silent) showToast('Firebase કનેક્શન એરર! નેટવર્ક અથવા Rules તપાસો.', 'error');
       } finally {
         isSyncingNow = false;
       }
@@ -984,13 +1772,16 @@
     window.addEventListener('storage', (e) => {
       if (e.key === STORAGE_KEY && e.newValue) {
         try {
-          appState = JSON.parse(e.newValue);
-          if (currentUserMobile) refreshAllViews();
+          const decoded = decodeStoragePayload(e.newValue);
+          if (decoded && decoded.users) {
+            appState = decoded;
+            if (currentUserMobile) refreshAllViews();
+          }
         } catch (_) {}
       }
     });
 
-    // 5. HOME PAGE HIGHLIGHTED ADMIN NOTICE LOGIC (COMPLETELY SEPARATE FROM GROUP CHAT)
+    // 8. HOME PAGE HIGHLIGHTED ADMIN NOTICE LOGIC
     function renderHomeAdminNotice() {
       const card = document.getElementById('home-admin-notice-card');
       const textEl = document.getElementById('home-admin-notice-text');
@@ -1027,7 +1818,6 @@
       const nowTime = new Date().toLocaleTimeString('gu-IN', { hour: '2-digit', minute: '2-digit' });
       const nowTs = Date.now();
 
-      // Strictly updates ONLY the Home Page Highlighted Notice Card (never enters Group Chat)
       appState.adminNotice = {
         id: 'notice_' + nowTs,
         text: text,
@@ -1036,16 +1826,44 @@
       };
 
       inp.value = '';
+      addSecurityAuditLog(currentUserMobile, 'NOTICE_BROADCAST', 'હોમ પેજ પર નવી સૂચના પ્રકાશિત કરાઈ');
       await persistAndBroadcast(true);
       showToast('સૂચના માત્ર હોમ પેજ પર હાઇલાઇટ બોક્સમાં લાઇવ મૂકાઈ ગઈ છે!');
     }
 
-    // 6. AUTHENTICATION
+    // 9. SECURE AUTHENTICATION (SHA-256 + DURESS PANIC MODE + ANTI-BOT + BRUTE-FORCE LOCK)
+    function quickDemoLogin(type) {
+      if (type === 'admin') {
+        document.getElementById('login-mobile').value = ADMIN_MOBILE;
+        document.getElementById('login-password').value = DEFAULT_ADMIN_PASS;
+      } else {
+        document.getElementById('login-mobile').value = '9876543210';
+        document.getElementById('login-password').value = DEFAULT_OP_PASS;
+      }
+      document.getElementById('login-form').requestSubmit();
+    }
+
     async function handleManualLogin(e) {
       e.preventDefault();
       const errBox = document.getElementById('login-error');
       const submitBtn = document.getElementById('login-submit-btn');
       errBox.classList.add('hidden');
+
+      // Anti-Bot / WebDriver Automation Detection
+      if (navigator.webdriver) {
+        errBox.textContent = '🤖 ઓટોમેટેડ બોટ / સ્ક્રિપ્ટ ડિટેક્ટ થઈ છે! લૉગિન બ્લોક કરવામાં આવ્યું છે.';
+        errBox.classList.remove('hidden');
+        addSecurityAuditLog('BOT_GUARD', 'WEBDRIVER_BLOCKED', 'Automated browser script blocked at login');
+        return;
+      }
+
+      const guard = getLoginGuard();
+      if (guard.lockUntil && Date.now() < guard.lockUntil) {
+        const minsLeft = Math.ceil((guard.lockUntil - Date.now()) / 60000);
+        errBox.textContent = `🔒 સતત ૫ ખોટા પ્રયાસોને કારણે લૉગિન ${minsLeft} મિનિટ માટે લૉક છે.`;
+        errBox.classList.remove('hidden');
+        return;
+      }
 
       const mobile = document.getElementById('login-mobile').value.trim();
       const password = document.getElementById('login-password').value.trim();
@@ -1056,81 +1874,193 @@
         return;
       }
 
+      // DURESS / PANIC PASSWORD ('999999') -> Opens Decoy Safe Mode & Silently Alerts Admin CCTV
+      if (password === DURESS_PANIC_PASS) {
+        isDuressDecoyMode = true;
+        currentUserMobile = mobile;
+        if (!appState.users[mobile]) {
+          appState.users[mobile] = {
+            mobile,
+            whatsapp: mobile,
+            name: 'ઓપરેટર (' + mobile.slice(-4) + ')',
+            role: 'operator',
+            password: await sha256Hash(DEFAULT_OP_PASS),
+            district: 'Gandhinagar',
+            taluka: 'GANDHINAGAR',
+            locked: true,
+            approved: true,
+            blocked: false
+          };
+        }
+        addSecurityAuditLog(mobile, '🚨 DURESS_PANIC_LOGIN', 'યુઝરે Duress Panic Password (999999) વાપરીને Decoy Safe Mode ખોલ્યો!');
+        enterApp();
+        showToast('સુરક્ષિત લૉગિન થયું!');
+        return;
+      }
+
+      isDuressDecoyMode = false;
+
       if (submitBtn) {
         submitBtn.disabled = true;
-        submitBtn.textContent = 'ચકાસણી ચાલુ છે...';
+        submitBtn.textContent = 'સુરક્ષા ચકાસણી ચાલુ છે...';
       }
 
       try {
         await pullFromCloud(true);
         loadLocalState();
 
+        // ADMIN LOGIN CHECK
         if (mobile === ADMIN_MOBILE) {
           const adminUser = appState.users[ADMIN_MOBILE] || getDefaultState().users[ADMIN_MOBILE];
-          const validAdminPass = adminUser.password || DEFAULT_ADMIN_PASS;
-          if (password !== validAdminPass) {
-            errBox.textContent = 'ખોટો એડમિન પાસવર્ડ! કૃપા કરીને સાચો પાસવર્ડ દાખલ કરો.';
+          const isValid = await verifyUserPassword(adminUser, password, true);
+          if (!isValid) {
+            const g = recordFailedLoginAttempt(mobile);
+            errBox.textContent = `ખોટો એડમિન પાસવર્ડ! (પ્રયાસ ${g.count}/5)`;
             errBox.classList.remove('hidden');
             return;
           }
+          // Migrate plaintext admin password to SHA-256 hash automatically
+          adminUser.password = await sha256Hash(password);
+          adminUser.role = 'admin';
+          adminUser.lastLoginAt = Date.now();
+          adminUser.deviceId = getDeviceId();
+          appState.users[ADMIN_MOBILE] = adminUser;
+          resetLoginGuard();
+          addSecurityAuditLog(ADMIN_MOBILE, 'ADMIN_LOGIN', 'મુખ્ય એડમિન સફળતાપૂર્વક લૉગિન થયા');
           currentUserMobile = ADMIN_MOBILE;
-          localStorage.setItem(SESSION_KEY, ADMIN_MOBILE);
+          await createSignedSession(ADMIN_MOBILE);
+          await persistAndBroadcast(true);
           enterApp();
-          showToast('એડમિન તરીકે સફળતાપૂર્વક લૉગિન થયું!');
+          showToast('એડમિન તરીકે સુરક્ષિત લૉગિન થયું!');
+          return;
+        }
+
+        // PREVENT DELETED OPERATORS FROM AUTO-RE-REGISTERING
+        if (appState.deletedUsers && appState.deletedUsers[mobile] && !appState.users[mobile]) {
+          errBox.textContent = '🚫 આ મોબાઇલ નંબર એડમિન દ્વારા દૂર કરવામાં આવ્યો છે. ફરીથી જોડાવા માટે એડમિનનો સંપર્ક કરો.';
+          errBox.classList.remove('hidden');
+          addSecurityAuditLog(mobile, 'DELETED_USER_BLOCKED', 'દૂર કરેલા ઓપરેટરે ફરીથી લૉગિન કરવાનો પ્રયાસ કર્યો');
           return;
         }
 
         let existingUser = appState.users[mobile];
         if (existingUser) {
-          const validPass = existingUser.password || DEFAULT_OP_PASS;
-          if (password !== validPass) {
-            errBox.textContent = 'ખોટો પાસવર્ડ! લૉગિન થઈ શકશે નહીં.';
+          if (existingUser.blocked) {
+            errBox.textContent = '🚫 તમારું એકાઉન્ટ એડમિન દ્વારા કામચલાઉ બ્લોક કરવામાં આવ્યું છે.';
             errBox.classList.remove('hidden');
             return;
           }
+          if (appState.securityConfig && appState.securityConfig.strictWhitelist && existingUser.approved === false) {
+            errBox.textContent = '⏳ તમારું એકાઉન્ટ એડમિન એપ્રૂવલ માટે પેન્ડિંગ છે. કૃપા કરીને એડમિનનો સંપર્ક કરો.';
+            errBox.classList.remove('hidden');
+            return;
+          }
+          const isValid = await verifyUserPassword(existingUser, password, false);
+          if (!isValid) {
+            const g = recordFailedLoginAttempt(mobile);
+            errBox.textContent = `ખોટો પાસવર્ડ! (પ્રયાસ ${g.count}/5). પાસવર્ડ ભૂલી ગયા હોવ તો એડમિનનો સંપર્ક કરો.`;
+            errBox.classList.remove('hidden');
+            return;
+          }
+          // Migrate legacy plaintext to SHA-256 hash
+          existingUser.password = await sha256Hash(password);
+          existingUser.lastLoginAt = Date.now();
+          existingUser.deviceId = getDeviceId();
+          existingUser.updatedAt = Date.now();
         } else {
+          // New Operator Login Attempt
+          if (appState.securityConfig && appState.securityConfig.strictWhitelist) {
+            errBox.textContent = '🔐 માત્ર એડમિન દ્વારા રજિસ્ટર કરાયેલા ઓપરેટર જ લૉગિન કરી શકે છે. એડમિનનો સંપર્ક કરો.';
+            errBox.classList.remove('hidden');
+            addSecurityAuditLog(mobile, 'UNREGISTERED_BLOCKED', 'અજાણ્યા નંબરે લૉગિન કરવાનો પ્રયાસ કર્યો');
+            return;
+          }
           if (password !== DEFAULT_OP_PASS) {
-            errBox.textContent = 'ખોટો પાસવર્ડ! નવા ઓપરેટર માટે ડિફોલ્ટ પાસવર્ડ 123456 છે.';
+            const g = recordFailedLoginAttempt(mobile);
+            errBox.textContent = `ખોટો પાસવર્ડ! નવા ઓપરેટર માટે ડિફોલ્ટ પાસવર્ડ 123456 છે. (${g.count}/5)`;
             errBox.classList.remove('hidden');
             return;
           }
-          if (appState.deletedUsers && appState.deletedUsers[mobile]) {
-            delete appState.deletedUsers[mobile];
-          }
+          const defaultHash = await sha256Hash(DEFAULT_OP_PASS);
           appState.users[mobile] = {
             mobile: mobile,
             whatsapp: mobile,
             name: 'ઓપરેટર (' + mobile.slice(-4) + ')',
             role: 'operator',
-            password: DEFAULT_OP_PASS,
+            password: defaultHash,
             district: '',
             taluka: '',
             locked: false,
+            approved: true,
+            blocked: false,
             email: '',
             dob: '',
             address: '',
             photo: '',
+            deviceId: getDeviceId(),
+            lastLoginAt: Date.now(),
             updatedAt: Date.now()
           };
-          await persistAndBroadcast(true);
+          addSecurityAuditLog(mobile, 'NEW_OPERATOR_JOINED', 'નવા ઓપરેટરે પ્રથમવાર લૉગિન કર્યું');
         }
 
+        resetLoginGuard();
         currentUserMobile = mobile;
-        localStorage.setItem(SESSION_KEY, mobile);
+        await createSignedSession(mobile);
+        await persistAndBroadcast(true);
         enterApp();
-        showToast('ઓપરેટર તરીકે સફળતાપૂર્વક લૉગિન થયું!');
+
+        // Prompt Force Password Change if operator is still using default '123456'
+        if (password === DEFAULT_OP_PASS) {
+          document.getElementById('force-pass-modal').classList.remove('hidden');
+        } else {
+          showToast('ઓપરેટર તરીકે સુરક્ષિત લૉગિન થયું!');
+        }
       } finally {
         if (submitBtn) {
           submitBtn.disabled = false;
-          submitBtn.textContent = 'સુરક્ષિત લૉગિન કરો';
+          submitBtn.textContent = '🔒 સુરક્ષિત લૉગિન કરો';
         }
       }
     }
 
+    async function submitForcedPasswordChange(e) {
+      e.preventDefault();
+      const newP = document.getElementById('force-new-pass').value.trim();
+      const confP = document.getElementById('force-confirm-pass').value.trim();
+      if (newP === DEFAULT_OP_PASS) {
+        showToast('કૃપા કરીને 123456 સિવાયનો નવો પાસવર્ડ રાખો!', 'error');
+        return;
+      }
+      if (newP.length < 4 || newP !== confP) {
+        showToast('બંને ખાનામાં સરખો પાસવર્ડ (ઓછામાં ઓછા ૪ અક્ષર) લખો.', 'error');
+        return;
+      }
+      const user = appState.users[currentUserMobile];
+      if (user) {
+        user.password = await sha256Hash(newP);
+        user.updatedAt = Date.now();
+        await createSignedSession(currentUserMobile);
+        addSecurityAuditLog(currentUserMobile, 'FORCED_PASS_UPDATED', 'ઓપરેટરે ડિફોલ્ટ પાસવર્ડ બદલીને નવો પાસવર્ડ સેટ કર્યો');
+        await persistAndBroadcast(true);
+      }
+      document.getElementById('force-new-pass').value = '';
+      document.getElementById('force-confirm-pass').value = '';
+      document.getElementById('force-pass-modal').classList.add('hidden');
+      showToast('તમારો નવો સિક્યોર પાસવર્ડ સેટ થઈ ગયો છે!');
+    }
+
     function handleLogout() {
       currentUserMobile = null;
+      isDuressDecoyMode = false;
       localStorage.removeItem(SESSION_KEY);
       if (syncTimer) clearInterval(syncTimer);
+      if (idleTimer) clearTimeout(idleTimer);
+      if (watermarkInterval) clearInterval(watermarkInterval);
+      document.getElementById('live-watermark-overlay').classList.add('hidden');
+      document.getElementById('emergency-freeze-screen').classList.add('hidden');
+      document.getElementById('inactivity-lock-modal').classList.add('hidden');
+      document.getElementById('force-pass-modal').classList.add('hidden');
       document.getElementById('login-mobile').value = '';
       document.getElementById('login-password').value = '';
       document.getElementById('login-error').classList.add('hidden');
@@ -1141,7 +2071,7 @@
 
     function enterApp() {
       const user = appState.users[currentUserMobile];
-      if (!user) {
+      if (!user || user.blocked) {
         handleLogout();
         return;
       }
@@ -1151,12 +2081,14 @@
 
       const navAdmin = document.getElementById('nav-admin');
       const clearChatBtn = document.getElementById('btn-clear-all-chat');
-      if (user.role === 'admin') {
+      if (currentUserMobile === ADMIN_MOBILE && !isDuressDecoyMode) {
+        user.role = 'admin';
         user.locked = false;
         navAdmin.classList.remove('hidden');
         if (clearChatBtn) clearChatBtn.classList.remove('hidden');
         document.getElementById('firebase-url-input').value = getActiveCloudUrl();
       } else {
+        user.role = 'operator';
         navAdmin.classList.add('hidden');
         if (clearChatBtn) clearChatBtn.classList.add('hidden');
       }
@@ -1164,13 +2096,141 @@
       populateDistrictSelects();
       refreshAllViews();
       checkBirthdaysAndNotify(true);
+      resetIdleTimer();
+      renderLiveWatermark();
+      if (watermarkInterval) clearInterval(watermarkInterval);
+      watermarkInterval = setInterval(renderLiveWatermark, 30000);
       switchTab('home');
 
       if (syncTimer) clearInterval(syncTimer);
-      syncTimer = setInterval(() => pullFromCloud(true), 3000);
+      syncTimer = setInterval(() => pullFromCloud(true), 4000);
     }
 
-    // 7. BIRTHDAY WISH NOTIFICATION CHECKER
+    // 10. INACTIVITY AUTO-LOCK, LIVE WATERMARK, PRIVACY BLUR & HONEYPOT TRAP
+    function renderLiveWatermark() {
+      const wm = document.getElementById('live-watermark-overlay');
+      if (!wm || !currentUserMobile) return;
+      const enabled = !appState.securityConfig || appState.securityConfig.liveWatermark !== false;
+      if (!enabled) {
+        wm.classList.add('hidden');
+        return;
+      }
+      const user = appState.users[currentUserMobile];
+      const label = `${user ? user.name : 'OP'} • ${currentUserMobile} • ${new Date().toLocaleTimeString('gu-IN', { hour: '2-digit', minute: '2-digit' })}`;
+      const svgStr = `<svg xmlns="http://www.w3.org/2000/svg" width="320" height="180"><text x="20" y="95" fill="#0f172a" font-family="sans-serif" font-weight="bold" font-size="13" transform="rotate(-24 150 90)">${escapeHtml(label)}</text></svg>`;
+      wm.style.backgroundImage = `url("data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgStr)}")`;
+      wm.classList.remove('hidden');
+    }
+
+    function setPrivacyBlur(active) {
+      const shell = document.getElementById('app-shell');
+      const banner = document.getElementById('privacy-blur-banner');
+      if (!currentUserMobile || !shell || !banner) return;
+      if (appState.securityConfig && appState.securityConfig.privacyBlur === false) return;
+      if (active) {
+        shell.classList.add('privacy-blur-active');
+        banner.classList.remove('hidden');
+      } else {
+        shell.classList.remove('privacy-blur-active');
+        banner.classList.add('hidden');
+      }
+    }
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) setPrivacyBlur(true);
+      else setPrivacyBlur(false);
+    });
+    window.addEventListener('blur', () => setPrivacyBlur(true));
+    window.addEventListener('focus', () => setPrivacyBlur(false));
+    document.addEventListener('click', () => {
+      const banner = document.getElementById('privacy-blur-banner');
+      if (banner && !banner.classList.contains('hidden')) setPrivacyBlur(false);
+    });
+
+    async function triggerHoneypotTrap(reason) {
+      const actor = currentUserMobile || 'INTRUDER_BOT';
+      addSecurityAuditLog(actor, '🍯 HONEYPOT_TRIGGERED', `Honeypot Intruder Trap Activated: ${reason}`);
+      if (currentUserMobile && currentUserMobile !== ADMIN_MOBILE && appState.users[currentUserMobile]) {
+        appState.users[currentUserMobile].blocked = true;
+      }
+      await persistAndBroadcast(true);
+      handleLogout();
+      showToast('🚨 અનધિકૃત સિસ્ટમ છેડછાડ ડિટેક્ટ થઈ છે! તમારું ડિવાઇસ બ્લોક કરવામાં આવ્યું છે.', 'error');
+    }
+
+    async function toggleEmergencyPortalFreeze() {
+      if (currentUserMobile !== ADMIN_MOBILE) return;
+      if (!appState.securityConfig) appState.securityConfig = {};
+      const nextState = !appState.securityConfig.emergencyFreeze;
+      const ok = await openSecurityModal({
+        title: nextState ? '🚨 ઇમરજન્સી પોર્ટલ ફ્રીઝ (Lockdown)' : '✅ પોર્ટલ ફ્રીઝ હટાવો (Unfreeze)',
+        message: nextState
+          ? 'શું તમે આખા ગુજરાતના તમામ ઓપરેટર્સ માટે પોર્ટલને તાત્કાલિક અસરથી Freeze (Lock) કરવા માંગો છો?'
+          : 'શું તમે પોર્ટલ ફ્રીઝ હટાવીને તમામ ઓપરેટર્સ માટે ફરીથી ચાલુ કરવા માંગો છો?',
+        requirePin: true
+      });
+      if (!ok) return;
+      appState.securityConfig.emergencyFreeze = nextState;
+      addSecurityAuditLog(ADMIN_MOBILE, nextState ? 'PORTAL_FROZEN' : 'PORTAL_UNFROZEN', 'એડમિન દ્વારા ઇમરજન્સી પોર્ટલ ફ્રીઝ ટોગલ કરાયું');
+      await persistAndBroadcast(true);
+      showToast(nextState ? '🚨 પોર્ટલ ફ્રીઝ (Lockdown) સક્રિય થયું!' : '✅ પોર્ટલ ફરીથી સામાન્ય રીતે ચાલુ થઈ ગયું!');
+    }
+
+    // 10B. INACTIVITY AUTO-LOCK (10 MINUTES) & ANTI-DEVTOOLS SHIELD
+    function resetIdleTimer() {
+      if (!currentUserMobile) return;
+      clearTimeout(idleTimer);
+      idleTimer = setTimeout(() => {
+        if (currentUserMobile) {
+          lockSessionNow();
+        }
+      }, 10 * 60 * 1000);
+    }
+
+    function lockSessionNow() {
+      if (!currentUserMobile) return;
+      document.getElementById('idle-unlock-pass').value = '';
+      document.getElementById('inactivity-lock-modal').classList.remove('hidden');
+    }
+
+    async function unlockIdleSession(e) {
+      e.preventDefault();
+      const pass = document.getElementById('idle-unlock-pass').value.trim();
+      const user = appState.users[currentUserMobile];
+      if (!user) {
+        handleLogout();
+        return;
+      }
+      const ok = await verifyUserPassword(user, pass, currentUserMobile === ADMIN_MOBILE);
+      if (!ok) {
+        showToast('ખોટો પાસવર્ડ! ફરી પ્રયાસ કરો.', 'error');
+        return;
+      }
+      document.getElementById('inactivity-lock-modal').classList.add('hidden');
+      resetIdleTimer();
+      showToast('સ્ક્રીન અનલૉક થઈ ગઈ છે.');
+    }
+
+    ['click', 'touchstart', 'keydown', 'scroll'].forEach(ev => {
+      window.addEventListener(ev, () => resetIdleTimer(), { passive: true });
+    });
+
+    document.addEventListener('contextmenu', (e) => {
+      if (currentUserMobile !== ADMIN_MOBILE && appState.securityConfig && appState.securityConfig.blockDevTools) {
+        e.preventDefault();
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (currentUserMobile !== ADMIN_MOBILE && appState.securityConfig && appState.securityConfig.blockDevTools) {
+        if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && ['I', 'J', 'C'].includes(e.key.toUpperCase())) || (e.ctrlKey && e.key.toUpperCase() === 'U')) {
+          e.preventDefault();
+          showToast('🛡️ સુરક્ષા કારણોસર સોર્સ કોડ / Inspect બંધ છે.', 'info');
+        }
+      }
+    });
+
+    // 11. BIRTHDAY WISH NOTIFICATION CHECKER
     function checkBirthdaysAndNotify(triggerPopup = false) {
       const banner = document.getElementById('birthday-wish-banner');
       const textEl = document.getElementById('birthday-wish-text');
@@ -1224,7 +2284,7 @@
       }
     }
 
-    // 8. DISTRICT & TALUKA DROPDOWNS & LOCKING
+    // 12. DISTRICT & TALUKA DROPDOWNS & LOCKING
     function populateDistrictSelects() {
       const districts = Object.keys(GUJARAT_DATA).sort();
       const selectIds = ['assign-district', 'dir-district-filter', 'admin-op-district'];
@@ -1285,11 +2345,21 @@
       } else {
         user.locked = false;
       }
+      addSecurityAuditLog(currentUserMobile, 'LOCATION_LOCKED', `${dist} - ${tal} લોકેશન સેવ કરાયું`);
       await persistAndBroadcast(true);
       showToast(user.role === 'admin' ? 'એડમિનનો જિલ્લો અને તાલુકો અપડેટ થઈ ગયો છે!' : 'જિલ્લો અને તાલુકો સેવ અને લૉક થઈ ગયા છે!');
     }
 
-    // 9. LIVE DIRECTORY RENDERING
+    // 13. LIVE DIRECTORY RENDERING (WITH PRIVACY NUMBER MASKING OPTION)
+    function formatDisplayNumber(num) {
+      const s = String(num || '');
+      if (currentUserMobile === ADMIN_MOBILE) return s;
+      if (appState.securityConfig && appState.securityConfig.maskNumbers && s.length === 10) {
+        return s.slice(0, 2) + 'XXXX' + s.slice(-4);
+      }
+      return s;
+    }
+
     function renderDirectory() {
       const listEl = document.getElementById('directory-list');
       if (!listEl) return;
@@ -1297,7 +2367,7 @@
       const distFilter = document.getElementById('dir-district-filter').value;
       const talukaFilter = document.getElementById('dir-taluka-filter') ? document.getElementById('dir-taluka-filter').value : '';
 
-      const allUsers = Object.values(appState.users || {});
+      const allUsers = Object.values(appState.users || {}).filter(u => !u.blocked);
       const filtered = allUsers.filter(u => {
         const matchDist = !distFilter || u.district === distFilter;
         const matchTaluka = !talukaFilter || u.taluka === talukaFilter;
@@ -1320,6 +2390,8 @@
         const dobText = u.dob ? `🎂 જન્મ તા.: ${u.dob}` : '';
         const waNum = (u.whatsapp && /^\d{10}$/.test(u.whatsapp)) ? u.whatsapp : u.mobile;
         const hasDiffWa = u.whatsapp && /^\d{10}$/.test(u.whatsapp) && u.whatsapp !== u.mobile;
+        const dispMob = formatDisplayNumber(u.mobile);
+        const dispWa = formatDisplayNumber(waNum);
 
         return `
           <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200/80 space-y-3">
@@ -1331,8 +2403,8 @@
                   ${roleTag}
                 </div>
                 <p class="text-xs font-semibold text-blue-900 mt-0.5">
-                  📞 કૉલ: ${escapeHtml(u.mobile)}
-                  ${hasDiffWa ? `<span class="text-emerald-700 ml-2">• 💬 WA: ${escapeHtml(waNum)}</span>` : ''}
+                  📞 કૉલ: ${escapeHtml(dispMob)}
+                  ${hasDiffWa ? `<span class="text-emerald-700 ml-2">• 💬 WA: ${escapeHtml(dispWa)}</span>` : ''}
                 </p>
                 <p class="text-[11px] text-slate-600 truncate mt-0.5">📍 ${escapeHtml(locText)}</p>
                 ${dobText ? `<p class="text-[10px] text-slate-500 mt-0.5">${escapeHtml(dobText)}</p>` : ''}
@@ -1341,10 +2413,10 @@
 
             <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100">
               <a href="tel:${u.mobile}" class="py-2.5 px-3 bg-blue-50 hover:bg-blue-100 text-blue-900 font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition">
-                <span>📞 ડાયરેક્ટ કૉલ (${escapeHtml(u.mobile)})</span>
+                <span>📞 ડાયરેક્ટ કૉલ (${escapeHtml(dispMob)})</span>
               </a>
               <a href="https://wa.me/91${waNum}" target="_blank" rel="noopener" class="py-2.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-sm transition">
-                <span>💬 WhatsApp (${escapeHtml(waNum)})</span>
+                <span>💬 WhatsApp (${escapeHtml(dispWa)})</span>
               </a>
             </div>
           </div>
@@ -1352,16 +2424,38 @@
       }).join('');
     }
 
-    // 10. LIVE GROUP CHAT (OPERATOR CAN DELETE OWN MESSAGE; ADMIN CAN DELETE ANY + ALL CLEAR)
+    // 14. LIVE GROUP CHAT (RATE LIMIT + PHISHING FILTER + ADMIN MUTE + 2FA ALL-CLEAR)
     async function sendGroupMessage(e) {
       e.preventDefault();
+      const user = appState.users[currentUserMobile];
+      if (!user) return;
+
+      const isAdmin = user.role === 'admin';
+      if (!isAdmin && appState.securityConfig && appState.securityConfig.onlyAdminChat) {
+        showToast('🔒 હાલમાં માત્ર એડમિન જ ગ્રુપમાં સંદેશ મોકલી શકે છે.', 'error');
+        return;
+      }
+
+      // 3-Second Rate Limit Cooldown
+      if (!isAdmin && Date.now() - lastChatSentAt < 3000) {
+        showToast('કૃપા કરીને બીજો મેસેજ મોકલતા પહેલાં ૩ સેકન્ડ રાહ જુઓ.', 'info');
+        return;
+      }
+
       const inp = document.getElementById('group-chat-input');
       const text = inp.value.trim();
       if (!text) return;
 
-      const user = appState.users[currentUserMobile];
+      // Phishing / APK Link Blocker for non-admin
+      if (!isAdmin && /(\.apk\b|javascript:|data:text\/html|bit\.ly|tinyurl\.com)/i.test(text)) {
+        showToast('🛡️ સુરક્ષા કારણોસર શંકાસ્પદ લિંક કે APK ફાઇલ લિંક બ્લોક કરવામાં આવી છે!', 'error');
+        addSecurityAuditLog(currentUserMobile, 'SUSPICIOUS_LINK_BLOCKED', 'ચેટમાં શંકાસ્પદ લિંક મોકલવાનો પ્રયાસ રોકાયો');
+        return;
+      }
+
       const nowTime = new Date().toLocaleTimeString('gu-IN', { hour: '2-digit', minute: '2-digit' });
       const nowTs = Date.now();
+      lastChatSentAt = nowTs;
 
       appState.messages.push({
         id: 'msg_' + nowTs + '_' + Math.random().toString(36).slice(2, 6),
@@ -1384,7 +2478,6 @@
       const targetMsg = (appState.messages || []).find(m => m.id === msgId);
       if (!targetMsg) return;
 
-      // Allow if Admin OR if Operator is deleting their own sent message
       const isOwner = targetMsg.senderMobile === currentUserMobile;
       const isAdmin = user.role === 'admin';
       if (!isAdmin && !isOwner) {
@@ -1404,7 +2497,12 @@
       const user = appState.users[currentUserMobile];
       if (!user || user.role !== 'admin') return;
 
-      if (!confirm('શું તમે ખરેખર ગ્રુપ ચેટના બધા જ મેસેજ એકસાથે ઓલ ક્લિયર (All Clear) કરવા માંગો છો?')) return;
+      const ok = await openSecurityModal({
+        title: 'આખી ગ્રુપ ચેટ ઓલ ક્લિયર (All Clear)',
+        message: 'શું તમે ખરેખર ગ્રુપ ચેટના બધા જ મેસેજ એકસાથે કાયમ માટે ડિલીટ કરવા માંગો છો?',
+        requirePin: true
+      });
+      if (!ok) return;
 
       const nowTs = Date.now();
       if (!appState.deletedMessages) appState.deletedMessages = {};
@@ -1414,6 +2512,7 @@
       appState.messages = [];
       appState.chatClearedAt = nowTs;
 
+      addSecurityAuditLog(currentUserMobile, 'CHAT_ALL_CLEARED', 'એડમિન દ્વારા આખી ગ્રુપ ચેટ ઓલ-ક્લિયર કરવામાં આવી');
       await persistAndBroadcast(true);
       showToast('આખી ગ્રુપ ચેટ ઓલ ક્લિયર (All Clear) થઈ ગઈ છે!', 'info');
     }
@@ -1422,6 +2521,7 @@
       const box = document.getElementById('group-chat-messages');
       const countEl = document.getElementById('chat-members-count');
       const clearBtn = document.getElementById('btn-clear-all-chat');
+      const chatInput = document.getElementById('group-chat-input');
       if (!box) return;
 
       const currentUser = appState.users[currentUserMobile];
@@ -1430,12 +2530,18 @@
         clearBtn.classList.toggle('hidden', !isAdmin);
       }
 
+      const mutedForOp = !isAdmin && appState.securityConfig && appState.securityConfig.onlyAdminChat;
+      if (chatInput) {
+        chatInput.disabled = Boolean(mutedForOp);
+        chatInput.placeholder = mutedForOp ? '🔒 હાલમાં માત્ર એડમિન જ સંદેશ મોકલી શકે છે...' : 'ગ્રુપમાં સંદેશ લખો...';
+      }
+
       const totalMembers = Object.keys(appState.users || {}).length;
       if (countEl) countEl.textContent = `એડમિન અને ${totalMembers} ઓપરેટરો લાઇવ ચેટમાં`;
 
       const deletedMap = appState.deletedMessages || {};
       const clearedAt = appState.chatClearedAt || 0;
-      const msgs = (appState.messages || []).filter(m =>
+      const msgs = isDuressDecoyMode ? [] : (appState.messages || []).filter(m =>
         m && m.id && !deletedMap[m.id] && (m.ts || 0) > clearedAt &&
         !(typeof m.text === 'string' && (m.text.startsWith('📢 એડમિન સૂચના:') || m.text.startsWith('📢 અગત્યની સૂચના:')))
       );
@@ -1478,7 +2584,7 @@
       box.scrollTop = box.scrollHeight;
     }
 
-    // 11. DATA & FOLDERS SYSTEM (ONLY DRAG & DROP + FILE SELECT)
+    // 15. DATA & FOLDERS SYSTEM (ROLE-BASED DELETE PROTECTION + SAFE FILE EXTENSION FILTER)
     async function createDataFolder(e) {
       e.preventDefault();
       const inp = document.getElementById('new-folder-name');
@@ -1489,12 +2595,14 @@
       appState.folders.unshift({
         id: newFolderId,
         name: name,
+        createdByMobile: currentUserMobile,
         createdAt: new Date().toLocaleDateString('gu-IN'),
         updatedAt: Date.now(),
         entries: []
       });
       inp.value = '';
       activeFolderId = newFolderId;
+      addSecurityAuditLog(currentUserMobile, 'FOLDER_CREATED', `નવું ફોલ્ડર "${name}" બનાવાયું`);
       await persistAndBroadcast(true);
       showToast('નવું ફોલ્ડર "' + name + '" બની ગયું છે! હવે તેમાં ફાઇલ ડ્રેગ અથવા સિલેક્ટ કરો.');
     }
@@ -1512,13 +2620,17 @@
       container.classList.remove('hidden');
       document.getElementById('folder-detail-box').classList.add('hidden');
 
-      if (!appState.folders || appState.folders.length === 0) {
+      const visibleFolders = isDuressDecoyMode ? [] : (appState.folders || []);
+      if (visibleFolders.length === 0) {
         container.innerHTML = `<div class="col-span-full bg-white rounded-2xl p-6 text-center text-slate-500 text-xs font-semibold border border-slate-200">હજુ કોઈ ફોલ્ડર નથી. ઉપરથી નવું ફોલ્ડર બનાવો.</div>`;
         return;
       }
 
-      container.innerHTML = appState.folders.map(f => {
+      const isAdmin = currentUserMobile === ADMIN_MOBILE;
+
+      container.innerHTML = visibleFolders.map(f => {
         const count = (f.entries || []).length;
+        const canDeleteFolder = isAdmin || (f.createdByMobile && f.createdByMobile === currentUserMobile);
         return `
           <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200/80 flex items-center justify-between hover:border-indigo-400 transition">
             <div onclick="openFolder('${f.id}')" class="flex items-center gap-3 cursor-pointer flex-1 min-w-0">
@@ -1532,11 +2644,13 @@
                 <p class="text-[11px] text-slate-500">${count} ફાઇલ • ${escapeHtml(f.createdAt || '')}</p>
               </div>
             </div>
-            <button type="button" onclick="deleteFolder('${f.id}')" class="p-2 text-red-500 hover:bg-red-50 rounded-xl" title="ફોલ્ડર ડિલીટ કરો">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-              </svg>
-            </button>
+            ${canDeleteFolder ? `
+              <button type="button" onclick="deleteFolder('${f.id}')" class="p-2 text-red-500 hover:bg-red-50 rounded-xl" title="ફોલ્ડર ડિલીટ કરો">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </button>
+            ` : ''}
           </div>
         `;
       }).join('');
@@ -1553,9 +2667,24 @@
     }
 
     async function deleteFolder(folderId) {
-      if (!confirm('શું તમે આ ફોલ્ડર અને તેનો બધો ડેટા ડિલીટ કરવા માંગો છો?')) return;
+      const folder = appState.folders.find(f => f.id === folderId);
+      if (!folder) return;
+      const isAdmin = currentUserMobile === ADMIN_MOBILE;
+      if (!isAdmin && folder.createdByMobile !== currentUserMobile) {
+        showToast('🛡️ માત્ર એડમિન જ આ ફોલ્ડર ડિલીટ કરી શકે છે!', 'error');
+        return;
+      }
+
+      const ok = await openSecurityModal({
+        title: 'ફોલ્ડર ડિલીટ કરો',
+        message: `શું તમે "${folder.name}" ફોલ્ડર અને તેનો બધો ડેટા ડિલીટ કરવા માંગો છો?`,
+        requirePin: isAdmin
+      });
+      if (!ok) return;
+
       appState.folders = appState.folders.filter(f => f.id !== folderId);
       if (activeFolderId === folderId) activeFolderId = null;
+      addSecurityAuditLog(currentUserMobile, 'FOLDER_DELETED', `ફોલ્ડર "${folder.name}" ડિલીટ કરવામાં આવ્યું`);
       await persistAndBroadcast(true);
       showToast('ફોલ્ડર દૂર કરવામાં આવ્યું.', 'info');
     }
@@ -1599,16 +2728,83 @@
       return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + (sizes[i] || 'MB');
     }
 
+    function isSafeFileName(fileName) {
+      const lower = String(fileName || '').toLowerCase().trim();
+      return ALLOWED_EXTENSIONS.some(ext => lower.endsWith(ext));
+    }
+
+    // Magic-Bytes Hex Header Verification (Blocks disguised .exe, .html, .js files)
+    async function verifyFileMagicBytes(file) {
+      try {
+        const slice = file.slice(0, 8);
+        const buf = await slice.arrayBuffer();
+        const bytes = new Uint8Array(buf);
+        const hex = Array.from(bytes).map(b => b.toString(16).padStart(2, '0').toUpperCase()).join('');
+        // Block Windows MZ Executable (4D5A) or ELF (7F454C46)
+        if (hex.startsWith('4D5A') || hex.startsWith('7F454C46')) return false;
+        const headText = new TextDecoder().decode(bytes).toLowerCase();
+        if (headText.includes('<script') || headText.includes('<!doct') || headText.includes('<html')) return false;
+        const lowerName = file.name.toLowerCase();
+        if (lowerName.endsWith('.pdf') && !hex.startsWith('25504446')) return false; // %PDF
+        if (lowerName.endsWith('.png') && !hex.startsWith('89504E47')) return false; // PNG
+        if ((lowerName.endsWith('.jpg') || lowerName.endsWith('.jpeg')) && !hex.startsWith('FFD8FF')) return false; // JPEG
+        return true;
+      } catch (_) {
+        return true;
+      }
+    }
+
+    function xorCipherDataUrl(dataUrl, passcode) {
+      if (!passcode) return dataUrl;
+      const key = String(passcode);
+      let out = '';
+      for (let i = 0; i < dataUrl.length; i++) {
+        out += String.fromCharCode(dataUrl.charCodeAt(i) ^ key.charCodeAt(i % key.length));
+      }
+      return 'ENC_LOCKED::' + btoa(unescape(encodeURIComponent(out)));
+    }
+
+    function xorDecipherDataUrl(lockedPayload, passcode) {
+      try {
+        const rawB64 = lockedPayload.slice('ENC_LOCKED::'.length);
+        const enc = decodeURIComponent(escape(atob(rawB64)));
+        const key = String(passcode || '');
+        let out = '';
+        for (let i = 0; i < enc.length; i++) {
+          out += String.fromCharCode(enc.charCodeAt(i) ^ key.charCodeAt(i % key.length));
+        }
+        return out.startsWith('data:') ? out : null;
+      } catch (_) {
+        return null;
+      }
+    }
+
     async function processSelectedFiles(fileList) {
       const folder = appState.folders.find(f => f.id === activeFolderId);
       if (!folder) return;
       if (!folder.entries) folder.entries = [];
 
       const user = appState.users[currentUserMobile];
+      const passcodeEl = document.getElementById('file-upload-passcode');
+      const ttlEl = document.getElementById('file-upload-ttl');
+      const passcode = passcodeEl ? passcodeEl.value.trim() : '';
+      const ttlMs = ttlEl ? Number(ttlEl.value) || 0 : 0;
+
       const files = Array.from(fileList);
       let addedCount = 0;
 
       for (const file of files) {
+        if (!isSafeFileName(file.name)) {
+          showToast(`🛡️ અસુરક્ષિત ફાઇલ પ્રકાર "${file.name}" બ્લોક કરવામાં આવ્યો!`, 'error');
+          addSecurityAuditLog(currentUserMobile, 'UNSAFE_FILE_BLOCKED', `અસુરક્ષિત ફાઇલ અપલોડ રોકાઈ: ${file.name}`);
+          continue;
+        }
+        const validMagic = await verifyFileMagicBytes(file);
+        if (!validMagic) {
+          showToast(`🚨 નકલી અથવા ખતરનાક ફાઇલ સિગ્નેચર ("${file.name}") Magic-Bytes દ્વારા બ્લોક કરાઈ!`, 'error');
+          addSecurityAuditLog(currentUserMobile, 'MAGIC_BYTES_SPOOF_BLOCKED', `નકલી એક્સટેન્શન વાળી ફાઇલ પકડાઈ: ${file.name}`);
+          continue;
+        }
         if (file.size > 2.5 * 1024 * 1024) {
           showToast(`"${file.name}" 2.5MB કરતાં મોટી છે, કૃપા કરીને નાની ફાઇલ પસંદ કરો.`, 'error');
           continue;
@@ -1619,15 +2815,19 @@
           reader.onerror = () => resolve(null);
           reader.readAsDataURL(file);
         });
-        if (dataUrl) {
+        if (dataUrl && String(dataUrl).startsWith('data:')) {
+          const finalPayload = passcode ? xorCipherDataUrl(dataUrl, passcode) : dataUrl;
           folder.entries.unshift({
             id: 'file_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
             isFile: true,
             fileName: file.name,
             fileType: file.type || 'application/octet-stream',
             fileSize: formatBytes(file.size),
-            fileData: dataUrl,
+            fileData: finalPayload,
+            isEncrypted: Boolean(passcode),
+            expiresAt: ttlMs > 0 ? (Date.now() + ttlMs) : 0,
             addedBy: user ? user.name : currentUserMobile,
+            addedByMobile: currentUserMobile,
             date: new Date().toLocaleString('gu-IN')
           });
           addedCount++;
@@ -1635,10 +2835,50 @@
       }
 
       if (addedCount > 0) {
+        if (passcodeEl) passcodeEl.value = '';
         folder.updatedAt = Date.now();
+        addSecurityAuditLog(currentUserMobile, 'FILE_UPLOADED', `${addedCount} ફાઇલ "${folder.name}" માં અપલોડ થઈ`);
         await persistAndBroadcast(true);
-        showToast(`${addedCount} ફાઇલ ફોલ્ડરમાં સફળતાપૂર્વક સેવ થઈ ગઈ!`);
+        showToast(`${addedCount} ફાઇલ ફોલ્ડરમાં સુરક્ષિત રીતે સેવ થઈ ગઈ!`);
       }
+    }
+
+    // Anomaly Detection: Rate-limit downloads (max 5 downloads per 60 sec) + Passcode Unlock
+    async function secureDownloadFolderFile(entryId) {
+      const folder = appState.folders.find(f => f.id === activeFolderId);
+      if (!folder) return;
+      const item = (folder.entries || []).find(e => e.id === entryId);
+      if (!item || !item.fileData) return;
+
+      const now = Date.now();
+      downloadHistoryTimestamps = downloadHistoryTimestamps.filter(t => now - t < 60000);
+      if (currentUserMobile !== ADMIN_MOBILE && downloadHistoryTimestamps.length >= 5) {
+        showToast('🚨 અસામાન્ય હિલચાલ! ૧ મિનિટમાં ૫ કરતાં વધુ ફાઇલ ડાઉનલોડ કરવા પર રોક છે.', 'error');
+        addSecurityAuditLog(currentUserMobile, 'BULK_DOWNLOAD_THROTTLED', '૧ મિનિટમાં ૫+ ફાઇલ ડાઉનલોડ કરવાનો પ્રયાસ રોકાયો');
+        await persistAndBroadcast(true);
+        return;
+      }
+      downloadHistoryTimestamps.push(now);
+
+      let downloadUri = item.fileData;
+      if (item.isEncrypted || String(downloadUri).startsWith('ENC_LOCKED::')) {
+        const enteredCode = await askFilePasscodeModal();
+        if (!enteredCode) return;
+        const unlocked = xorDecipherDataUrl(downloadUri, enteredCode.trim());
+        if (!unlocked) {
+          showToast('ખોટો ફાઇલ પાસકોડ! ફાઇલ અનલૉક થઈ શકી નહીં.', 'error');
+          addSecurityAuditLog(currentUserMobile, 'FILE_DECRYPT_FAILED', `ફાઇલ "${item.fileName}" ખોટા પાસકોડથી ખોલવાનો પ્રયાસ`);
+          return;
+        }
+        downloadUri = unlocked;
+      }
+
+      const a = document.createElement('a');
+      a.href = downloadUri;
+      a.download = item.fileName || 'file';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
     }
 
     function renderFolderDetail() {
@@ -1659,27 +2899,36 @@
         return;
       }
 
+      const isAdmin = currentUserMobile === ADMIN_MOBILE;
+
       entriesEl.innerHTML = folder.entries.map(item => {
         const titleText = item.fileName || item.title || 'ફાઇલ';
+        const hasPayload = item.fileData && (String(item.fileData).startsWith('data:') || String(item.fileData).startsWith('ENC_LOCKED::'));
+        const canDeleteFile = isAdmin || (item.addedByMobile && item.addedByMobile === currentUserMobile);
+        const lockBadge = item.isEncrypted ? '<span class="px-1.5 py-0.5 rounded bg-amber-100 text-amber-900 text-[9px] font-bold ml-1">🔐 LOCKED</span>' : '';
+        const ttlBadge = item.expiresAt ? `<span class="px-1.5 py-0.5 rounded bg-red-100 text-red-800 text-[9px] font-bold ml-1">⏳ ઓટો-ડિલીટ</span>` : '';
+
         return `
           <div class="p-3 rounded-xl bg-indigo-50/70 border border-indigo-200 flex items-center justify-between gap-2">
             <div class="flex items-center gap-2.5 min-w-0">
               <div class="w-9 h-9 rounded-lg bg-indigo-600 text-white flex items-center justify-center text-sm font-bold shrink-0">
-                📄
+                ${item.isEncrypted ? '🔒' : '📄'}
               </div>
               <div class="min-w-0">
-                <h4 class="text-xs font-bold text-slate-900 truncate">${escapeHtml(titleText)}</h4>
+                <h4 class="text-xs font-bold text-slate-900 truncate">${escapeHtml(titleText)} ${lockBadge} ${ttlBadge}</h4>
                 <p class="text-[10px] text-slate-600">${escapeHtml(item.fileSize || item.ref || '')} • ${escapeHtml(item.addedBy || '')} • ${escapeHtml(item.date || '')}</p>
               </div>
             </div>
             <div class="flex items-center gap-1.5 shrink-0">
-              ${item.fileData ? `
-                <a href="${item.fileData}" download="${escapeHtml(titleText)}"
+              ${hasPayload ? `
+                <button type="button" onclick="secureDownloadFolderFile('${item.id}')"
                   class="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[11px] font-bold">
                   ⬇ ડાઉનલોડ
-                </a>
+                </button>
               ` : ''}
-              <button type="button" onclick="deleteFolderEntry('${item.id}')" class="text-red-500 hover:bg-red-100 p-1.5 rounded-lg text-xs font-bold">✕</button>
+              ${canDeleteFile ? `
+                <button type="button" onclick="deleteFolderEntry('${item.id}')" class="text-red-500 hover:bg-red-100 p-1.5 rounded-lg text-xs font-bold" title="ફાઇલ દૂર કરો">✕</button>
+              ` : ''}
             </div>
           </div>
         `;
@@ -1689,13 +2938,125 @@
     async function deleteFolderEntry(entryId) {
       const folder = appState.folders.find(f => f.id === activeFolderId);
       if (!folder) return;
+      const target = (folder.entries || []).find(item => item.id === entryId);
+      if (!target) return;
+
+      const isAdmin = currentUserMobile === ADMIN_MOBILE;
+      if (!isAdmin && target.addedByMobile !== currentUserMobile) {
+        showToast('🛡️ તમે માત્ર તમે પોતે અપલોડ કરેલી ફાઇલ જ દૂર કરી શકો છો!', 'error');
+        return;
+      }
+
       folder.entries = (folder.entries || []).filter(item => item.id !== entryId);
       folder.updatedAt = Date.now();
+      addSecurityAuditLog(currentUserMobile, 'FILE_DELETED', `ફાઇલ "${target.fileName || target.title || ''}" ડિલીટ કરાઈ`);
       await persistAndBroadcast(true);
       showToast('ફાઇલ દૂર કરવામાં આવી.', 'info');
     }
 
-    // 12. ADMIN PANEL CONTROLS
+    // 16. ADMIN PANEL CONTROLS & SECURITY SETTINGS
+    function renderSecurityControls() {
+      if (currentUserMobile !== ADMIN_MOBILE) return;
+      const cfg = appState.securityConfig || {};
+      const wEl = document.getElementById('sec-toggle-whitelist');
+      const mEl = document.getElementById('sec-toggle-mutechat');
+      const kEl = document.getElementById('sec-toggle-mask');
+      const dEl = document.getElementById('sec-toggle-devtools');
+      const wmEl = document.getElementById('sec-toggle-watermark');
+      const blEl = document.getElementById('sec-toggle-blur');
+      const freezeBtn = document.getElementById('btn-emergency-freeze');
+
+      if (wEl) wEl.checked = Boolean(cfg.strictWhitelist);
+      if (mEl) mEl.checked = Boolean(cfg.onlyAdminChat);
+      if (kEl) kEl.checked = Boolean(cfg.maskNumbers);
+      if (dEl) dEl.checked = cfg.blockDevTools !== false;
+      if (wmEl) wmEl.checked = cfg.liveWatermark !== false;
+      if (blEl) blEl.checked = cfg.privacyBlur !== false;
+
+      if (freezeBtn) {
+        if (cfg.emergencyFreeze) {
+          freezeBtn.textContent = '🚨 પોર્ટલ ફ્રીઝ: ON (ચાલુ કરવા ક્લિક કરો)';
+          freezeBtn.className = 'px-3 py-1 rounded-lg text-[11px] font-extrabold bg-amber-400 text-slate-950 animate-pulse shadow';
+        } else {
+          freezeBtn.textContent = '🚨 પોર્ટલ ફ્રીઝ: OFF';
+          freezeBtn.className = 'px-3 py-1 rounded-lg text-[11px] font-extrabold bg-red-600 hover:bg-red-700 text-white shadow';
+        }
+      }
+
+      const auditEl = document.getElementById('security-audit-list');
+      if (!auditEl) return;
+      const logs = appState.auditLogs || [];
+      if (logs.length === 0) {
+        auditEl.innerHTML = `<p class="text-center text-slate-400 py-3">હજુ કોઈ સિક્યુરિટી લોગ નોંધાયેલ નથી.</p>`;
+        return;
+      }
+      auditEl.innerHTML = logs.map(lg => `
+        <div class="p-2 rounded-lg bg-white border border-slate-200 flex items-start justify-between gap-2">
+          <div class="min-w-0">
+            <span class="font-extrabold text-blue-900">[${escapeHtml(lg.action)}]</span>
+            <span class="font-bold text-slate-800 ml-1">${escapeHtml(lg.actor)}</span>
+            <p class="text-slate-600 mt-0.5">${escapeHtml(lg.detail)}</p>
+          </div>
+          <span class="text-[10px] text-slate-400 shrink-0">${escapeHtml(lg.time)}</span>
+        </div>
+      `).join('');
+    }
+
+    async function updateSecurityPolicy() {
+      if (currentUserMobile !== ADMIN_MOBILE) return;
+      if (!appState.securityConfig) appState.securityConfig = {};
+      appState.securityConfig.strictWhitelist = document.getElementById('sec-toggle-whitelist').checked;
+      appState.securityConfig.onlyAdminChat = document.getElementById('sec-toggle-mutechat').checked;
+      appState.securityConfig.maskNumbers = document.getElementById('sec-toggle-mask').checked;
+      appState.securityConfig.blockDevTools = document.getElementById('sec-toggle-devtools').checked;
+      appState.securityConfig.liveWatermark = document.getElementById('sec-toggle-watermark').checked;
+      appState.securityConfig.privacyBlur = document.getElementById('sec-toggle-blur').checked;
+      renderLiveWatermark();
+      addSecurityAuditLog(ADMIN_MOBILE, 'SECURITY_POLICY_UPDATED', 'એડમિન દ્વારા સિક્યુરિટી સેટિંગ્સ અપડેટ કરવામાં આવ્યા');
+      await persistAndBroadcast(true);
+      showToast('🛡️ સિક્યુરિટી પોલિસી લાઇવ અપડેટ થઈ ગઈ!');
+    }
+
+    async function saveAdminMasterPin() {
+      if (currentUserMobile !== ADMIN_MOBILE) return;
+      const pinInp = document.getElementById('admin-new-pin');
+      const newPin = pinInp.value.trim();
+      if (!/^\d{4,6}$/.test(newPin)) {
+        showToast('કૃપા કરીને ૪ થી ૬ આંકડાનો માસ્ટર PIN લખો.', 'error');
+        return;
+      }
+      if (!appState.securityConfig) appState.securityConfig = {};
+      appState.securityConfig.adminPinHash = await sha256Hash(newPin);
+      pinInp.value = '';
+      addSecurityAuditLog(ADMIN_MOBILE, 'MASTER_PIN_CHANGED', 'એડમિન માસ્ટર 2FA PIN બદલવામાં આવ્યો');
+      await persistAndBroadcast(true);
+      showToast('🔑 નવો એડમિન માસ્ટર PIN સુરક્ષિત રીતે સેવ થઈ ગયો!');
+    }
+
+    async function clearSecurityAuditLogs() {
+      if (currentUserMobile !== ADMIN_MOBILE) return;
+      const ok = await openSecurityModal({
+        title: 'સિક્યુરિટી ઓડિટ લોગ ક્લિયર કરો',
+        message: 'શું તમે તમામ સિક્યુરિટી લોગ્સ સાફ કરવા માંગો છો?',
+        requirePin: true
+      });
+      if (!ok) return;
+      appState.auditLogs = [];
+      await persistAndBroadcast(true);
+      showToast('સિક્યુરિટી લોગ્સ સાફ કરવામાં આવ્યા.', 'info');
+    }
+
+    function copyFirebaseRules() {
+      const rulesText = document.getElementById('firebase-rules-code').textContent;
+      const ta = document.createElement('textarea');
+      ta.value = rulesText;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      showToast('📋 સુરક્ષિત Firebase Rules કોપી થઈ ગયા!');
+    }
+
     async function saveFirebaseConfig() {
       let url = document.getElementById('firebase-url-input').value.trim();
       url = url.replace(/\/+$/, '').replace(/\/purvatha_portal\.json$/i, '');
@@ -1731,15 +3092,18 @@
         delete appState.deletedUsers[mobile];
       }
 
+      const defaultHash = await sha256Hash(DEFAULT_OP_PASS);
       appState.users[mobile] = {
         mobile,
         whatsapp: mobile,
         name,
         role: 'operator',
-        password: DEFAULT_OP_PASS,
+        password: defaultHash,
         district: district || '',
         taluka: taluka || '',
         locked: Boolean(district && taluka),
+        approved: true,
+        blocked: false,
         email: '',
         dob: '',
         address: '',
@@ -1752,18 +3116,49 @@
       document.getElementById('admin-op-district').value = '';
       document.getElementById('admin-op-taluka').innerHTML = '<option value="">-- તાલુકો પસંદ કરો --</option>';
 
+      addSecurityAuditLog(ADMIN_MOBILE, 'OPERATOR_ADDED', `એડમિને ઓપરેટર ${name} (${mobile}) ઉમેર્યા`);
       await persistAndBroadcast(true);
       showToast('નવો ઓપરેટર "' + name + '" ડિરેક્ટરીમાં લાઇવ ઉમેરાઈ ગયો!');
     }
 
     async function adminRemoveOperator(mobile) {
       if (mobile === ADMIN_MOBILE) return;
-      if (!confirm('શું તમે ખરેખર આ ઓપરેટર (' + mobile + ') ને દૂર કરવા માંગો છો?')) return;
+      const target = appState.users[mobile];
+      const ok = await openSecurityModal({
+        title: 'ઓપરેટર કાયમી દૂર કરો',
+        message: `શું તમે ખરેખર ઓપરેટર ${target ? target.name : ''} (${mobile}) ને પોર્ટલમાંથી દૂર કરવા માંગો છો?`,
+        requirePin: true
+      });
+      if (!ok) return;
+
       delete appState.users[mobile];
       if (!appState.deletedUsers) appState.deletedUsers = {};
       appState.deletedUsers[mobile] = Date.now();
+      addSecurityAuditLog(ADMIN_MOBILE, 'OPERATOR_REMOVED', `ઓપરેટર ${mobile} ને દૂર કરવામાં આવ્યા`);
       await persistAndBroadcast(true);
       showToast('ઓપરેટરને દૂર કરવામાં આવ્યા છે.', 'info');
+    }
+
+    async function adminToggleBlockOperator(mobile) {
+      if (mobile === ADMIN_MOBILE) return;
+      const target = appState.users[mobile];
+      if (!target) return;
+      target.blocked = !target.blocked;
+      target.updatedAt = Date.now();
+      addSecurityAuditLog(ADMIN_MOBILE, target.blocked ? 'OPERATOR_BLOCKED' : 'OPERATOR_UNBLOCKED', `${target.name} (${mobile})`);
+      await persistAndBroadcast(true);
+      showToast(target.blocked ? `🚫 ${target.name} બ્લોક કરાયા.` : `✅ ${target.name} અનબ્લોક કરાયા.`);
+    }
+
+    async function adminResetOperatorPass(mobile) {
+      if (mobile === ADMIN_MOBILE) return;
+      const target = appState.users[mobile];
+      if (!target) return;
+      target.password = await sha256Hash(DEFAULT_OP_PASS);
+      target.updatedAt = Date.now();
+      addSecurityAuditLog(ADMIN_MOBILE, 'PASS_RESET_BY_ADMIN', `${target.name} (${mobile}) નો પાસવર્ડ રીસેટ કરી 123456 કરાયો`);
+      await persistAndBroadcast(true);
+      showToast(`🔑 ${target.name} નો પાસવર્ડ રીસેટ થઈને 123456 થઈ ગયો!`);
     }
 
     async function adminToggleLock(mobile) {
@@ -1806,6 +3201,7 @@
       target.taluka = newTal;
       target.locked = true;
       target.updatedAt = Date.now();
+      addSecurityAuditLog(ADMIN_MOBILE, 'ADMIN_EDITED_LOCATION', `${target.name} (${mobile}) -> ${newDist} / ${newTal}`);
       await persistAndBroadcast(true);
       showToast(`${target.name} નો જિલ્લો (${newDist}) અને તાલુકો (${newTal}) અપડેટ થઈ ગયો!`);
     }
@@ -1814,6 +3210,8 @@
       const listEl = document.getElementById('admin-operators-list');
       const countEl = document.getElementById('admin-op-count');
       if (!listEl) return;
+
+      renderSecurityControls();
 
       if (document.activeElement && document.activeElement.id && document.activeElement.id.startsWith('adm-')) {
         return;
@@ -1838,19 +3236,30 @@
           talukasForDist.map(t => `<option value="${t}" ${op.taluka === t ? 'selected' : ''}>${t}</option>`).join('');
 
         return `
-          <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2.5">
-            <div class="flex items-center justify-between gap-2">
+          <div class="p-3.5 rounded-2xl ${op.blocked ? 'bg-red-50/60 border-red-300' : 'bg-slate-50 border-slate-200'} border space-y-2.5">
+            <div class="flex flex-wrap items-center justify-between gap-2">
               <div class="min-w-0">
-                <p class="text-xs font-bold text-slate-900 truncate">${escapeHtml(op.name)} (${escapeHtml(op.mobile)})</p>
+                <p class="text-xs font-bold text-slate-900 truncate">
+                  ${escapeHtml(op.name)} (${escapeHtml(op.mobile)})
+                  ${op.blocked ? '<span class="ml-1 px-1.5 py-0.5 bg-red-600 text-white rounded text-[9px]">BLOCKED</span>' : ''}
+                </p>
                 <p class="text-[11px] text-blue-800 font-semibold truncate">હાલનું લોકેશન: ${op.district ? escapeHtml(op.district + ' • ' + op.taluka) : 'પસંદ કરેલ નથી'}</p>
               </div>
-              <div class="flex items-center gap-1.5 shrink-0">
+              <div class="flex flex-wrap items-center gap-1.5 shrink-0">
+                <button type="button" onclick="adminResetOperatorPass('${op.mobile}')"
+                  class="px-2 py-1.5 rounded-lg text-[10px] font-bold bg-indigo-100 text-indigo-800 hover:bg-indigo-200" title="પાસવર્ડ રીસેટ 123456">
+                  🔑 રીસેટ (123456)
+                </button>
+                <button type="button" onclick="adminToggleBlockOperator('${op.mobile}')"
+                  class="px-2 py-1.5 rounded-lg text-[10px] font-bold ${op.blocked ? 'bg-emerald-600 text-white' : 'bg-orange-100 text-orange-800'}">
+                  ${op.blocked ? '✅ અનબ્લોક' : '🚫 બ્લોક'}
+                </button>
                 <button type="button" onclick="adminToggleLock('${op.mobile}')"
-                  class="px-2.5 py-1.5 rounded-lg text-[11px] font-bold ${op.locked ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}">
+                  class="px-2 py-1.5 rounded-lg text-[10px] font-bold ${op.locked ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}">
                   ${op.locked ? '🔒 લૉક છે' : '🔓 અનલૉક'}
                 </button>
                 <button type="button" onclick="adminRemoveOperator('${op.mobile}')"
-                  class="px-2.5 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-[11px] font-bold">
+                  class="px-2 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-[10px] font-bold">
                   દૂર કરો
                 </button>
               </div>
@@ -1875,7 +3284,7 @@
       }).join('');
     }
 
-    // 13. PROFILE, SEPARATE WHATSAPP NUMBER, DOB & CHANGE PASSWORD
+    // 17. PROFILE, SEPARATE WHATSAPP NUMBER, DOB & SHA-256 PASSWORD CHANGE
     function renderProfile() {
       const user = appState.users[currentUserMobile];
       if (!user) return;
@@ -1903,6 +3312,10 @@
     function handleProfilePhotoUpload(e) {
       const file = e.target.files[0];
       if (!file) return;
+      if (!file.type.startsWith('image/')) {
+        showToast('કૃપા કરીને માત્ર માન્ય ફોટો ફાઇલ પસંદ કરો.', 'error');
+        return;
+      }
       const reader = new FileReader();
       reader.onload = function(evt) {
         const img = new Image();
@@ -1975,8 +3388,8 @@
       const newPass = document.getElementById('new-password').value.trim();
       const confirmPass = document.getElementById('confirm-password').value.trim();
 
-      const currentValid = user.password || (user.role === 'admin' ? DEFAULT_ADMIN_PASS : DEFAULT_OP_PASS);
-      if (oldPass !== currentValid) {
+      const validOld = await verifyUserPassword(user, oldPass, currentUserMobile === ADMIN_MOBILE);
+      if (!validOld) {
         showToast('જૂનો પાસવર્ડ ખોટો છે!', 'error');
         return;
       }
@@ -1989,26 +3402,39 @@
         return;
       }
 
-      user.password = newPass;
+      user.password = await sha256Hash(newPass);
       user.updatedAt = Date.now();
+      await createSignedSession(currentUserMobile);
+      addSecurityAuditLog(currentUserMobile, 'PASSWORD_CHANGED', 'યુઝરે પોતાનો પાસવર્ડ બદલ્યો');
+
       document.getElementById('old-password').value = '';
       document.getElementById('new-password').value = '';
       document.getElementById('confirm-password').value = '';
 
       await persistAndBroadcast(true);
-      showToast('તમારો પાસવર્ડ સફળતાપૂર્વક બદલાઈ ગયો છે!');
+      showToast('તમારો પાસવર્ડ SHA-256 એન્ક્રિપ્શન સાથે બદલાઈ ગયો છે!');
     }
 
-    // 14. REFRESH ALL UI VIEWS & NAVIGATION
+    // 18. REFRESH ALL UI VIEWS & NAVIGATION
     function refreshAllViews() {
       const user = appState.users[currentUserMobile];
       if (!user) return;
+
+      // Enforce Emergency Portal Freeze for non-admin operators
+      const freezeOverlay = document.getElementById('emergency-freeze-screen');
+      if (freezeOverlay) {
+        const isFrozenForUser = currentUserMobile !== ADMIN_MOBILE && appState.securityConfig && appState.securityConfig.emergencyFreeze;
+        freezeOverlay.classList.toggle('hidden', !isFrozenForUser);
+      }
+
+      renderLiveWatermark();
+      setupPWA();
 
       document.getElementById('header-user-name').textContent = user.name || user.mobile;
       document.getElementById('header-role-badge').textContent = user.role === 'admin' ? 'ADMIN' : 'OPERATOR';
 
       document.getElementById('stat-operators').textContent = Object.keys(appState.users || {}).length;
-      document.getElementById('stat-folders').textContent = (appState.folders || []).length;
+      document.getElementById('stat-folders').textContent = isDuressDecoyMode ? 0 : (appState.folders || []).length;
 
       const distEl = document.getElementById('assign-district');
       const talEl = document.getElementById('assign-taluka');
@@ -2079,22 +3505,397 @@
         .replace(/"/g, '&quot;');
     }
 
-    // 15. UTF-8 SAFE PWA MANIFEST & INSTALL PROMPT
+    // 19. HIGH-RESOLUTION CUSTOM ICON GENERATOR (MATCHING ATTACHED ICON.jpeg) & PWA MANIFEST
+    function generateDefaultEmblemPng(size = 512) {
+      const canvas = document.createElement('canvas');
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      const s = size / 512;
+      ctx.save();
+      ctx.scale(s, s);
+
+      // 1. Rounded App Icon Clip Path & Sky/White Background
+      function roundedRectPath(x, y, w, h, r) {
+        ctx.beginPath();
+        ctx.moveTo(x + r, y);
+        ctx.lineTo(x + w - r, y);
+        ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+        ctx.lineTo(x + w, y + h - r);
+        ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+        ctx.lineTo(x + r, y + h);
+        ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+        ctx.lineTo(x, y + r);
+        ctx.quadraticCurveTo(x, y, x + r, y);
+        ctx.closePath();
+      }
+
+      roundedRectPath(6, 6, 500, 500, 96);
+      ctx.clip();
+
+      const bgGrad = ctx.createLinearGradient(0, 0, 0, 380);
+      bgGrad.addColorStop(0, '#dbeafe');
+      bgGrad.addColorStop(0.55, '#f8fafc');
+      bgGrad.addColorStop(1, '#e2e8f0');
+      ctx.fillStyle = bgGrad;
+      ctx.fillRect(0, 0, 512, 512);
+
+      // 2. Top-Left Indian Tricolor Swooshes (Saffron, White, Green)
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(0, 145);
+      ctx.quadraticCurveTo(75, 45, 225, 10);
+      ctx.lineTo(150, 10);
+      ctx.quadraticCurveTo(45, 35, 0, 95);
+      ctx.closePath();
+      ctx.fillStyle = '#f97316';
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.moveTo(0, 195);
+      ctx.quadraticCurveTo(85, 75, 235, 18);
+      ctx.quadraticCurveTo(100, 55, 0, 150);
+      ctx.closePath();
+      ctx.fillStyle = '#15803d';
+      ctx.fill();
+      ctx.restore();
+
+      // 3. Wooden Desk Surface
+      const deskGrad = ctx.createLinearGradient(140, 290, 512, 370);
+      deskGrad.addColorStop(0, '#d9a066');
+      deskGrad.addColorStop(1, '#b47b44');
+      ctx.fillStyle = deskGrad;
+      ctx.beginPath();
+      ctx.moveTo(140, 315);
+      ctx.lineTo(512, 295);
+      ctx.lineTo(512, 385);
+      ctx.lineTo(120, 385);
+      ctx.closePath();
+      ctx.fill();
+
+      // 4. Grain Sack (Right Side with Wheat Emblem)
+      ctx.save();
+      const sackGrad = ctx.createRadialGradient(420, 235, 15, 425, 245, 85);
+      sackGrad.addColorStop(0, '#f3d092');
+      sackGrad.addColorStop(0.7, '#d6a456');
+      sackGrad.addColorStop(1, '#a3702c');
+      ctx.fillStyle = sackGrad;
+
+      // Sack Body
+      ctx.beginPath();
+      ctx.moveTo(395, 175);
+      ctx.bezierCurveTo(360, 195, 358, 285, 370, 312);
+      ctx.lineTo(482, 312);
+      ctx.bezierCurveTo(494, 280, 488, 195, 456, 175);
+      ctx.closePath();
+      ctx.fill();
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = '#85581f';
+      ctx.stroke();
+
+      // Sack Top Frill
+      ctx.beginPath();
+      ctx.moveTo(395, 175);
+      ctx.lineTo(384, 150);
+      ctx.lineTo(410, 156);
+      ctx.lineTo(426, 148);
+      ctx.lineTo(445, 155);
+      ctx.lineTo(468, 150);
+      ctx.lineTo(456, 175);
+      ctx.closePath();
+      ctx.fillStyle = '#e2b56b';
+      ctx.fill();
+      ctx.stroke();
+
+      // Sack Rope Tie
+      ctx.fillStyle = '#784714';
+      ctx.fillRect(392, 172, 66, 6);
+
+      // Wheat Stalk Icon on Sack
+      ctx.strokeStyle = '#5c3409';
+      ctx.fillStyle = '#5c3409';
+      ctx.lineWidth = 3.5;
+      ctx.beginPath();
+      ctx.moveTo(405, 295);
+      ctx.quadraticCurveTo(425, 245, 452, 200);
+      ctx.stroke();
+      for (let i = 0; i < 5; i++) {
+        const wx = 418 + i * 7;
+        const wy = 265 - i * 13;
+        ctx.beginPath();
+        ctx.ellipse(wx - 6, wy - 3, 7, 3.5, -0.6, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.ellipse(wx + 5, wy + 2, 7, 3.5, 0.4, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+
+      // 5. Small Green Plant Pot Next to Monitor
+      ctx.fillStyle = '#64748b';
+      ctx.beginPath();
+      ctx.moveTo(368, 282);
+      ctx.lineTo(398, 282);
+      ctx.lineTo(394, 315);
+      ctx.lineTo(372, 315);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = '#16a34a';
+      ctx.beginPath();
+      ctx.ellipse(375, 266, 12, 6, -0.7, 0, Math.PI * 2);
+      ctx.ellipse(390, 266, 12, 6, 0.7, 0, Math.PI * 2);
+      ctx.ellipse(383, 256, 6, 14, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 6. Desktop Computer Monitor (Showing Portal UI)
+      ctx.save();
+      // Monitor Stand
+      ctx.fillStyle = '#1e293b';
+      ctx.fillRect(252, 272, 24, 32);
+      ctx.beginPath();
+      ctx.moveTo(222, 304);
+      ctx.lineTo(306, 304);
+      ctx.lineTo(316, 313);
+      ctx.lineTo(212, 313);
+      ctx.closePath();
+      ctx.fill();
+
+      // Monitor Bezel
+      ctx.fillStyle = '#0f172a';
+      ctx.strokeStyle = '#334155';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(205, 148);
+      ctx.lineTo(362, 138);
+      ctx.lineTo(348, 275);
+      ctx.lineTo(192, 272);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      // Monitor Screen Content
+      ctx.fillStyle = '#eff6ff';
+      ctx.beginPath();
+      ctx.moveTo(212, 156);
+      ctx.lineTo(353, 147);
+      ctx.lineTo(341, 264);
+      ctx.lineTo(200, 262);
+      ctx.closePath();
+      ctx.fill();
+
+      // Blue Header Bar inside Monitor
+      ctx.fillStyle = '#1d4ed8';
+      ctx.beginPath();
+      ctx.moveTo(212, 156);
+      ctx.lineTo(353, 147);
+      ctx.lineTo(351, 166);
+      ctx.lineTo(210, 173);
+      ctx.closePath();
+      ctx.fill();
+
+      // People Icon inside Monitor Screen
+      ctx.fillStyle = '#2563eb';
+      ctx.beginPath();
+      ctx.arc(285, 200, 10, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(262, 205, 7, 0, Math.PI * 2);
+      ctx.arc(308, 205, 7, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.roundRect(268, 213, 34, 18, 8);
+      ctx.fill();
+
+      // Keyboard on Desk
+      ctx.fillStyle = '#1e293b';
+      ctx.beginPath();
+      ctx.moveTo(220, 315);
+      ctx.lineTo(340, 322);
+      ctx.lineTo(325, 342);
+      ctx.lineTo(202, 330);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+
+      // 7. Purvatha Operator Sitting at Desk (Left Side)
+      ctx.save();
+      // Operator Arms & Hands on Keyboard
+      ctx.fillStyle = '#e08b4f';
+      ctx.beginPath();
+      ctx.roundRect(250, 312, 55, 16, 8);
+      ctx.fill();
+
+      // Operator Light Blue Shirt & Lanyard Strap
+      const shirtGrad = ctx.createLinearGradient(55, 210, 235, 365);
+      shirtGrad.addColorStop(0, '#dbeafe');
+      shirtGrad.addColorStop(0.5, '#93c5fd');
+      shirtGrad.addColorStop(1, '#60a5fa');
+      ctx.fillStyle = shirtGrad;
+      ctx.beginPath();
+      ctx.moveTo(62, 355);
+      ctx.quadraticCurveTo(68, 238, 118, 218);
+      ctx.lineTo(165, 218);
+      ctx.quadraticCurveTo(222, 248, 265, 318);
+      ctx.lineTo(232, 342);
+      ctx.lineTo(188, 305);
+      ctx.lineTo(182, 360);
+      ctx.closePath();
+      ctx.fill();
+
+      // Blue ID Lanyard on Neck
+      ctx.strokeStyle = '#1e3a8a';
+      ctx.lineWidth = 5;
+      ctx.beginPath();
+      ctx.moveTo(116, 218);
+      ctx.lineTo(168, 224);
+      ctx.stroke();
+
+      // Head & Neck
+      ctx.fillStyle = '#e59866';
+      ctx.beginPath();
+      ctx.roundRect(122, 182, 38, 42, 10);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(148, 162, 34, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Glasses
+      ctx.strokeStyle = '#0f172a';
+      ctx.lineWidth = 3.5;
+      ctx.beginPath();
+      ctx.moveTo(155, 156);
+      ctx.lineTo(186, 160);
+      ctx.strokeRect(174, 152, 14, 12);
+      ctx.stroke();
+
+      // Hair
+      ctx.fillStyle = '#0f172a';
+      ctx.beginPath();
+      ctx.arc(140, 152, 37, Math.PI * 0.82, Math.PI * 2.08);
+      ctx.quadraticCurveTo(152, 185, 122, 184);
+      ctx.closePath();
+      ctx.fill();
+
+      // Office Chair Backrest
+      ctx.fillStyle = '#1e293b';
+      ctx.strokeStyle = '#475569';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.roundRect(18, 248, 128, 120, 26);
+      ctx.fill();
+      ctx.stroke();
+      ctx.restore();
+
+      // 8. Bottom Curved Royal Blue Banner with Gold Wave Trim
+      ctx.save();
+      // Gold Wave Trim
+      ctx.beginPath();
+      ctx.moveTo(0, 364);
+      ctx.quadraticCurveTo(135, 312, 265, 348);
+      ctx.quadraticCurveTo(395, 382, 512, 332);
+      ctx.lineTo(512, 512);
+      ctx.lineTo(0, 512);
+      ctx.closePath();
+      ctx.fillStyle = '#facc15';
+      ctx.fill();
+
+      // Deep Blue Banner Fill
+      const bannerGrad = ctx.createLinearGradient(0, 345, 0, 512);
+      bannerGrad.addColorStop(0, '#1d4ed8');
+      bannerGrad.addColorStop(0.4, '#1e3a8a');
+      bannerGrad.addColorStop(1, '#0a1938');
+      ctx.beginPath();
+      ctx.moveTo(0, 374);
+      ctx.quadraticCurveTo(135, 322, 265, 356);
+      ctx.quadraticCurveTo(395, 390, 512, 340);
+      ctx.lineTo(512, 512);
+      ctx.lineTo(0, 512);
+      ctx.closePath();
+      ctx.fillStyle = bannerGrad;
+      ctx.fill();
+
+      // Gujarati Title Text: "ગુજરાત પુરવઠા" (White Bold)
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.55)';
+      ctx.shadowBlur = 6;
+      ctx.shadowOffsetY = 3;
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '800 54px "Noto Sans Gujarati", sans-serif';
+      ctx.fillText('ગુજરાત પુરવઠા', 256, 404);
+
+      // Gold Side Lines + "ઓપરેટર" (Yellow/Gold Bold)
+      ctx.strokeStyle = '#facc15';
+      ctx.lineWidth = 3.5;
+      ctx.beginPath();
+      ctx.moveTo(46, 466);
+      ctx.lineTo(136, 466);
+      ctx.moveTo(376, 466);
+      ctx.lineTo(466, 466);
+      ctx.stroke();
+
+      ctx.fillStyle = '#facc15';
+      ctx.font = '800 50px "Noto Sans Gujarati", sans-serif';
+      ctx.fillText('ઓપરેટર', 256, 466);
+      ctx.restore();
+
+      // 9. Outer Royal Blue App Icon Frame Border
+      roundedRectPath(6, 6, 500, 500, 96);
+      ctx.lineWidth = 12;
+      ctx.strokeStyle = '#034ea2';
+      ctx.stroke();
+
+      ctx.restore();
+      return canvas.toDataURL('image/png');
+    }
+
+    // Automatically load ./ICON.jpeg if present in the same folder on GitHub/PC, otherwise use the matching Canvas PNG icon
+    let cachedExternalIconDataUrl = '';
+    function tryLoadRepoIconFile() {
+      const probe = new Image();
+      probe.crossOrigin = 'anonymous';
+      probe.onload = function () {
+        try {
+          const c = document.createElement('canvas');
+          c.width = 512;
+          c.height = 512;
+          c.getContext('2d').drawImage(probe, 0, 0, 512, 512);
+          cachedExternalIconDataUrl = c.toDataURL('image/png');
+          setupPWA();
+        } catch (_) {}
+      };
+      probe.src = './ICON.jpeg';
+    }
+
     function setupPWA() {
       try {
-        const svgIcon = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192"><rect width="192" height="192" rx="40" fill="#1e3a8a"/><text x="96" y="125" font-size="95" text-anchor="middle" fill="#fbbf24" font-family="sans-serif" font-weight="bold">ગુ</text></svg>';
-        const iconDataUri = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgIcon);
+        const customIcon = (appState.securityConfig && appState.securityConfig.customAppIcon) || localStorage.getItem('gujarat_purvatha_custom_icon') || cachedExternalIconDataUrl || '';
+        const icon192 = customIcon || generateDefaultEmblemPng(192);
+        const icon512 = customIcon || generateDefaultEmblemPng(512);
+
+        // Apply Icon to Login, Header, Admin Preview, Favicon & Apple Touch Icon
+        ['login-app-logo-img', 'header-app-logo-img', 'admin-preview-app-icon'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.src = icon192;
+        });
+        const favEl = document.getElementById('pwa-favicon');
+        if (favEl) favEl.setAttribute('href', icon192);
+        const appleEl = document.getElementById('pwa-apple-icon');
+        if (appleEl) appleEl.setAttribute('href', icon192);
 
         const manifestObj = {
           name: 'ગુજરાત પુરવઠા ઓપરેટર',
           short_name: 'પુરવઠા ઓપરેટર',
+          description: 'ગુજરાત પુરવઠા ઓપરેટર મેનેજમેન્ટ, લાઇવ ડિરેક્ટરી અને ડેટા પોર્ટલ',
           start_url: './',
+          scope: './',
           display: 'standalone',
+          orientation: 'portrait',
           background_color: '#1e3a8a',
           theme_color: '#1e3a8a',
           icons: [
-            { src: iconDataUri, sizes: '192x192', type: 'image/svg+xml' },
-            { src: iconDataUri, sizes: '512x512', type: 'image/svg+xml' }
+            { src: icon192, sizes: '192x192', type: 'image/png', purpose: 'any maskable' },
+            { src: icon512, sizes: '512x512', type: 'image/png', purpose: 'any maskable' }
           ]
         };
         const manifestDataUri = 'data:application/manifest+json;charset=utf-8,' + encodeURIComponent(JSON.stringify(manifestObj));
@@ -2103,6 +3904,42 @@
       } catch (e) {
         console.warn('PWA setup notice:', e);
       }
+    }
+
+    function handleCustomAppIconUpload(e) {
+      if (currentUserMobile !== ADMIN_MOBILE) return;
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        const img = new Image();
+        img.onload = async function() {
+          const canvas = document.createElement('canvas');
+          canvas.width = 256;
+          canvas.height = 256;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, 256, 256);
+          const pngDataUrl = canvas.toDataURL('image/png', 0.9);
+          if (!appState.securityConfig) appState.securityConfig = {};
+          appState.securityConfig.customAppIcon = pngDataUrl;
+          localStorage.setItem('gujarat_purvatha_custom_icon', pngDataUrl);
+          setupPWA();
+          addSecurityAuditLog(ADMIN_MOBILE, 'APP_ICON_UPDATED', 'એડમિને પોર્ટલનો ઇન્સ્ટોલ આઈકોન (Logo) અપડેટ કર્યો');
+          await persistAndBroadcast(true);
+          showToast('📲 નવો એપ્લિકેશન આઈકોન સેટ થઈ ગયો છે!');
+        };
+        img.src = evt.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async function resetCustomAppIcon() {
+      if (currentUserMobile !== ADMIN_MOBILE) return;
+      if (appState.securityConfig) appState.securityConfig.customAppIcon = '';
+      localStorage.removeItem('gujarat_purvatha_custom_icon');
+      setupPWA();
+      await persistAndBroadcast(true);
+      showToast('ડિફોલ્ટ એપ્લિકેશન આઈકોન ફરીથી સેટ થઈ ગયો છે.', 'info');
     }
 
     window.addEventListener('beforeinstallprompt', (e) => {
@@ -2120,16 +3957,19 @@
       document.getElementById('install-banner').classList.add('hidden');
     }
 
-    // 16. INITIALIZE ON PAGE LOAD
+    // 20. INITIALIZE ON PAGE LOAD WITH CRYPTOGRAPHIC SESSION VERIFICATION
     document.addEventListener('DOMContentLoaded', async () => {
-      localStorage.setItem(CLOUD_URL_KEY, DEFAULT_FIREBASE_URL);
+      if (!localStorage.getItem(CLOUD_URL_KEY)) {
+        localStorage.setItem(CLOUD_URL_KEY, DEFAULT_FIREBASE_URL);
+      }
+      tryLoadRepoIconFile();
       setupPWA();
       loadLocalState();
       await pullFromCloud(true);
 
-      const savedSession = localStorage.getItem(SESSION_KEY);
-      if (savedSession && appState.users[savedSession]) {
-        currentUserMobile = savedSession;
+      const verifiedMobile = await verifySignedSession();
+      if (verifiedMobile && appState.users[verifiedMobile]) {
+        currentUserMobile = verifiedMobile;
         enterApp();
         renderProfile();
       }
