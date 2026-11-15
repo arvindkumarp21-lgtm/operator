@@ -141,29 +141,34 @@
   </div>
 
   <!-- Force Default Password Change Modal -->
-  <div id="force-pass-modal" class="fixed inset-0 z-[60] hidden bg-slate-950/75 backdrop-blur-xs flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl max-w-sm w-full p-5 shadow-2xl border border-amber-300 space-y-4">
+  <div id="force-pass-modal" class="fixed inset-0 z-[85] hidden bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-5 shadow-2xl border-2 border-amber-400 space-y-4">
       <div class="flex items-center gap-3">
         <div class="w-11 h-11 rounded-2xl bg-amber-100 text-amber-800 flex items-center justify-center text-xl font-bold shrink-0">🔐</div>
         <div>
-          <h3 class="text-sm font-bold text-slate-900">ડિફોલ્ટ પાસવર્ડ બદલવો ફરજિયાત છે!</h3>
-          <p class="text-[11px] text-slate-600 mt-0.5">સુરક્ષા કારણોસર ડિફોલ્ટ પાસવર્ડ (123456) બદલીને તમારો નવો ખાનગી પાસવર્ડ સેટ કરો.</p>
+          <h3 class="text-sm font-bold text-slate-900">પ્રથમ લૉગિન: પાસવર્ડ બદલવો ફરજિયાત!</h3>
+          <p class="text-[11px] text-slate-600 mt-0.5">સુરક્ષા કારણોસર પ્રથમ લૉગિન બાદ ડિફોલ્ટ પાસવર્ડ બદલીને તમારો નવો ખાનગી પાસવર્ડ સેટ કર્યા પછી જ પોર્ટલ ખુલશે.</p>
         </div>
       </div>
       <form onsubmit="submitForcedPasswordChange(event)" class="space-y-3">
         <div>
           <label class="block text-xs font-bold text-slate-700 mb-1">નવો પાસવર્ડ (ઓછામાં ઓછા ૪ અક્ષર)</label>
-          <input type="password" id="force-new-pass" minlength="4" required placeholder="નવો પાસવર્ડ લખો"
-            class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold" />
+          <input type="password" id="force-new-pass" minlength="4" required placeholder="નવો ખાનગી પાસવર્ડ લખો"
+            class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-amber-500" />
         </div>
         <div>
           <label class="block text-xs font-bold text-slate-700 mb-1">નવો પાસવર્ડ ફરીથી લખો</label>
           <input type="password" id="force-confirm-pass" minlength="4" required placeholder="પાસવર્ડ કન્ફર્મ કરો"
-            class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold" />
+            class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-amber-500" />
         </div>
-        <button type="submit" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow">
-          નવો પાસવર્ડ સેવ કરી આગળ વધો
-        </button>
+        <div class="grid grid-cols-3 gap-2 pt-1">
+          <button type="button" onclick="handleLogout()" class="col-span-1 py-3 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold rounded-xl text-xs">
+            લોગઆઉટ
+          </button>
+          <button type="submit" class="col-span-2 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow">
+            પાસવર્ડ બદલી આગળ વધો
+          </button>
+        </div>
       </form>
     </div>
   </div>
@@ -1901,6 +1906,9 @@
           // Migrate plaintext admin password to SHA-256 hash automatically
           adminUser.password = await sha256Hash(password);
           adminUser.role = 'admin';
+          if (password === DEFAULT_ADMIN_PASS) {
+            adminUser.mustChangePassword = true;
+          }
           adminUser.lastLoginAt = Date.now();
           adminUser.deviceId = getDeviceId();
           appState.users[ADMIN_MOBILE] = adminUser;
@@ -1910,7 +1918,11 @@
           await createSignedSession(ADMIN_MOBILE);
           await persistAndBroadcast(true);
           enterApp();
-          showToast('એડમિન તરીકે સુરક્ષિત લૉગિન થયું!');
+          if (adminUser.mustChangePassword) {
+            document.getElementById('force-pass-modal').classList.remove('hidden');
+          } else {
+            showToast('એડમિન તરીકે સુરક્ષિત લૉગિન થયું!');
+          }
           return;
         }
 
@@ -1943,6 +1955,9 @@
           }
           // Migrate legacy plaintext to SHA-256 hash
           existingUser.password = await sha256Hash(password);
+          if (password === DEFAULT_OP_PASS) {
+            existingUser.mustChangePassword = true;
+          }
           existingUser.lastLoginAt = Date.now();
           existingUser.deviceId = getDeviceId();
           existingUser.updatedAt = Date.now();
@@ -1967,6 +1982,7 @@
             name: 'ઓપરેટર (' + mobile.slice(-4) + ')',
             role: 'operator',
             password: defaultHash,
+            mustChangePassword: true,
             district: '',
             taluka: '',
             locked: false,
@@ -1989,8 +2005,9 @@
         await persistAndBroadcast(true);
         enterApp();
 
-        // Prompt Force Password Change if operator is still using default '123456'
-        if (password === DEFAULT_OP_PASS) {
+        // Mandatory Force Password Change on first login or when default password is used
+        const activeUserObj = appState.users[mobile];
+        if (password === DEFAULT_OP_PASS || (activeUserObj && activeUserObj.mustChangePassword)) {
           document.getElementById('force-pass-modal').classList.remove('hidden');
         } else {
           showToast('ઓપરેટર તરીકે સુરક્ષિત લૉગિન થયું!');
@@ -2007,8 +2024,8 @@
       e.preventDefault();
       const newP = document.getElementById('force-new-pass').value.trim();
       const confP = document.getElementById('force-confirm-pass').value.trim();
-      if (newP === DEFAULT_OP_PASS) {
-        showToast('કૃપા કરીને 123456 સિવાયનો નવો પાસવર્ડ રાખો!', 'error');
+      if (newP === DEFAULT_OP_PASS || newP === DEFAULT_ADMIN_PASS || newP === DURESS_PANIC_PASS) {
+        showToast('કૃપા કરીને ડિફોલ્ટ પાસવર્ડ (123456 / 654321) સિવાયનો નવો ખાનગી પાસવર્ડ રાખો!', 'error');
         return;
       }
       if (newP.length < 4 || newP !== confP) {
@@ -2018,15 +2035,17 @@
       const user = appState.users[currentUserMobile];
       if (user) {
         user.password = await sha256Hash(newP);
+        user.mustChangePassword = false;
+        user.passwordChangedAt = Date.now();
         user.updatedAt = Date.now();
         await createSignedSession(currentUserMobile);
-        addSecurityAuditLog(currentUserMobile, 'FORCED_PASS_UPDATED', 'ઓપરેટરે ડિફોલ્ટ પાસવર્ડ બદલીને નવો પાસવર્ડ સેટ કર્યો');
+        addSecurityAuditLog(currentUserMobile, 'FORCED_PASS_UPDATED', 'પ્રથમ લૉગિન બાદ યુઝરે પોતાનો નવો ખાનગી પાસવર્ડ સેટ કર્યો');
         await persistAndBroadcast(true);
       }
       document.getElementById('force-new-pass').value = '';
       document.getElementById('force-confirm-pass').value = '';
       document.getElementById('force-pass-modal').classList.add('hidden');
-      showToast('તમારો નવો સિક્યોર પાસવર્ડ સેટ થઈ ગયો છે!');
+      showToast('✅ તમારો નવો ખાનગી પાસવર્ડ સેટ થઈ ગયો છે!');
     }
 
     function handleLogout() {
@@ -3078,6 +3097,7 @@
         name,
         role: 'operator',
         password: defaultHash,
+        mustChangePassword: true,
         district: district || '',
         taluka: taluka || '',
         locked: Boolean(district && taluka),
@@ -3134,8 +3154,9 @@
       const target = appState.users[mobile];
       if (!target) return;
       target.password = await sha256Hash(DEFAULT_OP_PASS);
+      target.mustChangePassword = true;
       target.updatedAt = Date.now();
-      addSecurityAuditLog(ADMIN_MOBILE, 'PASS_RESET_BY_ADMIN', `${target.name} (${mobile}) નો પાસવર્ડ રીસેટ કરી 123456 કરાયો`);
+      addSecurityAuditLog(ADMIN_MOBILE, 'PASS_RESET_BY_ADMIN', `${target.name} (${mobile}) નો પાસવર્ડ રીસેટ કરી 123456 કરાયો (પ્રથમ લૉગિને બદલવો ફરજિયાત)`);
       await persistAndBroadcast(true);
       showToast(`🔑 ${target.name} નો પાસવર્ડ રીસેટ થઈને 123456 થઈ ગયો!`);
     }
@@ -3395,9 +3416,29 @@
     }
 
     // 18. REFRESH ALL UI VIEWS & NAVIGATION
+    async function checkMandatoryPasswordChange() {
+      const user = appState.users[currentUserMobile];
+      if (!user || isDuressDecoyMode) return;
+      const defOpHash = await sha256Hash(DEFAULT_OP_PASS);
+      const defAdmHash = await sha256Hash(DEFAULT_ADMIN_PASS);
+      const isStillDefault =
+        user.mustChangePassword === true ||
+        user.password === DEFAULT_OP_PASS ||
+        user.password === DEFAULT_ADMIN_PASS ||
+        user.password === defOpHash ||
+        (currentUserMobile === ADMIN_MOBILE && user.password === defAdmHash);
+
+      const modal = document.getElementById('force-pass-modal');
+      if (modal) {
+        modal.classList.toggle('hidden', !isStillDefault);
+      }
+    }
+
     function refreshAllViews() {
       const user = appState.users[currentUserMobile];
       if (!user) return;
+
+      checkMandatoryPasswordChange();
 
       // Enforce Emergency Portal Freeze for non-admin operators
       const freezeOverlay = document.getElementById('emergency-freeze-screen');
