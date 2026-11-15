@@ -231,29 +231,6 @@
           🔒 સુરક્ષિત લૉગિન કરો
         </button>
 
-        <!-- Quick Demo Login Buttons for Instant Testing -->
-        <div class="pt-1 border-t border-slate-100 space-y-1.5">
-          <p class="text-[10px] font-bold text-slate-400 text-center uppercase tracking-wider">ઝડપી ટેસ્ટિંગ માટે ડેમો લૉગિન</p>
-          <div class="grid grid-cols-2 gap-2">
-            <button type="button" onclick="quickDemoLogin('admin')"
-              class="py-2 px-2.5 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 rounded-xl text-[11px] font-bold flex items-center justify-center gap-1 transition">
-              <span>👑 એડમિન ડેમો</span>
-            </button>
-            <button type="button" onclick="quickDemoLogin('operator')"
-              class="py-2 px-2.5 bg-blue-50 hover:bg-blue-100 text-blue-900 border border-blue-200 rounded-xl text-[11px] font-bold flex items-center justify-center gap-1 transition">
-              <span>👤 ઓપરેટર ડેમો</span>
-            </button>
-          </div>
-        </div>
-
-        <div class="bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-[10px] text-slate-500 flex items-center justify-between">
-          <span>🛡️ SHA-256 + Anti-Bot</span>
-          <span>•</span>
-          <span>🕵️ Stego Leak Guard</span>
-          <span>•</span>
-          <span>🕵️‍♂️ Duress: 999999</span>
-        </div>
-
         <div id="install-banner" class="hidden pt-1">
           <button type="button" onclick="triggerPWAInstall()"
             class="w-full py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl text-xs flex items-center justify-center gap-2 shadow">
@@ -262,7 +239,7 @@
         </div>
       </form>
     </div>
-    <p class="text-blue-200/70 text-[11px] mt-4">ગુજરાત પુરવઠા ઓપરેટર PWA • એન્ટરપ્રાઇઝ સિક્યુરિટી v14</p>
+    <p class="text-blue-200/70 text-[11px] mt-4">ગુજરાત પુરવઠા ઓપરેટર PWA • સિક્યોર લાઇવ પોર્ટલ</p>
   </div>
 
   <!-- ================= MAIN APP SHELL ================= -->
@@ -799,6 +776,19 @@
               📋 Rules કોપી કરો
             </button>
           </details>
+
+          <!-- GitHub Auto-Update Service Worker (sw.js) Helper -->
+          <div class="bg-white/10 rounded-xl p-3 text-xs space-y-2 border border-white/15">
+            <div class="flex items-center justify-between flex-wrap gap-2">
+              <div>
+                <p class="font-bold text-amber-300">🚀 GitHub Pages ઓટો-અપડેટ અને PWA ફાઇલ (sw.js)</p>
+                <p class="text-[11px] text-blue-200 mt-0.5">GitHub માં <code class="bg-slate-950 px-1.5 py-0.5 rounded text-emerald-300">index.html</code> અને <code class="bg-slate-950 px-1.5 py-0.5 rounded text-emerald-300">ICON.jpeg</code> ની બાજુમાં <code class="bg-slate-950 px-1.5 py-0.5 rounded text-emerald-300">sw.js</code> મૂકવાથી દરેક ઓપરેટરના મોબાઇલમાં નવું અપડેટ આપોઆપ આવી જશે.</p>
+              </div>
+              <button type="button" onclick="downloadServiceWorkerFile()" class="px-3 py-2 bg-amber-400 hover:bg-amber-500 text-slate-950 font-bold rounded-xl text-[11px] shrink-0 shadow">
+                ⬇️ sw.js ફાઇલ ડાઉનલોડ કરો
+              </button>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -1832,17 +1822,6 @@
     }
 
     // 9. SECURE AUTHENTICATION (SHA-256 + DURESS PANIC MODE + ANTI-BOT + BRUTE-FORCE LOCK)
-    function quickDemoLogin(type) {
-      if (type === 'admin') {
-        document.getElementById('login-mobile').value = ADMIN_MOBILE;
-        document.getElementById('login-password').value = DEFAULT_ADMIN_PASS;
-      } else {
-        document.getElementById('login-mobile').value = '9876543210';
-        document.getElementById('login-password').value = DEFAULT_OP_PASS;
-      }
-      document.getElementById('login-form').requestSubmit();
-    }
-
     async function handleManualLogin(e) {
       e.preventDefault();
       const errBox = document.getElementById('login-error');
@@ -3957,6 +3936,46 @@
       document.getElementById('install-banner').classList.add('hidden');
     }
 
+    // Register GitHub Pages Service Worker (sw.js) for Instant Auto-Updates & Offline PWA Support
+    function registerGitHubServiceWorker() {
+      if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+        navigator.serviceWorker.register('./sw.js').then((reg) => {
+          reg.addEventListener('updatefound', () => {
+            const newWorker = reg.installing;
+            if (newWorker) {
+              newWorker.addEventListener('statechange', () => {
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                  showToast('🔄 પોર્ટલનું નવું અપડેટ મળી ગયું છે! ૨ સેકન્ડમાં રિફ્રેશ થશે...', 'info');
+                  setTimeout(() => window.location.reload(), 2000);
+                }
+              });
+            }
+          });
+        }).catch(() => {});
+      }
+    }
+
+    function downloadServiceWorkerFile() {
+      const swContent = [
+        "const CACHE_NAME = 'gujarat-purvatha-pwa-v16';",
+        "const ASSETS_TO_CACHE = ['./', './index.html', './ICON.jpeg'];",
+        "self.addEventListener('install', (e) => { self.skipWaiting(); e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(ASSETS_TO_CACHE).catch(()=>{}))); });",
+        "self.addEventListener('activate', (e) => { e.waitUntil(caches.keys().then(keys => Promise.all(keys.map(k => k !== CACHE_NAME ? caches.delete(k) : null))).then(() => self.clients.claim())); });",
+        "self.addEventListener('fetch', (e) => {",
+        "  if (e.request.url.includes('firebasedatabase.app') || e.request.url.includes('firebaseio.com') || e.request.method !== 'GET') return;",
+        "  e.respondWith(fetch(e.request).then(res => { if (res && res.status === 200 && e.request.url.startsWith(self.location.origin)) { const clone = res.clone(); caches.open(CACHE_NAME).then(c => c.put(e.request, clone)); } return res; }).catch(() => caches.match(e.request).then(r => r || caches.match('./index.html'))));",
+        "});"
+      ].join('\n');
+      const blob = new Blob([swContent], { type: 'application/javascript;charset=utf-8' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'sw.js';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      showToast('📥 sw.js ફાઇલ ડાઉનલોડ થઈ ગઈ! તેને GitHub માં અપલોડ કરી દો.');
+    }
+
     // 20. INITIALIZE ON PAGE LOAD WITH CRYPTOGRAPHIC SESSION VERIFICATION
     document.addEventListener('DOMContentLoaded', async () => {
       if (!localStorage.getItem(CLOUD_URL_KEY)) {
@@ -3964,6 +3983,7 @@
       }
       tryLoadRepoIconFile();
       setupPWA();
+      registerGitHubServiceWorker();
       loadLocalState();
       await pullFromCloud(true);
 
