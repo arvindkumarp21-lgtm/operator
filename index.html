@@ -1366,6 +1366,23 @@
 
   <!-- ================= APPLICATION JAVASCRIPT ================= -->
   <script>
+    // Polyfill ctx.roundRect for Samsung Internet & older mobile WebViews
+    if (typeof CanvasRenderingContext2D !== 'undefined' && !CanvasRenderingContext2D.prototype.roundRect) {
+      CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
+        const radius = typeof r === 'number' ? r : (Array.isArray(r) ? r[0] : 0);
+        this.moveTo(x + radius, y);
+        this.lineTo(x + w - radius, y);
+        this.quadraticCurveTo(x + w, y, x + w, y + radius);
+        this.lineTo(x + w, y + h - radius);
+        this.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
+        this.lineTo(x + radius, y + h);
+        this.quadraticCurveTo(x, y + h, x, y + h - radius);
+        this.lineTo(x, y + radius);
+        this.quadraticCurveTo(x, y, x + radius, y);
+        return this;
+      };
+    }
+
     const DEFAULT_FIREBASE_URL = "https://all-pds-oprator-default-rtdb.asia-southeast1.firebasedatabase.app";
 
     // 1. ALL 35 DISTRICTS & TALUKAS OF GUJARAT
@@ -4536,8 +4553,8 @@
     // Automatically load ./ICON.jpeg if present in the same folder on GitHub/PC, otherwise use the matching Canvas PNG icon
     let cachedExternalIconDataUrl = '';
     function tryLoadRepoIconFile() {
+      if (location.protocol === 'file:') return;
       const probe = new Image();
-      probe.crossOrigin = 'anonymous';
       probe.onload = function () {
         try {
           const c = document.createElement('canvas');
@@ -4940,24 +4957,19 @@
       const membersLines = (d.members || []).map((m, i) => {
         const st = String(m.ekyc || '').toLowerCase().includes('done') ? '✅ e-KYC પૂર્ણ' : '⏳ e-KYC બાકી';
         return `${i + 1}. ${m.name} (${m.relation}) - ${st}`;
-      }).join('
-');
+      }).join('\n');
 
-      const msg = `*🪪 રેશન કાર્ડ વિગત (ગુજરાત પુરવઠા)*
-` +
-        `• કાર્ડ નંબર: *${d.card_number}*
-` +
-        `• મુખ્ય સભ્ય: *${d.head_name}*
-` +
-        `• કેટેગરી: ${d.category}
-` +
-        `• સરનામું: ${d.address}
-` +
-        `• દુકાન (FPS): ${d.fps_name}
-
-` +
-        `*સભ્યો અને e-KYC સ્ટેટસ:*
-${membersLines}`;
+      const msg = [
+        `*🪪 રેશન કાર્ડ વિગત (ગુજરાત પુરવઠા)*`,
+        `• કાર્ડ નંબર: *${d.card_number}*`,
+        `• મુખ્ય સભ્ય: *${d.head_name}*`,
+        `• કેટેગરી: ${d.category}`,
+        `• સરનામું: ${d.address}`,
+        `• દુકાન (FPS): ${d.fps_name}`,
+        ``,
+        `*સભ્યો અને e-KYC સ્ટેટસ:*`,
+        membersLines
+      ].join('\n');
 
       window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank', 'noopener');
     }
@@ -5205,7 +5217,7 @@ ${membersLines}`;
         });
       });
 
-      const csvContent = '﻿' + rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
+      const csvContent = '\uFEFF' + rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
