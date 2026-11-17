@@ -153,14 +153,20 @@
     </div>
     <main class="p-4 space-y-5">
       <section id="tab-home" class="space-y-4">
-        <div class="bg-white rounded-2xl p-4 shadow-sm">
-          <h2 class="text-sm font-bold">સ્વાગત છે! એપ સફળતાપૂર્વક GitHub API સાથે કનેક્ટ થઈ ગઈ છે.</h2>
+        <div class="bg-white rounded-2xl p-4 shadow-sm space-y-3">
+          <h2 class="text-sm font-bold text-slate-800">જિલ્લો અને તાલુકો પસંદગી</h2>
+          <select id="assign-district" onchange="populateTalukas('assign-district', 'assign-taluka')" class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-semibold">
+            <option value="">-- જિલ્લો પસંદ કરો --</option>
+          </select>
+          <select id="assign-taluka" class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-semibold">
+            <option value="">-- પ્રથમ જિલ્લો પસંદ કરો --</option>
+          </select>
+          <button type="button" onclick="saveOperatorLocation()" class="w-full py-2.5 bg-blue-900 text-white font-bold rounded-xl text-xs">જિલ્લો અને તાલુકો સેવ કરો</button>
         </div>
       </section>
     </main>
   </div>
 
-  <!-- GITHUB API SCRIPT -->
   <script>
     const GITHUB_USERNAME = "arvindkumarp21-lgtm";
     const REPO_NAME = "operator";
@@ -169,12 +175,20 @@
 
     const ADMIN_MOBILE = '9033483992';
     const DEFAULT_ADMIN_PASS = '654321';
+
+    const GUJARAT_DATA = {
+      'Ahmedabad': ['Ghatlodia', 'DETROJ', 'DASKROI', 'DHANDHUKA', 'DHOLERA', 'BAVLA', 'MANDAL', 'VIRAMGAM', 'SANAND', 'DSO OFFICE'],
+      'Gandhinagar': ['KALOL', 'GANDHINAGAR', 'DEHGAM', 'MANSA', 'DSO OFFICE'],
+      'Mehsana': ['UNJHA', 'KADI', 'KHERALU', 'JOTANA', 'BECHARAJI', 'MAHESANA', 'VADNAGAR', 'VISNAGAR', 'VIJAPOOR', 'SATLASANA', 'DSO OFFICE']
+    };
+
     let appState = { users: {} };
     let currentUserMobile = null;
 
-    async function sha256Hash(text) {
-      return 'sha256:' + text;
+    function showToast(msg) {
+      alert(msg);
     }
+    function hideToast() {}
 
     async function pullFromCloud(silent = true) {
       try {
@@ -211,7 +225,7 @@
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
-              message: "Update operator data via PWA",
+              message: "Update operator data via GitHub API",
               content: encodedContent,
               sha: sha,
               branch: "main"
@@ -223,32 +237,102 @@
       }
     }
 
-    function showToast(msg) {
-      alert(msg);
+    function populateDistrictSelects() {
+      const districts = Object.keys(GUJARAT_DATA).sort();
+      const el = document.getElementById('assign-district');
+      if (!el) return;
+      el.innerHTML = '<option value="">-- જિલ્લો પસંદ કરો --</option>' + districts.map(d => `<option value="${d}">${d}</option>`).join('');
     }
 
-    function handleManualLogin(e) {
+    function populateTalukas(distSelectId, talukaSelectId) {
+      const dist = document.getElementById(distSelectId).value;
+      const talEl = document.getElementById(talukaSelectId);
+      if (!talEl) return;
+      if (!dist || !GUJARAT_DATA[dist]) {
+        talEl.innerHTML = '<option value="">-- પ્રથમ જિલ્લો પસંદ કરો --</option>';
+        return;
+      }
+      talEl.innerHTML = '<option value="">-- તાલુકો પસંદ કરો --</option>' + GUJARAT_DATA[dist].map(t => `<option value="${t}">${t}</option>`).join('');
+    }
+
+    async function handleManualLogin(e) {
       e.preventDefault();
       const mobile = document.getElementById('login-mobile').value.trim();
       const password = document.getElementById('login-password').value.trim();
+
+      await pullFromCloud(true);
+
+      if (!appState.users) appState.users = {};
+      if (!appState.users[ADMIN_MOBILE]) {
+        appState.users[ADMIN_MOBILE] = {
+          mobile: ADMIN_MOBILE,
+          name: 'મુખ્ય એડમિન',
+          role: 'admin',
+          password: DEFAULT_ADMIN_PASS,
+          district: 'Gandhinagar',
+          taluka: 'GANDHINAGAR'
+        };
+      }
+
+      let user = appState.users[mobile];
       if (mobile === ADMIN_MOBILE && password === DEFAULT_ADMIN_PASS) {
         currentUserMobile = mobile;
-        document.getElementById('login-screen').classList.add('hidden');
-        document.getElementById('app-shell').classList.remove('hidden');
+        enterApp();
         showToast('લૉગિન સફળ!');
-      } else {
-        alert('ખોટો નંબર અથવા પાસવર્ડ!');
+        return;
       }
+
+      if (user && user.password === password) {
+        currentUserMobile = mobile;
+        enterApp();
+        showToast('લૉગિન સફળ!');
+      } else if (!user && password === '123456') {
+        appState.users[mobile] = {
+          mobile: mobile,
+          name: 'ઓપરેટર',
+          role: 'operator',
+          password: '123456',
+          district: '',
+          taluka: ''
+        };
+        currentUserMobile = mobile;
+        await persistAndBroadcast(true);
+        enterApp();
+        showToast('નવું ઓપરેટર એકાઉન્ટ બન્યું!');
+      } else {
+        alert('ખોટો મોબાઇલ નંબર અથવા પાસવર્ડ!');
+      }
+    }
+
+    function enterApp() {
+      document.getElementById('login-screen').classList.add('hidden');
+      document.getElementById('app-shell').classList.remove('hidden');
+      populateDistrictSelects();
+    }
+
+    async function saveOperatorLocation() {
+      const user = appState.users[currentUserMobile];
+      if (!user) return;
+      const dist = document.getElementById('assign-district').value;
+      const tal = document.getElementById('assign-taluka').value;
+      if (!dist || !tal) {
+        showToast('કૃપા કરીને જિલ્લો અને તાલુકો બંને પસંદ કરો.');
+        return;
+      }
+      user.district = dist;
+      user.taluka = tal;
+      await persistAndBroadcast(true);
+      showToast('જિલ્લો અને તાલુકો સફળતાપૂર્વક GitHub પર સેવ થઈ ગયા!');
     }
 
     function manualSyncNow() {
       pullFromCloud(false);
-      alert('GitHub સાથે સિંક થઈ ગયું છે!');
+      showToast('GitHub સાથે ડેટા સિંક થઈ ગયો છે!');
     }
 
-    function handleLogout() {
-      location.reload();
-    }
+    document.addEventListener('DOMContentLoaded', () => {
+      pullFromCloud(true);
+    });
   </script>
 </body>
 </html>
