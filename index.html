@@ -4972,21 +4972,11 @@ GITHUB_FILE_PATH = data.json</pre>
         return;
       }
 
-      const apiBase = (localStorage.getItem(PRO_API_URL_KEY) || '').trim();
+      localStorage.removeItem(PRO_API_URL_KEY);
       const workerBase = getActiveCloudUrl();
       let data = null;
 
-      if (apiBase) {
-        try {
-          const cleanBase = apiBase.endsWith('/') ? apiBase : apiBase + '/';
-          const res = await fetch(cleanBase + cardNo);
-          if (!res.ok) throw new Error('HTTP ' + res.status);
-          data = await res.json();
-        } catch (err) {
-          showToast('FastAPI સર્વર સાથે કનેક્ટ ન થયું, ડેમો ડેટા બતાવી રહ્યા છીએ.', 'info');
-          data = getDemoRationRecord(cardNo);
-        }
-      } else if (workerBase) {
+      if (workerBase) {
         try {
           showToast('ગુજરાત ટ્રાન્સપરન્સી પોર્ટલ પરથી લાઇવ વિગત લાવી રહ્યા છીએ...', 'info');
           const res = await fetch(`${workerBase}/ration?rc=${cardNo}`);
