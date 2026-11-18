@@ -2146,7 +2146,11 @@ GITHUB_FILE_PATH = data.json</pre>
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(appState)
           });
-          if (!putRes.ok) throw new Error('PUT HTTP ' + putRes.status);
+          if (!putRes.ok) {
+            let detail = '';
+            try { detail = await putRes.text(); } catch (_) {}
+            throw new Error('PUT HTTP ' + putRes.status + (detail ? ' - ' + detail.slice(0, 120) : ''));
+          }
           setSyncStatus('live');
           if (currentUserMobile) refreshAllViews();
         } catch (err) {
@@ -2167,7 +2171,11 @@ GITHUB_FILE_PATH = data.json</pre>
       try {
         if (!silent) setSyncStatus('syncing');
         const res = await fetch(`${cloudUrl}/purvatha_portal.json?t=${Date.now()}`, { cache: 'no-store' });
-        if (!res.ok) throw new Error('HTTP ' + res.status);
+        if (!res.ok) {
+          let detail = '';
+          try { detail = await res.text(); } catch (_) {}
+          throw new Error('GET HTTP ' + res.status + (detail ? ' - ' + detail.slice(0, 120) : ''));
+        }
         const rawCloud = await res.json();
         const cloudData = (rawCloud && rawCloud.purvatha_portal && rawCloud.purvatha_portal.users) ? rawCloud.purvatha_portal : rawCloud;
         if (cloudData && cloudData.users) {
@@ -2190,7 +2198,7 @@ GITHUB_FILE_PATH = data.json</pre>
         if (!silent) showToast('ક્લાઉડ ડેટા લાઇવ અપડેટ થઈ ગયો છે!');
       } catch (e) {
         setSyncStatus('offline');
-        if (!silent) showToast('GitHub Worker કનેક્શન એરર! Worker URL અથવા નેટવર્ક તપાસો.', 'error');
+        if (!silent) showToast('GitHub Worker એરર: ' + (e && e.message ? e.message : 'નેટવર્ક અથવા Worker URL તપાસો.'), 'error');
       } finally {
         isSyncingNow = false;
       }
