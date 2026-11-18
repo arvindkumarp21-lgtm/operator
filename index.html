@@ -708,7 +708,7 @@
               class="adm-feature-tile p-3 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-left space-y-1 transition active:scale-[0.98]">
               <div class="text-xl">☁️</div>
               <p class="text-xs font-extrabold text-white leading-tight">ક્લાઉડ & PWA</p>
-              <p class="text-[10px] text-blue-200">Firebase & sw.js</p>
+              <p class="text-[10px] text-blue-200">GitHub Sync & sw.js</p>
             </button>
           </div>
         </div>
@@ -987,34 +987,39 @@
         </div>
 
         <div id="adm-sub-cloud" class="adm-sub-panel hidden">
-        <!-- Cloud Live Sync Setup & Secure Firebase Rules Generator -->
+        <!-- GitHub Cloud Live Sync Setup (via Free Cloudflare Worker) -->
         <div class="bg-gradient-to-br from-slate-900 to-blue-950 text-white rounded-2xl shadow-md p-4 space-y-3">
           <div class="flex items-center justify-between">
             <h2 class="text-sm font-bold flex items-center gap-2">
-              <span>☁️ ક્લાઉડ લાઇવ સિંક અને Firebase Security Rules</span>
+              <span>☁️ GitHub લાઇવ સિંક સેટઅપ (Cloudflare Worker)</span>
             </h2>
             <span id="cloud-status-tag" class="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-400 text-slate-950">CLOUD CONNECTED</span>
           </div>
           <div class="flex flex-col sm:flex-row gap-2">
-            <input type="url" id="firebase-url-input" placeholder="https://all-pds-oprator-default-rtdb.asia-southeast1.firebasedatabase.app"
+            <input type="url" id="firebase-url-input" placeholder="https://your-worker.your-subdomain.workers.dev"
               class="flex-1 px-3 py-2.5 rounded-xl bg-white/10 border border-white/20 text-white placeholder-blue-300/60 text-xs focus:outline-none focus:ring-2 focus:ring-amber-400" />
             <button type="button" onclick="saveFirebaseConfig()" class="px-4 py-2.5 bg-amber-400 hover:bg-amber-500 text-slate-950 font-bold rounded-xl text-xs whitespace-nowrap">
-              લાઇવ સિંક અપડેટ કરો
+              GitHub સિંક URL સેવ કરો
+            </button>
+          </div>
+          <div class="flex flex-col sm:flex-row items-center justify-between gap-2 bg-emerald-950/60 border border-emerald-400/30 rounded-xl p-3">
+            <div class="text-[11px] text-emerald-100">
+              <strong class="text-amber-300">📥 જૂનો ડેટા પાછો લાવવો છે?</strong> Firebase માંથી બધા ઓપરેટર, ચેટ અને ફોલ્ડરનો જૂનો ડેટા ૧ ક્લિકમાં GitHub માં ટ્રાન્સફર કરો:
+            </div>
+            <button type="button" onclick="importOldDataFromFirebase()" class="px-3.5 py-2 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold rounded-xl text-xs whitespace-nowrap shadow shrink-0">
+              📥 Firebase માંથી જૂનો ડેટા લાવો
             </button>
           </div>
           <details class="bg-white/10 rounded-xl p-3 text-xs">
-            <summary class="font-bold text-amber-300 cursor-pointer">🔒 Firebase Console માટે સુરક્ષિત Rules અહીંથી કોપી કરો</summary>
-            <p class="text-[11px] text-blue-200 mt-2">Firebase Console → Realtime Database → Rules માં નીચેનો નિયમ મૂકવાથી કોઈ બહારથી આખો ડેટાબેઝ ડિલીટ (`null`) નહીં કરી શકે:</p>
-            <pre id="firebase-rules-code" class="mt-2 p-2.5 bg-slate-950 text-emerald-300 rounded-lg overflow-x-auto text-[10px] font-mono leading-relaxed">{
-  "rules": {
-    "purvatha_portal": {
-      ".read": true,
-      ".write": "newData.exists() && newData.hasChildren(['users', 'updatedAt'])"
-    }
-  }
-}</pre>
+            <summary class="font-bold text-amber-300 cursor-pointer">📘 GitHub + Cloudflare Worker ફ્રી સેટઅપ ગાઈડ</summary>
+            <p class="text-[11px] text-blue-200 mt-2">૧) GitHub માં નવી Repo બનાવો અને Fine-grained Token (Contents: Read &amp; Write) જનરેટ કરો. ૨) Cloudflare Worker માં <code class="bg-slate-950 px-1 rounded text-emerald-300">worker.js</code> મૂકી નીચેના Variables સેટ કરો અને મળેલી Worker URL ઉપર પેસ્ટ કરો:</p>
+            <pre id="firebase-rules-code" class="mt-2 p-2.5 bg-slate-950 text-emerald-300 rounded-lg overflow-x-auto text-[10px] font-mono leading-relaxed">GITHUB_TOKEN = github_pat_xxxx (Secret)
+GITHUB_OWNER = arvindkumarp21-lgtm
+GITHUB_REPO  = operator
+GITHUB_BRANCH = main
+GITHUB_FILE_PATH = data.json</pre>
             <button type="button" onclick="copyFirebaseRules()" class="mt-2 px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold rounded-lg text-[11px]">
-              📋 Rules કોપી કરો
+              📋 Settings લિસ્ટ કોપી કરો
             </button>
           </details>
 
@@ -1383,7 +1388,8 @@
       };
     }
 
-    const DEFAULT_FIREBASE_URL = "https://all-pds-oprator-default-rtdb.asia-southeast1.firebasedatabase.app";
+    // અહીં તમારી Cloudflare Worker URL મૂકો જેથી બધા ઓપરેટર્સ સીધા GitHub સાથે સિંક થાય
+    const DEFAULT_FIREBASE_URL = "https://purvatha-sync156d.arvindkumarp21.workers.dev";
 
     // 1. ALL 35 DISTRICTS & TALUKAS OF GUJARAT
     const GUJARAT_DATA = {
@@ -1436,7 +1442,7 @@
     const SESSION_KEY = 'gujarat_purvatha_session_sig_v14';
     const DEVICE_ID_KEY = 'gujarat_purvatha_device_id';
     const BRUTE_FORCE_KEY = 'gujarat_purvatha_login_guard';
-    const CLOUD_URL_KEY = 'gujarat_purvatha_firebase_url';
+    const CLOUD_URL_KEY = 'gujarat_purvatha_github_worker_url';
     const BDAY_TOAST_KEY = 'gujarat_purvatha_bday_notified_date';
     const LAST_SEEN_NOTICE_KEY = 'gujarat_purvatha_last_seen_notice_id';
 
@@ -2125,7 +2131,8 @@
           try {
             const getRes = await fetch(`${cloudUrl}/purvatha_portal.json?t=${Date.now()}`, { cache: 'no-store' });
             if (getRes.ok) {
-              const remoteData = await getRes.json();
+              const rawRemote = await getRes.json();
+              const remoteData = (rawRemote && rawRemote.purvatha_portal && rawRemote.purvatha_portal.users) ? rawRemote.purvatha_portal : rawRemote;
               if (remoteData && remoteData.users) {
                 appState = mergeStates(appState, remoteData);
                 appState.updatedAt = Date.now();
@@ -2161,7 +2168,8 @@
         if (!silent) setSyncStatus('syncing');
         const res = await fetch(`${cloudUrl}/purvatha_portal.json?t=${Date.now()}`, { cache: 'no-store' });
         if (!res.ok) throw new Error('HTTP ' + res.status);
-        const cloudData = await res.json();
+        const rawCloud = await res.json();
+        const cloudData = (rawCloud && rawCloud.purvatha_portal && rawCloud.purvatha_portal.users) ? rawCloud.purvatha_portal : rawCloud;
         if (cloudData && cloudData.users) {
           appState = mergeStates(appState, cloudData);
           purgeExpiredSelfDestructFiles();
@@ -2182,7 +2190,7 @@
         if (!silent) showToast('ક્લાઉડ ડેટા લાઇવ અપડેટ થઈ ગયો છે!');
       } catch (e) {
         setSyncStatus('offline');
-        if (!silent) showToast('Firebase કનેક્શન એરર! નેટવર્ક અથવા Rules તપાસો.', 'error');
+        if (!silent) showToast('GitHub Worker કનેક્શન એરર! Worker URL અથવા નેટવર્ક તપાસો.', 'error');
       } finally {
         isSyncingNow = false;
       }
@@ -2204,7 +2212,7 @@
       } else if (mode === 'offline') {
         dot.className = 'w-2 h-2 rounded-full bg-red-400';
         txt.textContent = 'SYNC ERROR';
-        if (tag) { tag.textContent = 'CHECK FIREBASE RULES'; tag.className = 'text-[10px] font-bold px-2 py-0.5 rounded bg-red-500 text-white'; }
+        if (tag) { tag.textContent = 'CHECK WORKER URL'; tag.className = 'text-[10px] font-bold px-2 py-0.5 rounded bg-red-500 text-white'; }
       } else {
         dot.className = 'w-2 h-2 rounded-full bg-amber-400 live-dot';
         txt.textContent = 'LOCAL';
@@ -2557,7 +2565,7 @@
       switchTab('home');
 
       if (syncTimer) clearInterval(syncTimer);
-      syncTimer = setInterval(() => pullFromCloud(true), 4000);
+      syncTimer = setInterval(() => pullFromCloud(true), 15000);
     }
 
     // 10. INACTIVITY AUTO-LOCK, LIVE WATERMARK, PRIVACY BLUR & HONEYPOT TRAP
@@ -3714,19 +3722,40 @@
       ta.select();
       document.execCommand('copy');
       document.body.removeChild(ta);
-      showToast('📋 સુરક્ષિત Firebase Rules કોપી થઈ ગયા!');
+      showToast('📋 Worker Environment Variables લિસ્ટ કોપી થઈ ગયું!');
     }
 
     async function saveFirebaseConfig() {
       let url = document.getElementById('firebase-url-input').value.trim();
       url = url.replace(/\/+$/, '').replace(/\/purvatha_portal\.json$/i, '');
       if (url && !url.startsWith('https://')) {
-        showToast('કૃપા કરીને સાચી https:// Firebase URL દાખલ કરો.', 'error');
+        showToast('કૃપા કરીને સાચી https:// Cloudflare Worker URL દાખલ કરો.', 'error');
         return;
       }
       localStorage.setItem(CLOUD_URL_KEY, url || DEFAULT_FIREBASE_URL);
       await persistAndBroadcast(true);
       await pullFromCloud(false);
+    }
+
+    async function importOldDataFromFirebase() {
+      const legacyUrl = "https://all-pds-oprator-default-rtdb.asia-southeast1.firebasedatabase.app/purvatha_portal.json";
+      try {
+        showToast('Firebase માંથી જૂનો ડેટા લાવી રહ્યા છીએ...', 'info');
+        const res = await fetch(`${legacyUrl}?t=${Date.now()}`, { cache: 'no-store' });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const oldData = await res.json();
+        if (!oldData || !oldData.users) {
+          showToast('Firebase માં કોઈ જૂનો ડેટા મળ્યો નથી.', 'error');
+          return;
+        }
+        appState = mergeStates(appState, oldData);
+        appState.updatedAt = Date.now();
+        await persistAndBroadcast(true);
+        refreshAllViews();
+        showToast(`✅ સફળ! ${Object.keys(appState.users || {}).length} ઓપરેટર અને બધો જૂનો ડેટા GitHub માં સેવ થઈ ગયો!`);
+      } catch (err) {
+        showToast('Firebase માંથી ડેટા લાવવામાં ભૂલ આવી. નેટવર્ક તપાસો.', 'error');
+      }
     }
 
     async function adminAddOperator(e) {
@@ -4684,7 +4713,7 @@
         "self.addEventListener('install', (e) => { self.skipWaiting(); e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(ASSETS_TO_CACHE).catch(()=>{}))); });",
         "self.addEventListener('activate', (e) => { e.waitUntil(caches.keys().then(keys => Promise.all(keys.map(k => k !== CACHE_NAME ? caches.delete(k) : null))).then(() => self.clients.claim())); });",
         "self.addEventListener('fetch', (e) => {",
-        "  if (e.request.url.includes('firebasedatabase.app') || e.request.url.includes('firebaseio.com') || e.request.method !== 'GET') return;",
+        "  if (e.request.url.includes('workers.dev') || e.request.url.includes('data.json') || e.request.method !== 'GET') return;",
         "  e.respondWith(fetch(e.request).then(res => { if (res && res.status === 200 && e.request.url.startsWith(self.location.origin)) { const clone = res.clone(); caches.open(CACHE_NAME).then(c => c.put(e.request, clone)); } return res; }).catch(() => caches.match(e.request).then(r => r || caches.match('./index.html'))));",
         "});"
       ].join('\n');
