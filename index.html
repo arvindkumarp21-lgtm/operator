@@ -1039,7 +1039,7 @@ GITHUB_FILE_PATH = data.json</pre>
         </div>
       </section>
 
-      <!-- ============ TAB PRO: RATION CARD 15-DIGIT DETAILS & CAMERA/PHOTO OCR SCANNER ============ -->
+      <!-- ============ TAB PRO: RATION CARD 15-DIGIT DETAILS ============ -->
       <section id="tab-pro" class="hidden space-y-4">
         <!-- Pro Header Banner -->
         <div class="bg-gradient-to-r from-indigo-900 via-blue-900 to-blue-800 text-white rounded-2xl p-4 shadow-md flex items-center justify-between gap-3">
@@ -1052,64 +1052,8 @@ GITHUB_FILE_PATH = data.json</pre>
                 <h2 class="text-base font-extrabold truncate">યુટીલીટી • રેશન કાર્ડ વિગત અને e-KYC તપાસ</h2>
                 <span class="px-2 py-0.5 rounded bg-amber-400 text-slate-950 text-[10px] font-extrabold shrink-0">UTILITY (ADMIN)</span>
               </div>
-              <p class="text-[11px] text-blue-200 mt-0.5">૧૫ અંકનો રેશન કાર્ડ નંબર નાખો અથવા ફોટો/કેમેરાથી ઓટો-સ્કેન કરો</p>
+              <p class="text-[11px] text-blue-200 mt-0.5">૧૫ અંકનો રેશન કાર્ડ નંબર દાખલ કરીને લાઇવ વિગત જુઓ</p>
             </div>
-          </div>
-          <button type="button" onclick="toggleProApiSettings()" class="px-3 py-2 bg-white/15 hover:bg-white/25 rounded-xl text-xs font-bold shrink-0">
-            ⚙️ API
-          </button>
-        </div>
-
-        <!-- Pro API Settings Panel -->
-        <div id="pro-api-settings-box" class="hidden bg-slate-900 text-white rounded-2xl p-4 space-y-2.5 shadow-md">
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-bold text-amber-300">🔗 Python FastAPI લાઈવ સર્વર URL (વૈકલ્પિક)</span>
-            <span id="pro-api-mode-badge" class="text-[10px] px-2 py-0.5 rounded bg-emerald-500 text-slate-950 font-bold">DEMO / READY</span>
-          </div>
-          <p class="text-[11px] text-slate-300">તમારા FastAPI સર્વરની લિંક નાખો (દા.ત. <code class="text-amber-300">https://ration-api.onrender.com/api/ration/</code>). ખાલી રાખશો તો બિલ્ટ-ઇન ડેમો ડેટા ચાલશે.</p>
-          <div class="flex flex-col sm:flex-row gap-2">
-            <input type="url" id="pro-api-url-input" placeholder="http://127.0.0.1:8000/api/ration/"
-              class="flex-1 px-3 py-2 rounded-xl bg-white/10 border border-white/20 text-white text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-amber-400" />
-            <button type="button" onclick="saveProApiUrl()" class="px-4 py-2 bg-amber-400 hover:bg-amber-500 text-slate-950 font-bold rounded-xl text-xs">
-              સેવ કરો
-            </button>
-          </div>
-        </div>
-
-        <!-- Photo / Camera OCR Scanner Card -->
-        <div class="bg-white rounded-2xl shadow-sm border border-indigo-200 p-4 space-y-3">
-          <div class="flex items-center justify-between">
-            <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2">
-              <span class="w-2 h-5 bg-indigo-600 rounded-full"></span>
-              ફોટો / કેમેરા પરથી ૧૫-અંકનો નંબર શોધો (OCR)
-            </h3>
-            <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-indigo-50 text-indigo-800">15-DIGIT FILTER</span>
-          </div>
-          <p class="text-[11px] text-slate-500">રેશન કાર્ડનો ફોટો પાડો કે ગેલેરીમાંથી અપલોડ કરો — ૧૨ અંકના આધાર નંબરને અવગણીને આપોઆપ ૧૫ અંકનો રેશન કાર્ડ નંબર શોધી વિગત બતાવશે.</p>
-
-          <div class="grid grid-cols-2 gap-2.5">
-            <button type="button" onclick="document.getElementById('pro-camera-input').click()"
-              class="py-3 px-3 bg-indigo-600 hover:bg-indigo-700 active:scale-[0.99] text-white font-bold rounded-xl text-xs shadow flex items-center justify-center gap-1.5">
-              <span>📷 કેમેરાથી ફોટો પાડો</span>
-            </button>
-            <button type="button" onclick="document.getElementById('pro-gallery-input').click()"
-              class="py-3 px-3 bg-blue-50 hover:bg-blue-100 text-blue-900 border border-blue-200 font-bold rounded-xl text-xs flex items-center justify-center gap-1.5">
-              <span>🖼️ ગેલેરીમાંથી ફોટો</span>
-            </button>
-            <input type="file" id="pro-camera-input" accept="image/*" capture="environment" onchange="handleProRationPhotoScan(event)" class="hidden" />
-            <input type="file" id="pro-gallery-input" accept="image/*" onchange="handleProRationPhotoScan(event)" class="hidden" />
-          </div>
-
-          <!-- OCR Progress & Preview -->
-          <div id="pro-ocr-status-box" class="hidden p-3 rounded-xl bg-indigo-50 border border-indigo-200 space-y-2">
-            <div class="flex items-center justify-between text-xs font-bold text-indigo-900">
-              <span id="pro-ocr-status-text">ફોટો સ્કેન થઈ રહ્યો છે...</span>
-              <span id="pro-ocr-percent">0%</span>
-            </div>
-            <div class="w-full h-2 bg-indigo-200 rounded-full overflow-hidden">
-              <div id="pro-ocr-progress-bar" class="h-full bg-indigo-600 transition-all duration-200" style="width: 0%"></div>
-            </div>
-            <div id="pro-ocr-multi-matches" class="hidden flex flex-wrap gap-1.5 pt-1"></div>
           </div>
         </div>
 
@@ -1121,19 +1065,12 @@ GITHUB_FILE_PATH = data.json</pre>
           </div>
           <div class="flex flex-col sm:flex-row gap-2">
             <input type="tel" id="pro-card-input" maxlength="15" inputmode="numeric" oninput="onProCardInputChange()"
-              placeholder="દા.ત. 102030405060708"
+              placeholder="દા.ત. 327112000932585"
               class="flex-1 px-4 py-3 bg-slate-50 border-2 border-slate-300 rounded-xl text-base font-extrabold tracking-wider text-blue-950 focus:outline-none focus:border-blue-700" />
             <button type="button" onclick="fetchProRationDetails()"
               class="px-5 py-3 bg-blue-900 hover:bg-blue-800 active:scale-[0.99] text-white font-bold rounded-xl text-xs shadow whitespace-nowrap">
               🔍 વિગત જુઓ
             </button>
-          </div>
-          <!-- Sample 15-Digit Quick Test Chips -->
-          <div class="flex flex-wrap items-center gap-1.5 pt-1">
-            <span class="text-[10px] font-bold text-slate-400">સેમ્પલ ટેસ્ટ:</span>
-            <button type="button" onclick="fillProSampleCard('102030405060708')" class="px-2 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 text-blue-900 text-[10px] font-bold">102030405060708</button>
-            <button type="button" onclick="fillProSampleCard('240712345678901')" class="px-2 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 text-blue-900 text-[10px] font-bold">240712345678901</button>
-            <button type="button" onclick="fillProSampleCard('987654321012345')" class="px-2 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 text-blue-900 text-[10px] font-bold">987654321012345</button>
           </div>
         </div>
 
@@ -4966,6 +4903,67 @@ GITHUB_FILE_PATH = data.json</pre>
       };
     }
 
+    function parseDcsDofHtmlToRecord(html, cardNo) {
+      const doc = new DOMParser().parseFromString(html, 'text/html');
+      const tables = Array.from(doc.querySelectorAll('table'));
+      let bestTable = null;
+      let maxRows = 0;
+      for (const tbl of tables) {
+        const rows = tbl.querySelectorAll('tr');
+        if (rows.length > maxRows) {
+          maxRows = rows.length;
+          bestTable = tbl;
+        }
+      }
+      if (!bestTable || maxRows < 2) return null;
+
+      const allRows = Array.from(bestTable.querySelectorAll('tr'));
+      const headerCells = Array.from(allRows[0].querySelectorAll('th, td')).map(c => c.textContent.trim());
+      const hLower = headerCells.map(h => h.toLowerCase());
+
+      const idxName = hLower.findIndex(h => h.includes('member') || h.includes('name') || h.includes('નામ'));
+      const idxRel = hLower.findIndex(h => h.includes('relation') || h.includes('સંબંધ'));
+      const idxKyc = hLower.findIndex(h => h.includes('ekyc') || h.includes('kyc') || h.includes('status') || h.includes('સ્ટેટસ'));
+      const idxCardType = hLower.findIndex(h => h.includes('card') && h.includes('type') || h.includes('category') || h.includes('કેટેગરી'));
+      const idxFps = hLower.findIndex(h => h.includes('fps') || h.includes('shop') || h.includes('દુકાન'));
+      const idxAddr = hLower.findIndex(h => h.includes('address') || h.includes('સરનામું'));
+
+      const members = [];
+      let headName = '-';
+      let category = 'ગુજરાત ટ્રાન્સપરન્સી પોર્ટલ (LIVE)';
+      let fpsName = 'સત્તાવાર DCS-DOF પોર્ટલ';
+      let address = 'ગુજરાત સરકાર રેકોર્ડ મુજબ';
+
+      for (let i = 1; i < allRows.length; i++) {
+        const cells = Array.from(allRows[i].querySelectorAll('td, th')).map(c => c.textContent.trim());
+        if (cells.length === 0 || cells.every(v => !v)) continue;
+        if (cells.length === 1 && /no record|not found/i.test(cells[0])) return null;
+
+        const mName = idxName >= 0 ? (cells[idxName] || '') : (cells[1] || cells[0] || '');
+        const mRel = idxRel >= 0 ? (cells[idxRel] || '-') : (cells[2] || '-');
+        const mKyc = idxKyc >= 0 ? (cells[idxKyc] || '-') : (cells[cells.length - 1] || '-');
+
+        if (i === 1) {
+          headName = mName || '-';
+          if (idxCardType >= 0 && cells[idxCardType]) category = cells[idxCardType];
+          if (idxFps >= 0 && cells[idxFps]) fpsName = cells[idxFps];
+          if (idxAddr >= 0 && cells[idxAddr]) address = cells[idxAddr];
+        }
+        members.push({ name: mName, relation: mRel, ekyc: mKyc, rawCells: cells, headers: headerCells });
+      }
+
+      if (members.length === 0) return null;
+      return {
+        card_number: cardNo,
+        head_name: headName,
+        category,
+        address,
+        fps_name: fpsName,
+        entitlement: 'સત્તાવાર ગુજરાત પુરવઠા ટ્રાન્સપરન્સી પોર્ટલ પરથી લાઇવ ડેટા',
+        members
+      };
+    }
+
     async function fetchProRationDetails() {
       const inp = document.getElementById('pro-card-input');
       const cardNo = (inp?.value || '').replace(/\D/g, '');
@@ -4975,6 +4973,7 @@ GITHUB_FILE_PATH = data.json</pre>
       }
 
       const apiBase = (localStorage.getItem(PRO_API_URL_KEY) || '').trim();
+      const workerBase = getActiveCloudUrl();
       let data = null;
 
       if (apiBase) {
@@ -4985,6 +4984,23 @@ GITHUB_FILE_PATH = data.json</pre>
           data = await res.json();
         } catch (err) {
           showToast('FastAPI સર્વર સાથે કનેક્ટ ન થયું, ડેમો ડેટા બતાવી રહ્યા છીએ.', 'info');
+          data = getDemoRationRecord(cardNo);
+        }
+      } else if (workerBase) {
+        try {
+          showToast('ગુજરાત ટ્રાન્સપરન્સી પોર્ટલ પરથી લાઇવ વિગત લાવી રહ્યા છીએ...', 'info');
+          const res = await fetch(`${workerBase}/ration?rc=${cardNo}`);
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          const payload = await res.json();
+          if (payload && payload.html) {
+            data = parseDcsDofHtmlToRecord(payload.html, cardNo);
+          }
+          if (!data) {
+            showToast('આ ૧૫-અંકના રેશન કાર્ડની કોઈ વિગત સરકારી પોર્ટલ પર મળી નથી.', 'error');
+            return;
+          }
+        } catch (err) {
+          showToast('સરકારી પોર્ટલ સાથે કનેક્ટ ન થયું (' + err.message + '), ડેમો ડેટા બતાવી રહ્યા છીએ.', 'info');
           data = getDemoRationRecord(cardNo);
         }
       } else {
