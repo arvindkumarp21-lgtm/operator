@@ -2053,6 +2053,35 @@ GITHUB_FILE_PATH = data.json</pre>
       };
     }
 
+    function saveLocalCacheSafely(st) {
+      try {
+        localStorage.setItem(STORAGE_KEY, encodeStoragePayload(st));
+      } catch (e1) {
+        try {
+          const lightState = {
+            ...st,
+            folders: (st.folders || []).map(f => ({
+              ...f,
+              entries: (f.entries || []).map(ent => ({
+                ...ent,
+                fileData: (ent.fileData && ent.fileData.length > 50000) ? '' : ent.fileData
+              }))
+            }))
+          };
+          localStorage.setItem(STORAGE_KEY, encodeStoragePayload(lightState));
+        } catch (e2) {
+          try {
+            const ultraLight = {
+              ...st,
+              folders: (st.folders || []).map(f => ({ ...f, entries: [] })),
+              auditLogs: (st.auditLogs || []).slice(0, 10)
+            };
+            localStorage.setItem(STORAGE_KEY, encodeStoragePayload(ultraLight));
+          } catch (_) {}
+        }
+      }
+    }
+
     function loadLocalState() {
       try {
         const raw = localStorage.getItem(STORAGE_KEY);
@@ -2081,7 +2110,7 @@ GITHUB_FILE_PATH = data.json</pre>
         console.error('Local load error:', e);
       }
       appState = getDefaultState();
-      localStorage.setItem(STORAGE_KEY, encodeStoragePayload(appState));
+      saveLocalCacheSafely(appState);
     }
 
     function purgeExpiredSelfDestructFiles() {
@@ -2105,7 +2134,7 @@ GITHUB_FILE_PATH = data.json</pre>
       purgeExpiredSelfDestructFiles();
       appState.updatedAt = Date.now();
       try {
-        localStorage.setItem(STORAGE_KEY, encodeStoragePayload(appState));
+        saveLocalCacheSafely(appState);
       } catch (storageErr) {
         try {
           // If localStorage 5MB browser quota is exceeded by large 10MB files, cache metadata locally and sync full file to Cloud
@@ -2136,7 +2165,7 @@ GITHUB_FILE_PATH = data.json</pre>
               if (remoteData && remoteData.users) {
                 appState = mergeStates(appState, remoteData);
                 appState.updatedAt = Date.now();
-                localStorage.setItem(STORAGE_KEY, encodeStoragePayload(appState));
+                saveLocalCacheSafely(appState);
               }
             }
           } catch (_) {}
@@ -2181,7 +2210,7 @@ GITHUB_FILE_PATH = data.json</pre>
         if (cloudData && cloudData.users) {
           appState = mergeStates(appState, cloudData);
           purgeExpiredSelfDestructFiles();
-          localStorage.setItem(STORAGE_KEY, encodeStoragePayload(appState));
+          saveLocalCacheSafely(appState);
           if (currentUserMobile) {
             const myUser = appState.users[currentUserMobile];
             if (!myUser || myUser.blocked) {
