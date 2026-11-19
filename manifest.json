@@ -1,0 +1,25 @@
+{
+  "name": "ગુજરાત પુરવઠા ઓપરેટર",
+  "short_name": "પુરવઠા ઓપરેટર",
+  "description": "ગુજરાત પુરવઠા ઓપરેટર મેનેજમેન્ટ, લાઇવ ડિરેક્ટરી અને ડેટા પોર્ટલ",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#1e3a8a",
+  "theme_color": "#1e3a8a",
+  "icons": [
+    {
+      "src": "./ICON.jpeg",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "any"
+    },
+    {
+      "src": "./ICON.jpeg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any"
+    }
+  ]
+}
