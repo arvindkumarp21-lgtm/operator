@@ -12,7 +12,7 @@
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
   <title>ગુજરાત પુરવઠા ઓપરેટર • સિક્યોર પોર્ટલ</title>
 
-  <link id="pwa-manifest" rel="manifest" href="" />
+  <link id="pwa-manifest" rel="manifest" href="./manifest.json" />
   <link id="pwa-favicon" rel="icon" type="image/png" href="" />
   <link id="pwa-apple-icon" rel="apple-touch-icon" href="" />
   <script src="https://cdn.tailwindcss.com"></script>
@@ -1048,9 +1048,9 @@ GITHUB_FILE_PATH = data.json</pre>
               🪪
             </div>
             <div class="min-w-0">
-              <div class="flex items-center gap-2">
-                <h2 class="text-base font-extrabold truncate">યુટીલીટી • રેશન કાર્ડ વિગત અને e-KYC તપાસ</h2>
-                <span class="px-2 py-0.5 rounded bg-amber-400 text-slate-950 text-[10px] font-extrabold shrink-0">UTILITY (ADMIN)</span>
+              <div class="flex items-center gap-2 flex-wrap">
+                <h2 class="text-sm sm:text-base font-extrabold leading-tight">યુટીલીટી • રેશન કાર્ડ અને e-KYC</h2>
+                <span class="px-2 py-0.5 rounded bg-amber-400 text-slate-950 text-[10px] font-extrabold shrink-0">UTILITY</span>
               </div>
               <p class="text-[11px] text-blue-200 mt-0.5">૧૫ અંકનો રેશન કાર્ડ નંબર દાખલ કરીને લાઇવ વિગત જુઓ</p>
             </div>
@@ -4602,9 +4602,10 @@ GITHUB_FILE_PATH = data.json</pre>
             { src: icon512, sizes: '512x512', type: 'image/png', purpose: 'any maskable' }
           ]
         };
-        const manifestDataUri = 'data:application/manifest+json;charset=utf-8,' + encodeURIComponent(JSON.stringify(manifestObj));
         const manifestEl = document.getElementById('pwa-manifest');
-        if (manifestEl) manifestEl.setAttribute('href', manifestDataUri);
+        if (manifestEl && !manifestEl.getAttribute('href')) {
+          manifestEl.setAttribute('href', './manifest.json');
+        }
       } catch (e) {
         console.warn('PWA setup notice:', e);
       }
@@ -4683,7 +4684,7 @@ GITHUB_FILE_PATH = data.json</pre>
     function downloadServiceWorkerFile() {
       const swContent = [
         "const CACHE_NAME = 'gujarat-purvatha-pwa-v16';",
-        "const ASSETS_TO_CACHE = ['./', './index.html', './ICON.jpeg'];",
+        "const ASSETS_TO_CACHE = ['./', './index.html', './manifest.json', './ICON.jpeg'];",
         "self.addEventListener('install', (e) => { self.skipWaiting(); e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(ASSETS_TO_CACHE).catch(()=>{}))); });",
         "self.addEventListener('activate', (e) => { e.waitUntil(caches.keys().then(keys => Promise.all(keys.map(k => k !== CACHE_NAME ? caches.delete(k) : null))).then(() => self.clients.claim())); });",
         "self.addEventListener('fetch', (e) => {",
