@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "io.github.arvindkumarp21_lgtm.twa",
+        "sha256_cert_fingerprints": ["5C:07:C0:D6:98:C3:08:AC:8C:EA:B6:B4:69:30:EC:99:17:C6:4F:7A:7B:72:44:58:62:1F:E8:C2:6C:88:FC:96"]
+      }
+    }]
