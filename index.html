@@ -456,11 +456,11 @@
         <!-- HIGHLIGHTED ADMIN NOTICE CARD ON HOME PAGE ONLY -->
         <div id="home-admin-notice-card" class="hidden bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-400 text-slate-950 rounded-2xl p-4 border-2 border-amber-600/40 shadow-lg">
           <div class="flex items-start justify-between gap-3">
-            <div class="flex items-start gap-3 min-w-0">
+            <div class="flex items-start gap-3 min-w-0 flex-1">
               <div class="w-10 h-10 rounded-2xl bg-slate-950 text-amber-400 flex items-center justify-center text-lg shrink-0 shadow">
                 📢
               </div>
-              <div class="min-w-0">
+              <div class="min-w-0 flex-1">
                 <div class="flex items-center gap-2 flex-wrap">
                   <span class="text-[10px] font-extrabold uppercase tracking-wider bg-slate-950 text-amber-300 px-2 py-0.5 rounded-md">એડમિન અગત્યની સૂચના</span>
                   <span id="home-admin-notice-time" class="text-[11px] font-bold text-slate-800"></span>
@@ -468,6 +468,10 @@
                 <p id="home-admin-notice-text" class="text-sm font-bold text-slate-950 mt-1.5 break-words leading-relaxed"></p>
               </div>
             </div>
+            <button type="button" id="btn-delete-home-notice" onclick="deleteAdminHomeNotice()"
+              class="hidden px-2.5 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-xl text-[11px] font-extrabold shadow shrink-0">
+              🗑️ ડિલીટ
+            </button>
           </div>
         </div>
 
@@ -1271,6 +1275,14 @@ GITHUB_FILE_PATH = data.json</pre>
 
       <!-- ============ TAB 6: PROFILE, SEPARATE WHATSAPP, DOB, PASSWORD & LOGOUT ============ -->
       <section id="tab-profile" class="hidden space-y-4">
+        <!-- Pending Office Location Notification Banner -->
+        <div id="profile-location-pending-banner" class="hidden bg-amber-50 border-2 border-amber-400 text-amber-950 rounded-2xl p-3.5 shadow-sm flex items-start gap-2.5">
+          <span class="text-lg shrink-0">⚠️</span>
+          <div class="text-xs leading-relaxed">
+            <p class="font-extrabold text-amber-950">ઓફિસ લોકેશન / સરનામું સેવ કરવાનું બાકી (Pending) છે!</p>
+            <p class="text-[11px] text-amber-900 mt-0.5">કૃપા કરીને નીચે <strong>"📍 લાઇવ મેપ પરથી ઓફિસ એડ્રેસ મેળવો"</strong> બટન દબાવીને તમારી ઓફિસનું લોકેશન અને સરનામું સેવ કરો.</p>
+          </div>
+        </div>
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-5 space-y-4">
           <div class="flex items-center gap-4">
             <div class="relative">
@@ -1434,7 +1446,8 @@ GITHUB_FILE_PATH = data.json</pre>
           <span class="text-[10px]">એડમિન</span>
         </button>
 
-        <button type="button" onclick="switchTab('profile')" id="nav-profile" class="nav-btn flex flex-col items-center gap-0.5 px-1.5 py-1 text-slate-500 font-medium shrink-0">
+        <button type="button" onclick="switchTab('profile')" id="nav-profile" class="nav-btn relative flex flex-col items-center gap-0.5 px-1.5 py-1 text-slate-500 font-medium shrink-0">
+          <span id="profile-pending-dot" class="hidden absolute top-0.5 right-1.5 w-2.5 h-2.5 rounded-full bg-red-600 border-2 border-white"></span>
           <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
           </svg>
@@ -2440,6 +2453,8 @@ GITHUB_FILE_PATH = data.json</pre>
       if (!card || !textEl || !timeEl) return;
 
       const notice = appState.adminNotice;
+      const delBtn = document.getElementById('btn-delete-home-notice');
+      if (delBtn) delBtn.classList.toggle('hidden', currentUserMobile !== ADMIN_MOBILE);
       if (notice && notice.text) {
         textEl.textContent = notice.text;
         timeEl.textContent = notice.time ? `(${notice.time})` : '';
@@ -2457,10 +2472,25 @@ GITHUB_FILE_PATH = data.json</pre>
       }
     }
 
+    async function deleteAdminHomeNotice() {
+      const user = appState.users[currentUserMobile];
+      if (currentUserMobile !== ADMIN_MOBILE || !user || user.role !== 'admin') return;
+      const ok = await openSecurityModal({
+        title: 'હોમ પેજ સૂચના ડિલીટ કરો',
+        message: 'શું તમે હોમ પેજ પરની હાલની અગત્યની સૂચના હટાવવા માંગો છો?',
+        requirePin: false
+      });
+      if (!ok) return;
+      appState.adminNotice = { id: 'notice_deleted_' + Date.now(), text: '', time: '', ts: Date.now() };
+      addSecurityAuditLog(currentUserMobile, 'NOTICE_DELETED', 'એડમિન દ્વારા હોમ પેજ સૂચના ડિલીટ કરાઈ');
+      await persistAndBroadcast(true);
+      showToast('હોમ પેજ પરની સૂચના હટાવી દેવામાં આવી છે.', 'info');
+    }
+
     async function sendAdminHomeNotice(e) {
       e.preventDefault();
       const user = appState.users[currentUserMobile];
-      if (!user || user.role !== 'admin') return;
+      if (currentUserMobile !== ADMIN_MOBILE || !user || user.role !== 'admin') return;
 
       const inp = document.getElementById('admin-broadcast-input');
       const text = inp.value.trim();
@@ -4183,6 +4213,16 @@ GITHUB_FILE_PATH = data.json</pre>
     }
 
     // 17. PROFILE, SEPARATE WHATSAPP NUMBER, DOB & SHA-256 PASSWORD CHANGE
+    function updateProfileLocationPendingNotice() {
+      const user = appState.users[currentUserMobile];
+      const banner = document.getElementById('profile-location-pending-banner');
+      const dot = document.getElementById('profile-pending-dot');
+      if (!user) return;
+      const isPending = !String(user.address || '').trim() || !user.officeLat || !user.officeLon;
+      if (banner) banner.classList.toggle('hidden', !isPending);
+      if (dot) dot.classList.toggle('hidden', !isPending);
+    }
+
     function renderProfile() {
       const user = appState.users[currentUserMobile];
       if (!user) return;
@@ -4206,6 +4246,7 @@ GITHUB_FILE_PATH = data.json</pre>
       document.getElementById('prof-dob').value = user.dob || '';
       document.getElementById('prof-address').value = user.address || '';
       updateProfileLiveMap(user.officeLat, user.officeLon);
+      updateProfileLocationPendingNotice();
     }
 
     function handleProfilePhotoUpload(e) {
@@ -4496,6 +4537,7 @@ GITHUB_FILE_PATH = data.json</pre>
       }
 
       renderHomeAdminNotice();
+      updateProfileLocationPendingNotice();
       checkBirthdaysAndNotify(false);
       renderGroupChat();
       renderDirectory();
