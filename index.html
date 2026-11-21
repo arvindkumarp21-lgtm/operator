@@ -202,6 +202,60 @@
     </div>
   </div>
 
+  <!-- Force Compulsory Profile Details Modal (Name, DOB, Email) -->
+  <div id="force-profile-modal" class="fixed inset-0 z-[84] hidden bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-5 shadow-2xl border-2 border-blue-500 space-y-4">
+      <div class="flex items-center gap-3">
+        <div class="w-11 h-11 rounded-2xl bg-blue-100 text-blue-900 flex items-center justify-center text-xl font-bold shrink-0">👤</div>
+        <div>
+          <h3 class="text-sm font-bold text-slate-900">પ્રોફાઇલ વિગતો ભરવી ફરજિયાત છે!</h3>
+          <p class="text-[11px] text-slate-600 mt-0.5">એપ્લિકેશન વાપરવા માટે તમારું પૂરું નામ, જન્મ તારીખ, ઈમેલ, જિલ્લો અને તાલુકો ભરવા જરૂરી છે.</p>
+        </div>
+      </div>
+      <form onsubmit="submitForcedProfileCompletion(event)" class="space-y-3">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">પૂરું નામ <span class="text-red-600">*</span></label>
+          <input type="text" id="force-prof-name" required placeholder="તમારું પૂરું નામ લખો"
+            class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-600" />
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">જન્મ તારીખ (Date of Birth) <span class="text-red-600">*</span></label>
+          <input type="date" id="force-prof-dob" required
+            class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-600" />
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">ઈમેલ એડ્રેસ <span class="text-red-600">*</span></label>
+          <input type="email" id="force-prof-email" required placeholder="example@gmail.com"
+            class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-600" />
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">જિલ્લો <span class="text-red-600">*</span></label>
+            <select id="force-prof-district" required onchange="populateTalukas('force-prof-district', 'force-prof-taluka')"
+              class="w-full px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-600">
+              <option value="">-- જિલ્લો પસંદ કરો --</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">તાલુકો / ઝોન <span class="text-red-600">*</span></label>
+            <select id="force-prof-taluka" required
+              class="w-full px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-600">
+              <option value="">-- પ્રથમ જિલ્લો પસંદ કરો --</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid grid-cols-3 gap-2 pt-1">
+          <button type="button" onclick="handleLogout()" class="col-span-1 py-3 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold rounded-xl text-xs">
+            લોગઆઉટ
+          </button>
+          <button type="submit" class="col-span-2 py-3 bg-blue-900 hover:bg-blue-800 text-white font-bold rounded-xl text-xs shadow">
+            વિગતો સેવ કરી આગળ વધો
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- Inactivity Auto-Lock Screen -->
   <div id="inactivity-lock-modal" class="fixed inset-0 z-[62] hidden bg-gradient-to-br from-slate-950 via-blue-950 to-indigo-950 text-white flex flex-col items-center justify-center p-4">
     <div class="bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl max-w-sm w-full p-6 text-center space-y-4 shadow-2xl">
@@ -218,6 +272,52 @@
           <button type="submit" class="py-2.5 bg-amber-400 hover:bg-amber-500 text-slate-950 rounded-xl text-xs font-bold shadow">અનલૉક કરો</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- PWA / Android App Install Instructions Modal -->
+  <div id="pwa-install-guide-modal" class="fixed inset-0 z-[82] hidden bg-slate-950/80 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-5 shadow-2xl border border-blue-200 space-y-3.5">
+      <div class="flex items-center justify-between gap-2">
+        <div class="flex items-center gap-2.5">
+          <div class="w-10 h-10 rounded-2xl bg-blue-100 text-blue-900 flex items-center justify-center text-xl font-bold shrink-0">📲</div>
+          <div>
+            <h3 class="text-sm font-extrabold text-slate-900">મોબાઇલ એપ (APK) ઇન્સ્ટોલ કરવાની રીત</h3>
+            <p class="text-[11px] text-slate-500">બ્રાઉઝર મુજબ નીચેના સ્ટેપ્સ અનુસરો</p>
+          </div>
+        </div>
+        <button type="button" onclick="closeInstallGuideModal()" class="text-slate-400 hover:text-slate-700 font-bold text-lg px-1">&times;</button>
+      </div>
+
+      <div class="space-y-2.5 text-xs">
+        <div class="p-3 rounded-2xl bg-blue-50 border border-blue-200 space-y-1">
+          <p class="font-extrabold text-blue-950">🌐 Google Chrome (Android)</p>
+          <p class="text-[11px] text-slate-700 leading-relaxed">
+            ૧) ઉપર જમણી બાજુ <strong>⋮ (ત્રણ ટપકાં)</strong> મેનુ ખોલો.<br/>
+            ૨) <strong>Install app</strong> (અથવા <em>Add to Home screen → Install</em>) પર ક્લિક કરો.<br/>
+            ૩) થોડી સેકન્ડમાં ફોનમાં અસલી એપ તરીકે ઇન્સ્ટોલ થઈ જશે.
+          </p>
+        </div>
+
+        <div class="p-3 rounded-2xl bg-indigo-50 border border-indigo-200 space-y-1">
+          <p class="font-extrabold text-indigo-950">📱 Samsung Internet</p>
+          <p class="text-[11px] text-slate-700 leading-relaxed">
+            ૧) ઉપર એડ્રેસ બારમાં દેખાતા <strong>↓ (Install)</strong> આઈકોન પર ક્લિક કરો, અથવા નીચે <strong>☰ મેનુ → Add page to → Home screen</strong> પસંદ કરો.<br/>
+            ૨) <strong>Install</strong> દબાવો એટલે એપ હોમ સ્ક્રીન પર આવી જશે.
+          </p>
+        </div>
+
+        <div class="p-3 rounded-2xl bg-slate-50 border border-slate-200 space-y-1">
+          <p class="font-extrabold text-slate-900">🍎 iPhone (Safari)</p>
+          <p class="text-[11px] text-slate-700 leading-relaxed">
+            નીચે <strong>Share (□↑)</strong> બટન દબાવીને <strong>Add to Home Screen → Add</strong> પર ક્લિક કરો.
+          </p>
+        </div>
+      </div>
+
+      <button type="button" onclick="closeInstallGuideModal()" class="w-full py-2.5 bg-blue-900 hover:bg-blue-800 text-white font-bold rounded-xl text-xs shadow">
+        સમજાઈ ગયું (બંધ કરો)
+      </button>
     </div>
   </div>
 
@@ -321,6 +421,27 @@
 
       <!-- ============ TAB 1: HOME / DASHBOARD ============ -->
       <section id="tab-home" class="space-y-4">
+
+        <!-- In-App Android Application Install Banner -->
+        <div id="inapp-install-card" class="bg-gradient-to-r from-blue-900 to-indigo-900 text-white rounded-2xl p-3.5 shadow-md flex items-center justify-between gap-3">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-10 h-10 rounded-xl bg-amber-400 text-slate-950 flex items-center justify-center text-lg font-extrabold shrink-0 shadow">📲</div>
+            <div class="min-w-0">
+              <p class="text-xs font-extrabold truncate">Android મોબાઇલ એપ્લિકેશન</p>
+              <p class="text-[10px] text-blue-200 truncate">ફોનમાં અસલી એપ તરીકે ઇન્સ્ટોલ કરો</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-1.5 shrink-0">
+            <button type="button" onclick="openInstallGuideModal()"
+              class="px-2.5 py-2 bg-white/15 hover:bg-white/25 text-white font-bold rounded-xl text-[11px] whitespace-nowrap">
+              ❓ રીત
+            </button>
+            <button type="button" onclick="triggerPWAInstall()"
+              class="px-3 py-2 bg-amber-400 hover:bg-amber-500 active:scale-95 text-slate-950 font-extrabold rounded-xl text-xs shadow whitespace-nowrap">
+              📲 ઇન્સ્ટોલ
+            </button>
+          </div>
+        </div>
 
         <!-- HIGHLIGHTED ADMIN NOTICE CARD ON HOME PAGE ONLY -->
         <div id="home-admin-notice-card" class="hidden bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-400 text-slate-950 rounded-2xl p-4 border-2 border-amber-600/40 shadow-lg">
@@ -1067,9 +1188,9 @@ GITHUB_FILE_PATH = data.json</pre>
             <input type="tel" id="pro-card-input" maxlength="15" inputmode="numeric" oninput="onProCardInputChange()"
               placeholder="દા.ત. 327112000932585"
               class="flex-1 px-4 py-3 bg-slate-50 border-2 border-slate-300 rounded-xl text-base font-extrabold tracking-wider text-blue-950 focus:outline-none focus:border-blue-700" />
-            <button type="button" onclick="fetchProRationDetails()"
+            <button type="button" onclick="openOfficialRationPortalWithCopy()"
               class="px-5 py-3 bg-blue-900 hover:bg-blue-800 active:scale-[0.99] text-white font-bold rounded-xl text-xs shadow whitespace-nowrap">
-              🔍 વિગત જુઓ
+              🌐 સરકારી પોર્ટલમાં જુઓ
             </button>
           </div>
         </div>
@@ -1165,7 +1286,7 @@ GITHUB_FILE_PATH = data.json</pre>
 
           <form onsubmit="saveUserProfile(event)" class="space-y-3 pt-2 border-t border-slate-100">
             <div>
-              <label class="block text-xs font-bold text-slate-600 mb-1">પૂરું નામ</label>
+              <label class="block text-xs font-bold text-slate-600 mb-1">પૂરું નામ <span class="text-red-600">*</span></label>
               <input type="text" id="prof-name" required
                 class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-600" />
             </div>
@@ -1185,13 +1306,13 @@ GITHUB_FILE_PATH = data.json</pre>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label class="block text-xs font-bold text-slate-600 mb-1">જન્મ તારીખ (Date of Birth)</label>
-                <input type="date" id="prof-dob"
+                <label class="block text-xs font-bold text-slate-600 mb-1">જન્મ તારીખ (Date of Birth) <span class="text-red-600">*</span></label>
+                <input type="date" id="prof-dob" required
                   class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-600" />
               </div>
               <div>
-                <label class="block text-xs font-bold text-slate-600 mb-1">ઈમેલ એડ્રેસ</label>
-                <input type="email" id="prof-email" placeholder="example@gmail.com"
+                <label class="block text-xs font-bold text-slate-600 mb-1">ઈમેલ એડ્રેસ <span class="text-red-600">*</span></label>
+                <input type="email" id="prof-email" required placeholder="example@gmail.com"
                   class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-600" />
               </div>
             </div>
@@ -2480,6 +2601,8 @@ GITHUB_FILE_PATH = data.json</pre>
       document.getElementById('force-new-pass').value = '';
       document.getElementById('force-confirm-pass').value = '';
       document.getElementById('force-pass-modal').classList.add('hidden');
+      const fpMod = document.getElementById('force-profile-modal');
+      if (fpMod) fpMod.classList.add('hidden');
       showToast('✅ તમારો નવો ખાનગી પાસવર્ડ સેટ થઈ ગયો છે!');
     }
 
@@ -2530,6 +2653,7 @@ GITHUB_FILE_PATH = data.json</pre>
       }
 
       populateDistrictSelects();
+      updateInAppInstallBannerVisibility();
       refreshAllViews();
       checkBirthdaysAndNotify(true);
       resetIdleTimer();
@@ -2723,7 +2847,7 @@ GITHUB_FILE_PATH = data.json</pre>
     // 12. DISTRICT & TALUKA DROPDOWNS & LOCKING
     function populateDistrictSelects() {
       const districts = Object.keys(GUJARAT_DATA).sort();
-      const selectIds = ['assign-district', 'dir-district-filter', 'home-dir-district-filter', 'admin-op-district', 'admin-op-district-filter', 'admin-report-district-filter'];
+      const selectIds = ['assign-district', 'force-prof-district', 'dir-district-filter', 'home-dir-district-filter', 'admin-op-district', 'admin-op-district-filter', 'admin-report-district-filter'];
       selectIds.forEach(id => {
         const el = document.getElementById(id);
         if (!el) return;
@@ -4041,10 +4165,17 @@ GITHUB_FILE_PATH = data.json</pre>
         return;
       }
 
-      user.name = document.getElementById('prof-name').value.trim() || user.name;
+      const profName = document.getElementById('prof-name').value.trim();
+      const profDob = document.getElementById('prof-dob').value.trim();
+      const profEmail = document.getElementById('prof-email').value.trim();
+      if (!profName || !profDob || !profEmail) {
+        showToast('નામ, જન્મ તારીખ અને ઈમેલ એડ્રેસ ભરવા ફરજિયાત છે!', 'error');
+        return;
+      }
+      user.name = profName;
       user.whatsapp = waInput ? waInput : user.mobile;
-      user.email = document.getElementById('prof-email').value.trim();
-      user.dob = document.getElementById('prof-dob').value;
+      user.email = profEmail;
+      user.dob = profDob;
       user.address = document.getElementById('prof-address').value.trim();
       user.updatedAt = Date.now();
 
@@ -4106,6 +4237,78 @@ GITHUB_FILE_PATH = data.json</pre>
       if (modal) {
         modal.classList.toggle('hidden', !isStillDefault);
       }
+      checkMandatoryProfileCompletion(isStillDefault);
+    }
+
+    function checkMandatoryProfileCompletion(passModalOpen = false) {
+      const modal = document.getElementById('force-profile-modal');
+      if (!modal) return;
+      const user = appState.users[currentUserMobile];
+      if (!user || isDuressDecoyMode || passModalOpen) {
+        modal.classList.add('hidden');
+        return;
+      }
+      const nameStr = String(user.name || '').trim();
+      const isDefaultName = !nameStr || /^ઓપરેટર\s*\(\d{4}\)$/.test(nameStr);
+      const hasDob = Boolean(String(user.dob || '').trim());
+      const hasEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(user.email || '').trim());
+      const hasDistrict = Boolean(String(user.district || '').trim());
+      const hasTaluka = Boolean(String(user.taluka || '').trim());
+      const incomplete = isDefaultName || !hasDob || !hasEmail || !hasDistrict || !hasTaluka;
+
+      if (incomplete) {
+        const nEl = document.getElementById('force-prof-name');
+        const dEl = document.getElementById('force-prof-dob');
+        const eEl = document.getElementById('force-prof-email');
+        const distEl = document.getElementById('force-prof-district');
+        if (nEl && !nEl.value) nEl.value = isDefaultName ? '' : nameStr;
+        if (dEl && !dEl.value) dEl.value = user.dob || '';
+        if (eEl && !eEl.value) eEl.value = user.email || '';
+        if (distEl && !distEl.value && user.district) {
+          distEl.value = user.district;
+          populateTalukas('force-prof-district', 'force-prof-taluka', user.taluka || '');
+        }
+      }
+      modal.classList.toggle('hidden', !incomplete);
+    }
+
+    async function submitForcedProfileCompletion(e) {
+      e.preventDefault();
+      const nameVal = document.getElementById('force-prof-name').value.trim();
+      const dobVal = document.getElementById('force-prof-dob').value.trim();
+      const emailVal = document.getElementById('force-prof-email').value.trim();
+      const distVal = document.getElementById('force-prof-district').value.trim();
+      const talVal = document.getElementById('force-prof-taluka').value.trim();
+      if (!nameVal || /^ઓપરેટર\s*\(\d{4}\)$/.test(nameVal)) {
+        showToast('કૃપા કરીને તમારું સાચું પૂરું નામ દાખલ કરો.', 'error');
+        return;
+      }
+      if (!dobVal) {
+        showToast('જન્મ તારીખ પસંદ કરવી ફરજિયાત છે.', 'error');
+        return;
+      }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVal)) {
+        showToast('કૃપા કરીને સાચું ઈમેલ એડ્રેસ દાખલ કરો.', 'error');
+        return;
+      }
+      if (!distVal || !talVal) {
+        showToast('જિલ્લો અને તાલુકો પસંદ કરવા ફરજિયાત છે.', 'error');
+        return;
+      }
+      const user = appState.users[currentUserMobile];
+      if (user) {
+        user.name = nameVal;
+        user.dob = dobVal;
+        user.email = emailVal;
+        user.district = distVal;
+        user.taluka = talVal;
+        if (user.role !== 'admin') user.locked = true;
+        user.updatedAt = Date.now();
+        addSecurityAuditLog(currentUserMobile, 'FORCED_PROFILE_COMPLETED', `યુઝરે ફરજિયાત વિગતો પૂર્ણ કરી (${distVal} - ${talVal})`);
+        await persistAndBroadcast(true);
+      }
+      document.getElementById('force-profile-modal').classList.add('hidden');
+      showToast('✅ તમારી પ્રોફાઇલ વિગતો સેવ થઈ ગઈ છે!');
     }
 
     function refreshAllViews() {
@@ -4654,12 +4857,37 @@ GITHUB_FILE_PATH = data.json</pre>
       if (banner) banner.classList.remove('hidden');
     });
 
+    function updateInAppInstallBannerVisibility() {
+      const card = document.getElementById('inapp-install-card');
+      if (!card) return;
+      const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+      card.classList.toggle('hidden', isStandalone);
+    }
+
     async function triggerPWAInstall() {
-      if (!deferredInstallPrompt) return;
-      deferredInstallPrompt.prompt();
-      await deferredInstallPrompt.userChoice;
-      deferredInstallPrompt = null;
-      document.getElementById('install-banner').classList.add('hidden');
+      if (deferredInstallPrompt) {
+        deferredInstallPrompt.prompt();
+        const choice = await deferredInstallPrompt.userChoice;
+        deferredInstallPrompt = null;
+        if (choice && choice.outcome === 'accepted') {
+          const lb = document.getElementById('install-banner');
+          const ic = document.getElementById('inapp-install-card');
+          if (lb) lb.classList.add('hidden');
+          if (ic) ic.classList.add('hidden');
+        }
+        return;
+      }
+      openInstallGuideModal();
+    }
+
+    function openInstallGuideModal() {
+      const m = document.getElementById('pwa-install-guide-modal');
+      if (m) m.classList.remove('hidden');
+    }
+
+    function closeInstallGuideModal() {
+      const m = document.getElementById('pwa-install-guide-modal');
+      if (m) m.classList.add('hidden');
     }
 
     // Register GitHub Pages Service Worker (sw.js) for Instant Auto-Updates & Offline PWA Support
@@ -4902,6 +5130,22 @@ GITHUB_FILE_PATH = data.json</pre>
           { name: 'શાહ અલ્પાબેન મહેશભાઈ', relation: 'પત્ની', ekyc: 'Pending' }
         ]
       };
+    }
+
+    async function openOfficialRationPortalWithCopy() {
+      const inp = document.getElementById('pro-card-input');
+      const cardNo = (inp?.value || '').replace(/\D/g, '');
+      if (cardNo.length !== 15) {
+        showToast('કૃપા કરીને પૂરા ૧૫ અંકનો રેશન કાર્ડ નંબર દાખલ કરો.', 'error');
+        return;
+      }
+      try {
+        await navigator.clipboard.writeText(cardNo);
+        showToast(`📋 નંબર ${cardNo} કોપી થઈ ગયો! સરકારી પેજ પર Paste કરી Search દબાવો.`, 'info');
+      } catch (_) {
+        showToast('સરકારી પોર્ટલ ખોલી રહ્યા છીએ...', 'info');
+      }
+      window.open('https://dcs-dof.gujarat.gov.in/preview/TransparencyPortalAPI/RationCardsMembersDetailseKYC', '_blank', 'noopener');
     }
 
     function parseDcsDofHtmlToRecord(html, cardNo) {
