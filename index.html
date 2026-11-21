@@ -289,7 +289,17 @@
         <button type="button" onclick="closeInstallGuideModal()" class="text-slate-400 hover:text-slate-700 font-bold text-lg px-1">&times;</button>
       </div>
 
-      <div class="space-y-2.5 text-xs">
+      <div class="space-y-2.5 text-xs max-h-[65vh] overflow-y-auto pr-0.5">
+        <div class="p-3 rounded-2xl bg-emerald-50 border border-emerald-300 space-y-1.5">
+          <p class="font-extrabold text-emerald-950">📦 Android માં APK ઇન્સ્ટોલ અને Unknown Sources સેટિંગ</p>
+          <p class="text-[11px] text-slate-700 leading-relaxed">
+            ૧) <strong>Gujarat-Purvatha-Operator.apk</strong> ડાઉનલોડ થાય એટલે નોટિફિકેશન અથવા ફોનના <strong>My Files / Downloads</strong> માં જઈને ફાઇલ પર ક્લિક કરો.<br/>
+            ૨) જો ફોનમાં <em>"For your security, your phone is not allowed to install unknown apps"</em> (<strong>Unknown Sources</strong>) એવો મેસેજ આવે, તો <strong>Settings</strong> પર ક્લિક કરો.<br/>
+            ૩) ત્યાં <strong>Allow from this source (અજ્ઞાત સ્રોતોને મંજૂરી આપો)</strong> વાળું બટન <strong>ON (ચાલુ)</strong> કરો.<br/>
+            ૪) હવે પાછા આવીને <strong>Install</strong> પર ક્લિક કરો — થોડી જ સેકન્ડમાં એપ ફોનમાં ઇન્સ્ટોલ થઈ જશે!
+          </p>
+        </div>
+
         <div class="p-3 rounded-2xl bg-blue-50 border border-blue-200 space-y-1">
           <p class="font-extrabold text-blue-950">🌐 Google Chrome (Android)</p>
           <p class="text-[11px] text-slate-700 leading-relaxed">
@@ -436,9 +446,9 @@
               class="px-2.5 py-2 bg-white/15 hover:bg-white/25 text-white font-bold rounded-xl text-[11px] whitespace-nowrap">
               ❓ રીત
             </button>
-            <button type="button" onclick="triggerPWAInstall()"
+            <button type="button" onclick="downloadApkApp()"
               class="px-3 py-2 bg-amber-400 hover:bg-amber-500 active:scale-95 text-slate-950 font-extrabold rounded-xl text-xs shadow whitespace-nowrap">
-              📲 ઇન્સ્ટોલ
+              ⬇️ APK ડાઉનલોડ
             </button>
           </div>
         </div>
@@ -1317,15 +1327,22 @@ GITHUB_FILE_PATH = data.json</pre>
               </div>
             </div>
 
-            <div>
-              <div class="flex items-center justify-between mb-1">
-                <label class="block text-xs font-bold text-slate-600">ઓફિસ / રહેઠાણનું સરનામું</label>
-                <button type="button" onclick="captureGPSAddress()" class="text-[11px] font-bold text-blue-700 hover:underline flex items-center gap-1">
-                  <span>📍 GPS લોકેશન ઉમેરો</span>
+            <div class="space-y-2">
+              <div class="flex items-center justify-between gap-2 flex-wrap">
+                <label class="block text-xs font-bold text-slate-600">ઓફિસનું સરનામું (Office Address)</label>
+                <button type="button" onclick="captureGPSAddress()" class="px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-[11px] font-bold text-blue-800 border border-blue-200 flex items-center gap-1">
+                  <span>📍 લાઇવ મેપ પરથી ઓફિસ એડ્રેસ મેળવો</span>
                 </button>
               </div>
-              <textarea id="prof-address" rows="2" placeholder="સંપૂર્ણ સરનામું લખો..."
+              <textarea id="prof-address" rows="2" placeholder="ઓફિસનું સંપૂર્ણ સરનામું લખો અથવા ઉપરના બટનથી લાઇવ મેપ પરથી મેળવો..."
                 class="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-600"></textarea>
+              <div id="profile-live-map-wrap" class="hidden rounded-2xl overflow-hidden border border-slate-300 bg-slate-100">
+                <div class="px-3 py-1.5 bg-slate-800 text-white text-[10px] font-bold flex items-center justify-between">
+                  <span>🗺️ ઓફિસનું લાઇવ મેપ લોકેશન</span>
+                  <a id="profile-gmaps-link" href="#" target="_blank" rel="noopener" class="text-amber-300 hover:underline">Google Maps માં ખોલો ↗</a>
+                </div>
+                <iframe id="profile-live-map-iframe" src="" class="w-full h-44 border-0" loading="lazy"></iframe>
+              </div>
             </div>
 
             <button type="submit" class="w-full py-3 bg-blue-900 hover:bg-blue-800 text-white font-bold rounded-xl text-xs shadow">
@@ -1546,6 +1563,87 @@ GITHUB_FILE_PATH = data.json</pre>
     let syncTimer = null;
     let isSyncingNow = false;
     let lastChatSentAt = 0;
+    let lastNotifiedGroupMsgTs = 0;
+    let lastNotifiedPersonalMsgTs = 0;
+    let chatAudioCtx = null;
+
+    function unlockChatAudio() {
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (AudioCtx && !chatAudioCtx) {
+          chatAudioCtx = new AudioCtx();
+        }
+        if (chatAudioCtx && chatAudioCtx.state === 'suspended') {
+          chatAudioCtx.resume();
+        }
+      } catch (_) {}
+    }
+    document.addEventListener('click', unlockChatAudio, { once: true });
+    document.addEventListener('touchstart', unlockChatAudio, { once: true });
+
+    function playChatNotificationSound(isPersonal = false) {
+      try {
+        unlockChatAudio();
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        const ctx = chatAudioCtx || new AudioCtx();
+        const now = ctx.currentTime;
+        const freqs = isPersonal ? [880, 1174.66] : [659.25, 880];
+        freqs.forEach((f, idx) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(f, now + idx * 0.11);
+          gain.gain.setValueAtTime(0.001, now + idx * 0.11);
+          gain.gain.exponentialRampToValueAtTime(0.18, now + idx * 0.11 + 0.02);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.11 + 0.22);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now + idx * 0.11);
+          osc.stop(now + idx * 0.11 + 0.24);
+        });
+      } catch (_) {}
+    }
+
+    function checkAndNotifyNewChatMessages(isInitialLoad = false) {
+      if (!currentUserMobile) return;
+      const deletedMap = appState.deletedMessages || {};
+      const clearedAt = appState.chatClearedAt || 0;
+
+      const validGroup = (appState.messages || []).filter(m =>
+        m && m.id && !deletedMap[m.id] && (m.ts || 0) > clearedAt
+      );
+      const maxGrpTs = validGroup.reduce((mx, m) => Math.max(mx, m.ts || 0), 0);
+
+      const validPersonal = (appState.personalMessages || []).filter(m =>
+        m && m.id && !deletedMap[m.id] && m.receiverMobile === currentUserMobile
+      );
+      const maxPerTs = validPersonal.reduce((mx, m) => Math.max(mx, m.ts || 0), 0);
+
+      if (isInitialLoad || (lastNotifiedGroupMsgTs === 0 && lastNotifiedPersonalMsgTs === 0)) {
+        lastNotifiedGroupMsgTs = maxGrpTs || Date.now();
+        lastNotifiedPersonalMsgTs = maxPerTs || Date.now();
+        return;
+      }
+
+      const newPersonal = validPersonal.filter(m => (m.ts || 0) > lastNotifiedPersonalMsgTs);
+      if (newPersonal.length > 0) {
+        lastNotifiedPersonalMsgTs = maxPerTs;
+        const latest = newPersonal[newPersonal.length - 1];
+        playChatNotificationSound(true);
+        showToast(`💬 ${latest.sender || 'ઓપરેટર'} નો નવો પર્સનલ મેસેજ આવ્યો છે!`, 'info');
+      }
+
+      const newGroup = validGroup.filter(m => (m.ts || 0) > lastNotifiedGroupMsgTs && m.senderMobile !== currentUserMobile);
+      if (newGroup.length > 0) {
+        lastNotifiedGroupMsgTs = maxGrpTs;
+        const latestG = newGroup[newGroup.length - 1];
+        playChatNotificationSound(false);
+        showToast(`👥 ગ્રુપ ચેટમાં ${latestG.sender || 'ઓપરેટર'} નો નવો સંદેશ આવ્યો છે!`, 'info');
+      } else if (maxGrpTs > lastNotifiedGroupMsgTs) {
+        lastNotifiedGroupMsgTs = maxGrpTs;
+      }
+    }
     let idleTimer = null;
     let securityModalResolver = null;
     let filePasscodeModalResolver = null;
@@ -2186,7 +2284,8 @@ GITHUB_FILE_PATH = data.json</pre>
 
     async function persistAndBroadcast(pushCloud = true) {
       if (isDuressDecoyMode) {
-        refreshAllViews();
+        checkAndNotifyNewChatMessages(true);
+      refreshAllViews();
         return;
       }
       purgeExpiredSelfDestructFiles();
@@ -2276,6 +2375,7 @@ GITHUB_FILE_PATH = data.json</pre>
               showToast('તમારું એકાઉન્ટ એડમિન દ્વારા બ્લોક અથવા દૂર કરવામાં આવ્યું છે.', 'error');
               return;
             }
+            checkAndNotifyNewChatMessages(false);
             refreshAllViews();
           }
         } else {
@@ -4105,6 +4205,7 @@ GITHUB_FILE_PATH = data.json</pre>
       document.getElementById('prof-email').value = user.email || '';
       document.getElementById('prof-dob').value = user.dob || '';
       document.getElementById('prof-address').value = user.address || '';
+      updateProfileLiveMap(user.officeLat, user.officeLon);
     }
 
     function handleProfilePhotoUpload(e) {
@@ -4137,20 +4238,53 @@ GITHUB_FILE_PATH = data.json</pre>
       reader.readAsDataURL(file);
     }
 
+    function updateProfileLiveMap(lat, lon) {
+      const wrap = document.getElementById('profile-live-map-wrap');
+      const iframe = document.getElementById('profile-live-map-iframe');
+      const gLink = document.getElementById('profile-gmaps-link');
+      if (!wrap || !iframe || !lat || !lon) {
+        if (wrap) wrap.classList.add('hidden');
+        return;
+      }
+      const d = 0.004;
+      const bbox = `${(lon - d).toFixed(6)},${(lat - d).toFixed(6)},${(lon + d).toFixed(6)},${(lat + d).toFixed(6)}`;
+      iframe.src = `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${lat},${lon}`;
+      if (gLink) gLink.href = `https://maps.google.com/?q=${lat},${lon}`;
+      wrap.classList.remove('hidden');
+    }
+
     function captureGPSAddress() {
       if (!navigator.geolocation) {
         showToast('તમારા બ્રાઉઝરમાં GPS સપોર્ટ નથી.', 'error');
         return;
       }
-      showToast('GPS લોકેશન મેળવી રહ્યા છીએ...', 'info');
+      showToast('📍 લાઇવ મેપ પરથી ઓફિસનું સરનામું મેળવી રહ્યા છીએ...', 'info');
       navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          const coords = `GPS: ${pos.coords.latitude.toFixed(5)}, ${pos.coords.longitude.toFixed(5)}`;
+        async (pos) => {
+          const lat = pos.coords.latitude;
+          const lon = pos.coords.longitude;
+          updateProfileLiveMap(lat, lon);
+          const user = appState.users[currentUserMobile];
+          if (user) {
+            user.officeLat = lat;
+            user.officeLon = lon;
+          }
           const addrEl = document.getElementById('prof-address');
-          addrEl.value = addrEl.value ? `${addrEl.value} (${coords})` : coords;
-          showToast('GPS લોકેશન ઉમેરાઈ ગયું!');
+          try {
+            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}&accept-language=gu,en`);
+            if (!res.ok) throw new Error('Geo lookup failed');
+            const geo = await res.json();
+            if (geo && geo.display_name) {
+              addrEl.value = geo.display_name;
+              showToast('✅ લાઇવ મેપ પરથી ઓફિસનું સરનામું મળી ગયું!');
+              return;
+            }
+          } catch (_) {}
+          addrEl.value = `ઓફિસ લોકેશન (${lat.toFixed(5)}, ${lon.toFixed(5)})`;
+          showToast('મેપ લોકેશન સેટ થયું! સરનામાની વિગત તપાસી સેવ કરો.', 'info');
         },
-        () => showToast('GPS પરમિશન મળી નથી.', 'error')
+        () => showToast('GPS પરમિશન મળી નથી. મોબાઇલનું Location ચાલુ કરો.', 'error'),
+        { enableHighAccuracy: true, timeout: 12000 }
       );
     }
 
@@ -4862,6 +4996,24 @@ GITHUB_FILE_PATH = data.json</pre>
       if (!card) return;
       const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
       card.classList.toggle('hidden', isStandalone);
+    }
+
+    async function downloadApkApp() {
+      try {
+        const res = await fetch('./purvatha-operator.apk', { method: 'HEAD' });
+        if (res.ok) {
+          const a = document.createElement('a');
+          a.href = './purvatha-operator.apk';
+          a.download = 'Gujarat-Purvatha-Operator.apk';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          showToast('⬇️ APK ફાઇલ ડાઉનલોડ થઈ રહી છે! ઇન્સ્ટોલ કરવાની રીત નીચે જુઓ.', 'success');
+          openInstallGuideModal();
+          return;
+        }
+      } catch (_) {}
+      triggerPWAInstall();
     }
 
     async function triggerPWAInstall() {
